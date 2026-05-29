@@ -60,6 +60,9 @@ export class NotificationSignalRService implements OnDestroy {
           if (prefs.showPreview !== false) {
             this.toast.info(`${notification.title}: ${notification.body}`);
           }
+
+          // Trigger OS native local Push Notification
+          this.triggerLocalPush(notification.title, notification.body);
         }
       });
     }
@@ -139,6 +142,25 @@ export class NotificationSignalRService implements OnDestroy {
       void audio.play();
     } catch (e) {
       console.warn('Could not play notification sound', e);
+    }
+  }
+
+  triggerLocalPush(title: string, body: string): void {
+    if ('Notification' in window && Notification.permission === 'granted') {
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.ready.then(reg => {
+          reg.showNotification(title, {
+            body: body,
+            icon: '/favicon.ico',
+            dir: 'rtl',
+            vibrate: [100, 50, 100]
+          } as any);
+        }).catch(() => {
+          new Notification(title, { body: body, icon: '/favicon.ico' });
+        });
+      } else {
+        new Notification(title, { body: body, icon: '/favicon.ico' });
+      }
     }
   }
 

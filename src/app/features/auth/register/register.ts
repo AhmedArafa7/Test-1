@@ -12,9 +12,18 @@ import { ToastService } from '../../../core/services/toast.service';
   template: `
     <div class="min-h-screen flex bg-white font-sans selection:bg-[#0a8f96]/20">
       <!-- Left Side: Brand & Visual -->
-      <div class="hidden lg:flex w-[45%] relative overflow-hidden flex-col justify-between p-16">
+      <div class="hidden lg:flex w-[45%] relative overflow-hidden flex-col justify-between p-16 bg-slate-900 animate-fade-in">
+        <!-- Low-res placeholder blurred -->
+        <div [class]="bgLoaded() ? 'opacity-0' : 'opacity-100'"
+             class="absolute inset-0 transition-opacity duration-1000 bg-cover bg-center filter blur-xl scale-110"
+             style="background-image: url('https://images.unsplash.com/photo-1600585154340-be6161a56a0c?ixlib=rb-4.0.3&auto=format&fit=crop&w=50&q=10');"></div>
+        
+        <!-- High-res full image -->
         <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" 
-             class="absolute inset-0 w-full h-full object-cover">
+             (load)="bgLoaded.set(true)"
+             [class]="bgLoaded() ? 'opacity-100' : 'opacity-0'"
+             class="absolute inset-0 w-full h-full object-cover transition-opacity duration-1000">
+        
         <div class="absolute inset-0 bg-gradient-to-t from-[#0c1222]/90 via-[#076b70]/50 to-[#0a8f96]/30"></div>
         
         <!-- Floating Geometric Accents -->
@@ -121,19 +130,83 @@ import { ToastService } from '../../../core/services/toast.service';
               <label class="text-[10px] font-black text-gray-400 uppercase tracking-wider">{{ 'AUTH.REGISTER.PASSWORD' | translate }} <span class="text-red-500">*</span></label>
               <div class="relative">
                 <input [type]="showPassword ? 'text' : 'password'" [(ngModel)]="password" name="password" 
+                       (input)="onPasswordInput(password)"
                        class="input-field" 
                        [placeholder]="'AUTH.REGISTER.PASSWORD_HINT' | translate" required>
                 <button type="button" (click)="showPassword = !showPassword" class="absolute ltr:right-4 rtl:left-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                  @if (showPassword) {
+                    <!-- Eye Off Icon -->
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88"/>
+                    </svg>
+                  } @else {
+                    <!-- Eye Icon -->
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/>
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    </svg>
+                  }
                 </button>
               </div>
+
+              <!-- Password Strength Indicator -->
+              @if (password.length > 0) {
+                <div class="mt-3 space-y-3 animate-fade-in bg-slate-50/60 border border-slate-100 rounded-2xl p-4">
+                  <!-- Bar and label -->
+                  <div class="flex items-center justify-between text-[11px] font-bold">
+                    <span class="text-slate-400">قوة كلمة المرور:</span>
+                    <span [class]="passwordStrengthColor() === 'bg-rose-500' ? 'text-rose-500' : passwordStrengthColor() === 'bg-amber-500' ? 'text-amber-500' : 'text-emerald-500'">
+                      {{ passwordStrengthLabel() }}
+                    </span>
+                  </div>
+                  <!-- Dynamic Bar -->
+                  <div class="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                    <div [class]="passwordStrengthColor()" 
+                         [style.width]="passwordStrengthPercentage() + '%'"
+                         class="h-full transition-all duration-500 rounded-full"></div>
+                  </div>
+                  <!-- Checklist grid -->
+                  <div class="grid grid-cols-2 gap-2 text-[10px] font-bold">
+                    <!-- Rule 1: Min Length -->
+                    <div class="flex items-center gap-1.5 transition-colors" [class.text-emerald-500]="hasMinLength()" [class.text-slate-400]="!hasMinLength()">
+                      <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/>
+                      </svg>
+                      <span>8 رموز على الأقل</span>
+                    </div>
+                    <!-- Rule 2: Upper Case -->
+                    <div class="flex items-center gap-1.5 transition-colors" [class.text-emerald-500]="hasUppercase()" [class.text-slate-400]="!hasUppercase()">
+                      <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/>
+                      </svg>
+                      <span>حرف كبير (A-Z)</span>
+                    </div>
+                    <!-- Rule 3: Number -->
+                    <div class="flex items-center gap-1.5 transition-colors" [class.text-emerald-500]="hasNumber()" [class.text-slate-400]="!hasNumber()">
+                      <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/>
+                      </svg>
+                      <span>رقم واحد (0-9)</span>
+                    </div>
+                    <!-- Rule 4: Special Char -->
+                    <div class="flex items-center gap-1.5 transition-colors" [class.text-emerald-500]="hasSpecialChar()" [class.text-slate-400]="!hasSpecialChar()">
+                      <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/>
+                      </svg>
+                      <span>رمز خاص (!@#$)</span>
+                    </div>
+                  </div>
+                </div>
+              }
             </div>
 
             <button type="submit" [disabled]="loading()" 
-                    class="btn-luxury w-full py-4 mt-6">
+                    class="btn-luxury w-full py-4 mt-6 cursor-pointer">
               @if (loading()) { <div class="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> }
-              {{ 'AUTH.REGISTER.SUBMIT_BTN' | translate }}
-              <svg class="w-5 h-5 transition-transform ltr:group-hover:translate-x-1 rtl:group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+              @if (!loading()) {
+                <span>{{ 'AUTH.REGISTER.SUBMIT_BTN' | translate }}</span>
+                <svg class="w-5 h-5 transition-transform ltr:group-hover:translate-x-1 rtl:group-hover:-translate-x-1 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+              }
             </button>
           </form>
 
@@ -153,7 +226,60 @@ export class RegisterComponent {
   password = '';
   role = 'Buyer';
   showPassword = false;
+  bgLoaded = signal(false);
   loading = signal(false);
+
+  // Strength signals
+  passwordStrengthLabel = signal('');
+  passwordStrengthColor = signal('bg-rose-500');
+  passwordStrengthPercentage = signal(0);
+  
+  hasMinLength = signal(false);
+  hasNumber = signal(false);
+  hasUppercase = signal(false);
+  hasSpecialChar = signal(false);
+
+  onPasswordInput(val: string) {
+    if (!val) {
+      this.passwordStrengthLabel.set('');
+      this.passwordStrengthColor.set('bg-rose-500');
+      this.passwordStrengthPercentage.set(0);
+      this.hasMinLength.set(false);
+      this.hasNumber.set(false);
+      this.hasUppercase.set(false);
+      this.hasSpecialChar.set(false);
+      return;
+    }
+
+    const minLength = val.length >= 8;
+    const number = /\d/.test(val);
+    const uppercase = /[A-Z]/.test(val);
+    const special = /[!@#$%^&*(),.?":{}|<>]/.test(val);
+
+    this.hasMinLength.set(minLength);
+    this.hasNumber.set(number);
+    this.hasUppercase.set(uppercase);
+    this.hasSpecialChar.set(special);
+
+    let score = 0;
+    if (minLength) score++;
+    if (number) score++;
+    if (uppercase) score++;
+    if (special) score++;
+
+    this.passwordStrengthPercentage.set(score * 25);
+
+    if (score <= 1) {
+      this.passwordStrengthLabel.set('ضعيف');
+      this.passwordStrengthColor.set('bg-rose-500');
+    } else if (score <= 3) {
+      this.passwordStrengthLabel.set('متوسط');
+      this.passwordStrengthColor.set('bg-amber-500');
+    } else {
+      this.passwordStrengthLabel.set('قوي جداً');
+      this.passwordStrengthColor.set('bg-emerald-500');
+    }
+  }
 
   constructor(private auth: AuthService, private router: Router, private toast: ToastService) {}
 

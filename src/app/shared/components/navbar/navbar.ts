@@ -1,17 +1,18 @@
-import { Component, HostListener, computed } from '@angular/core';
+import { Component, HostListener, computed, signal, effect, inject, OnInit } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { AuthService } from '../../../core/auth/auth.service';
 import { NotificationSignalRService } from '../../../core/services/notification-signalr.service';
 import { LanguageService } from '../../../core/services/language.service';
+import { ChatSignalRService } from '../../../core/services/chat-signalr.service';
 
 @Component({
   selector: 'app-navbar',
   standalone: true,
   imports: [RouterLink, RouterLinkActive, TranslateModule],
   template: `
-    <nav class="sticky top-[3px] z-[100] bg-white/70 backdrop-blur-2xl border-b border-[#0a8f96]/10 shadow-[0_4px_30px_rgba(10,143,150,0.08)]">
+    <nav class="sticky top-[3px] z-[100] bg-white/70 backdrop-blur-2xl border-b border-[#0a8f96]/10"> <!--shadow-[0_4px_30px_rgba(10,143,150,0.08)]">-->
       <div class="max-w-[1400px] mx-auto px-6">
         <div class="flex items-center justify-between h-[72px]">
           
@@ -54,9 +55,16 @@ import { LanguageService } from '../../../core/services/language.service';
                   <a routerLink="/bookings" routerLinkActive="!text-[#0a8f96] !bg-[#0a8f96]/5" 
                      [routerLinkActiveOptions]="{exact: true}"
                      class="px-5 py-2.5 rounded-full text-sm font-bold text-gray-500 hover:text-gray-900 transition-all">{{ 'NAV.BOOKINGS' | translate }}</a>
-                  <a routerLink="/conversations" routerLinkActive="!text-[#0a8f96] !bg-[#0a8f96]/5" 
+                  <a routerLink="/conversations" 
+                     (click)="clearUnreadMessagesDot()"
+                     routerLinkActive="!text-[#0a8f96] !bg-[#0a8f96]/5" 
                      [routerLinkActiveOptions]="{exact: true}"
-                     class="px-5 py-2.5 rounded-full text-sm font-bold text-gray-500 hover:text-gray-900 transition-all">{{ 'NAV.MESSAGES' | translate }}</a>
+                     class="px-5 py-2.5 rounded-full text-sm font-bold text-gray-500 hover:text-gray-900 transition-all flex items-center gap-2">
+                    <span>{{ 'NAV.MESSAGES' | translate }}</span>
+                    @if (hasUnreadMessages()) {
+                      <span class="w-2.5 h-2.5 rounded-full bg-[#0a8f96] animate-pulse shrink-0"></span>
+                    }
+                  </a>
                 }
                 
                 @if (auth.isAdmin()) {
@@ -106,7 +114,7 @@ import { LanguageService } from '../../../core/services/language.service';
                 </button>
 
                 @if (menuOpen) {
-                  <div class="absolute end-0 mt-3 w-64 bg-white rounded-2xl shadow-xl py-3 border border-gray-100 animate-slide-up overflow-hidden z-[110]">
+                  <div class="absolute end-0 top-full mt-3 w-64 bg-white rounded-2xl shadow-xl py-3 border border-gray-100 animate-slide-up overflow-hidden z-[110]">
                     <div class="px-5 py-4 border-b border-gray-50 text-start">
                       <p class="text-[10px] text-[#0a8f96] font-black uppercase tracking-widest">{{ roleLabel() | translate }}</p>
                       <p class="text-sm font-bold text-gray-900 truncate mt-0.5">{{ displayIdentity() }}</p>
@@ -175,7 +183,14 @@ import { LanguageService } from '../../../core/services/language.service';
               }
               @if (auth.isBuyer() || auth.isAgent()) {
                 <a routerLink="/bookings" (click)="mobileOpen = false" class="block p-4 rounded-2xl hover:bg-gray-50 text-gray-700 font-bold">{{ 'NAV.BOOKINGS' | translate }}</a>
-                <a routerLink="/conversations" (click)="mobileOpen = false" class="block p-4 rounded-2xl hover:bg-gray-50 text-gray-700 font-bold">{{ 'NAV.MESSAGES' | translate }}</a>
+                <a routerLink="/conversations" 
+                   (click)="mobileOpen = false; clearUnreadMessagesDot()" 
+                   class="p-4 rounded-2xl hover:bg-gray-50 text-gray-700 font-bold flex items-center justify-between">
+                  <span>{{ 'NAV.MESSAGES' | translate }}</span>
+                  @if (hasUnreadMessages()) {
+                    <span class="w-2.5 h-2.5 rounded-full bg-[#0a8f96] animate-pulse shrink-0"></span>
+                  }
+                </a>
               }
               <a routerLink="/profile" (click)="mobileOpen = false" class="block p-4 rounded-2xl hover:bg-gray-50 text-gray-700 font-bold">{{ 'NAV.PROFILE' | translate }}</a>
               <button (click)="logout(); mobileOpen = false" class="w-full p-4 rounded-2xl bg-gradient-to-br from-red-100 to-red-50 text-red-500 font-black text-start">{{ 'NAV.LOGOUT' | translate }}</button>
@@ -186,9 +201,12 @@ import { LanguageService } from '../../../core/services/language.service';
     </nav>
   `,
 })
-export class NavbarComponent {
+export class NavbarComponent implements OnInit {
   menuOpen = false;
   mobileOpen = false;
+  hasUnreadMessages = signal(false);
+
+  private chatSignalR = inject(ChatSignalRService);
 
   displayIdentity = computed(() => {
     const user = this.auth.currentUser();
@@ -216,7 +234,39 @@ export class NavbarComponent {
     public auth: AuthService,
     public notificationService: NotificationSignalRService,
     public lang: LanguageService
-  ) {}
+  ) {
+    effect(() => {
+      const msg = this.chatSignalR.incomingMessage();
+      if (msg) {
+        setTimeout(() => this.updateUnreadStatus(), 150);
+      }
+    });
+  }
+
+  ngOnInit() {
+    this.updateUnreadStatus();
+  }
+
+  updateUnreadStatus() {
+    try {
+      const unreadCountsRaw = localStorage.getItem('baytology_unread_counts') || '{}';
+      const unreadCounts = JSON.parse(unreadCountsRaw);
+      const total = Object.values(unreadCounts).reduce((a: any, b: any) => a + b, 0) as number;
+      
+      const currentRoute = window.location.pathname;
+      if (currentRoute.includes('/conversations')) {
+        this.hasUnreadMessages.set(false);
+      } else {
+        this.hasUnreadMessages.set(total > 0);
+      }
+    } catch {
+      this.hasUnreadMessages.set(false);
+    }
+  }
+
+  clearUnreadMessagesDot() {
+    this.hasUnreadMessages.set(false);
+  }
 
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent) {

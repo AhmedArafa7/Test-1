@@ -40,12 +40,9 @@ import { ToastService } from '../../../core/services/toast.service';
               {{ 'AUTH.FORGOT_PASSWORD.RETURN_LOGIN' | translate }}
             </a>
             
-            <div class="flex items-center gap-3 mb-8">
-              <span class="text-2xl font-bold bg-gradient-to-r from-[#0a8f96] to-[#076b70] bg-clip-text text-transparent tracking-tight">Baytology</span>
-            </div>
-
-            <div class="w-12 h-12 bg-gradient-to-br from-[#0a8f96]/10 to-[#0a8f96]/5 rounded-xl flex items-center justify-center mb-8 border border-[#0a8f96]/10">
-              <svg class="w-6 h-6 text-[#0a8f96]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
+          <div class="flex flex-col items-center gap-3 mb-5 select-none">
+            <img src="./Baytology_image.png" alt="Baytology" class="w-36 h-36 rounded-[100px] object-contain shadow-md border border-slate-100/80 bg-slate-50/50 transition-transform duration-300 hover:scale-105">
+            <div class="text-center mt-1">
             </div>
 
             <h1 class="text-4xl font-bold text-gray-900 mb-4 ltr:text-left rtl:text-right">{{ 'AUTH.FORGOT_PASSWORD.TITLE' | translate }}</h1>

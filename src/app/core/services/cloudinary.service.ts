@@ -28,7 +28,6 @@ export class CloudinaryService {
     const formData = new FormData();
     
     if (typeof file === 'string') {
-      // Handle base64 strings if needed
       formData.append('file', file);
     } else {
       formData.append('file', file);
@@ -43,13 +42,36 @@ export class CloudinaryService {
         count: 3,
         delay: (error, retryCount) => {
           console.warn(`Cloudinary upload failed, retrying (${retryCount}/3)...`, error);
-          // Exponential backoff: 1s, 2s, 4s
           return timer(Math.pow(2, retryCount - 1) * 1000);
         }
       }),
       catchError(err => {
         console.error('Cloudinary upload error after retries:', err);
         return throwError(() => new Error('فشل رفع الصورة إلى السحابة. سيتم المحاولة لاحقاً.'));
+      })
+    );
+  }
+
+  uploadAudio(file: File): Observable<string> {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', this.uploadPreset);
+    formData.append('tags', 'baytology_upload_audio');
+
+    const audioUploadUrl = `https://api.cloudinary.com/v1_1/${this.cloudName}/video/upload`;
+
+    return this.http.post<any>(audioUploadUrl, formData).pipe(
+      map(res => res.secure_url),
+      retry({
+        count: 3,
+        delay: (error, retryCount) => {
+          console.warn(`Cloudinary audio upload failed, retrying (${retryCount}/3)...`, error);
+          return timer(Math.pow(2, retryCount - 1) * 1000);
+        }
+      }),
+      catchError(err => {
+        console.error('Cloudinary audio upload error after retries:', err);
+        return throwError(() => new Error('فشل رفع الملف الصوتي إلى السحابة. سيتم المحاولة لاحقاً.'));
       })
     );
   }

@@ -14,9 +14,13 @@ const USER_KEY = 'baytology_user';
 export class AuthService {
   private readonly apiUrl = environment.apiUrl;
 
+  private loadToken(): string | null {
+    return localStorage.getItem(TOKEN_KEY) || sessionStorage.getItem(TOKEN_KEY);
+  }
+
   // ─── Signals ───
   private _currentUser = signal<CurrentUser | null>(this.loadUser());
-  private _token = signal<string | null>(localStorage.getItem(TOKEN_KEY));
+  private _token = signal<string | null>(this.loadToken());
 
   readonly currentUser = this._currentUser.asReadonly();
   readonly isAuthenticated = computed(() => !!this._token());
@@ -58,22 +62,23 @@ export class AuthService {
   }
 
   get token(): string | null { return this._token(); }
-  get refreshToken(): string | null { return localStorage.getItem(REFRESH_KEY); }
+  get refreshToken(): string | null {
+    return localStorage.getItem(REFRESH_KEY) || sessionStorage.getItem(REFRESH_KEY);
+  }
 
   isTokenExpired(): boolean {
-    const expires = localStorage.getItem(EXPIRES_KEY);
+    const expires = localStorage.getItem(EXPIRES_KEY) || sessionStorage.getItem(EXPIRES_KEY);
     if (!expires) return true;
     const expiresDate = new Date(expires);
-    // Return true if expired or expiring in the next 30 seconds
     return expiresDate.getTime() - Date.now() < 30000;
   }
 
   // ─── Login ───
-  async login(request: LoginRequest): Promise<void> {
+  async login(request: LoginRequest, rememberMe = true): Promise<void> {
     const response = await firstValueFrom(
       this.http.post<TokenResponse>(`${this.apiUrl}/identity/token/generate`, request)
     );
-    this.storeTokens(response);
+    this.storeTokens(response, rememberMe);
     await this.loadCurrentUser();
   }
 
@@ -85,11 +90,11 @@ export class AuthService {
   }
 
   // ─── External Login ───
-  async externalLogin(request: ExternalLoginRequest): Promise<ExternalLoginResponse> {
+  async externalLogin(request: ExternalLoginRequest, rememberMe = true): Promise<ExternalLoginResponse> {
     const response = await firstValueFrom(
       this.http.post<ExternalLoginResponse>(`${this.apiUrl}/identity/external-login`, request)
     );
-    this.storeTokens(response.tokens);
+    this.storeTokens(response.tokens, rememberMe);
     await this.loadCurrentUser();
     return response;
   }
@@ -102,7 +107,8 @@ export class AuthService {
         expiredAccessToken: this._token(),
       })
     );
-    this.storeTokens(response);
+    const rememberMe = localStorage.getItem('baytology_remember_me') === 'true';
+    this.storeTokens(response, rememberMe);
     return response;
   }
 
@@ -113,7 +119,9 @@ export class AuthService {
         this.http.get<CurrentUser>(`${this.apiUrl}/identity/me`)
       );
       this._currentUser.set(user);
-      localStorage.setItem(USER_KEY, JSON.stringify(user));
+      const rememberMe = localStorage.getItem('baytology_remember_me') === 'true';
+      const storage = rememberMe ? localStorage : sessionStorage;
+      storage.setItem(USER_KEY, JSON.stringify(user));
     } catch {
       this.clearAuth();
     }
@@ -153,28 +161,53 @@ export class AuthService {
   }
 
   // ─── Helpers ───
-  private storeTokens(tokens: TokenResponse): void {
-    localStorage.setItem(TOKEN_KEY, tokens.accessToken!);
-    localStorage.setItem(REFRESH_KEY, tokens.refreshToken!);
+  private storeTokens(tokens: TokenResponse, rememberMe = true): void {
+    const storage = rememberMe ? localStorage : sessionStorage;
+    
+    // Set rememberMe flag
+    localStorage.setItem('baytology_remember_me', rememberMe ? 'true' : 'false');
+    
+    // Remove from opposite storage to avoid mixed states
+    const opposite = rememberMe ? sessionStorage : localStorage;
+    opposite.removeItem(TOKEN_KEY);
+    opposite.removeItem(REFRESH_KEY);
+    opposite.removeItem(EXPIRES_KEY);
+    opposite.removeItem(USER_KEY);
+
+    storage.setItem(TOKEN_KEY, tokens.accessToken!);
+    storage.setItem(REFRESH_KEY, tokens.refreshToken!);
     if (tokens.expiresOnUtc) {
-      localStorage.setItem(EXPIRES_KEY, tokens.expiresOnUtc);
+      storage.setItem(EXPIRES_KEY, tokens.expiresOnUtc);
     }
     this._token.set(tokens.accessToken!);
   }
 
   private clearAuth(): void {
+    const userId = this._currentUser()?.userId;
+    
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(REFRESH_KEY);
     localStorage.removeItem(EXPIRES_KEY);
     localStorage.removeItem(USER_KEY);
+    localStorage.removeItem('baytology_remember_me');
+
+    sessionStorage.removeItem(TOKEN_KEY);
+    sessionStorage.removeItem(REFRESH_KEY);
+    sessionStorage.removeItem(EXPIRES_KEY);
+    sessionStorage.removeItem(USER_KEY);
+
     localStorage.removeItem('baytology_chat_history');
+    localStorage.removeItem('baytology_mock_notifications'); // legacy shared key
+    if (userId) {
+      localStorage.removeItem(`baytology_mock_notifications_${userId}`);
+    }
     sessionStorage.removeItem('baytology_ai_session_id');
     this._token.set(null);
     this._currentUser.set(null);
   }
 
   private loadUser(): CurrentUser | null {
-    const raw = localStorage.getItem(USER_KEY);
+    const raw = localStorage.getItem(USER_KEY) || sessionStorage.getItem(USER_KEY);
     return raw ? JSON.parse(raw) : null;
   }
 }

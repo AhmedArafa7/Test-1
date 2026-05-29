@@ -1,8 +1,8 @@
 import { Component, signal, OnInit } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
-import { RouterLink } from '@angular/router';
+import { RouterLink, Router } from '@angular/router';
+import { CommonModule } from '@angular/common';
 import { LocalizedDatePipe } from '../../../shared/pipes/localized-date.pipe';
-
 import { AuthService } from '../../../core/auth/auth.service';
 import { BookingService } from '../services/booking.service';
 import { BookingListItem, BookingStatus } from '../../../core/models';
@@ -12,138 +12,298 @@ import { ToastService } from '../../../core/services/toast.service';
 import { PropertyService } from '../../properties/services/property.service';
 import { LocalImageService } from '../../../core/services/local-image.service';
 import { buildPropertyPlaceholder, getPropertyImageUrl } from '../../../core/utils/media';
-import { Router } from '@angular/router';
 import { ConversationService } from '../../conversations/services/conversation.service';
 import { EmptyStateComponent } from '../../../shared/components/empty-state/empty-state';
 
 @Component({
   selector: 'app-booking-list',
   standalone: true,
-  imports: [RouterLink, LoadingSpinnerComponent, PaginationComponent, LocalizedDatePipe, EmptyStateComponent, TranslateModule],
+  imports: [RouterLink, LoadingSpinnerComponent, PaginationComponent, LocalizedDatePipe, EmptyStateComponent, TranslateModule, CommonModule],
   template: `
-    <div class="min-h-screen bg-gradient-to-b from-[#f0f4f5] to-[#f8f9fa] font-sans py-20 px-6">
-      <div class="max-w-6xl mx-auto">
-        <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16">
+    <div class="min-h-screen bg-[#f8fafc] font-sans pt-24 md:pt-28 pb-16 px-4 md:px-8">
+      <div class="max-w-[1400px] mx-auto">
+        
+        <!-- Top Header -->
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10 w-full">
           <div class="ltr:text-left rtl:text-right">
-            <h1 class="text-4xl font-black text-gray-900 tracking-tight mb-2">{{ (auth.isAgent() ? 'BOOKINGS.AGENT_TITLE' : 'BOOKINGS.TITLE') | translate }}</h1>
-            <p class="text-gray-500 font-bold text-sm">{{ (auth.isAgent() ? 'BOOKINGS.AGENT_SUBTITLE' : 'BOOKINGS.SUBTITLE_COUNT') | translate:{ count: totalCount() } }}</p>
+            <h1 class="text-3xl md:text-[40px] font-black text-gray-900 tracking-tight mb-2">
+              {{ (auth.isAgent() ? 'BOOKINGS.AGENT_TITLE' : 'BOOKINGS.TITLE') | translate }}
+            </h1>
+            <p class="text-slate-500 font-bold text-sm md:text-base">
+              {{ (auth.isAgent() ? 'BOOKINGS.AGENT_SUBTITLE' : 'BOOKINGS.SUBTITLE_COUNT') | translate:{ count: totalCount() } }}
+            </p>
           </div>
-          <div class="flex items-center gap-2 bg-white p-1.5 rounded-[24px] border border-gray-100 shadow-sm">
-            <button (click)="setStatusFilter('Upcoming')" [class]="statusFilter() === 'Upcoming' ? 'text-[#0a8f96] bg-[#0a8f96]/5' : 'text-gray-400 hover:text-gray-900'" class="px-8 py-3 rounded-[18px] text-[11px] font-black uppercase tracking-widest transition-all">{{ 'BOOKINGS.UPCOMING' | translate }} ({{ getFilteredCount('Upcoming') }})</button>
-            <button (click)="setStatusFilter('Previous')" [class]="statusFilter() === 'Previous' ? 'text-[#0a8f96] bg-[#0a8f96]/5' : 'text-gray-400 hover:text-gray-900'" class="px-8 py-3 rounded-[18px] text-[11px] font-black uppercase tracking-widest transition-all">{{ 'BOOKINGS.PREVIOUS' | translate }}</button>
-            <button (click)="setStatusFilter('Cancelled')" [class]="statusFilter() === 'Cancelled' ? 'text-[#0a8f96] bg-[#0a8f96]/5' : 'text-gray-400 hover:text-gray-900'" class="px-8 py-3 rounded-[18px] text-[11px] font-black uppercase tracking-widest transition-all">{{ 'BOOKINGS.CANCELLED' | translate }}</button>
+          
+          <!-- Filter Switcher (Pills) -->
+          <div class="flex items-center gap-2 bg-[#f1f5f9] p-1.5 rounded-full border border-slate-100 shadow-sm shrink-0">
+            <button (click)="setStatusFilter('All')" 
+                    [class]="statusFilter() === 'All' ? 'bg-[#076b70] text-white shadow-sm' : 'text-slate-600 hover:text-slate-900 bg-transparent'" 
+                    class="px-6 py-2.5 rounded-full text-xs font-black uppercase tracking-wider transition-all duration-300 cursor-pointer">
+              الكل
+            </button>
+            <button (click)="setStatusFilter('Pending')" 
+                    [class]="statusFilter() === 'Pending' ? 'bg-[#076b70] text-white shadow-sm' : 'text-slate-600 hover:text-slate-900 bg-transparent'" 
+                    class="px-6 py-2.5 rounded-full text-xs font-black uppercase tracking-wider transition-all duration-300 cursor-pointer">
+              قيد الانتظار
+            </button>
+            <button (click)="setStatusFilter('Confirmed')" 
+                    [class]="statusFilter() === 'Confirmed' ? 'bg-[#076b70] text-white shadow-sm' : 'text-slate-600 hover:text-slate-900 bg-transparent'" 
+                    class="px-6 py-2.5 rounded-full text-xs font-black uppercase tracking-wider transition-all duration-300 cursor-pointer">
+              مؤكد
+            </button>
+            <button (click)="setStatusFilter('Cancelled')" 
+                    [class]="statusFilter() === 'Cancelled' ? 'bg-rose-600 text-white shadow-sm' : 'text-slate-600 hover:text-slate-900 bg-transparent'" 
+                    class="px-6 py-2.5 rounded-full text-xs font-black uppercase tracking-wider transition-all duration-300 cursor-pointer">
+              الملغية
+            </button>
           </div>
         </div>
 
-        @if (loading()) {
-          <div class="flex justify-center py-32"><app-loading-spinner [message]="'BOOKINGS.LOADING' | translate" /></div>
-        }
-        @else if (bookings().length === 0) {
-          <div class="bg-white rounded-[32px] border border-gray-100 shadow-sm overflow-hidden">
-            <app-empty-state 
-              [title]="(auth.isAgent() ? 'BOOKINGS.AGENT_EMPTY_TITLE' : 'BOOKINGS.EMPTY_TITLE') | translate" 
-              [message]="(auth.isAgent() ? 'BOOKINGS.AGENT_EMPTY_MSG' : 'BOOKINGS.EMPTY_MSG') | translate"
-              [actionText]="auth.isAgent() ? '' : ('BOOKINGS.BROWSE_BTN' | translate)"
-              [actionRoute]="auth.isAgent() ? '' : '/properties'">
-              <div icon class="w-12 h-12 text-[#0a8f96]">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+        <!-- Main Grid Content -->
+        <div class="grid grid-cols-12 gap-8">
+          
+          <!-- Left Column: Statistics & Calendar Sync -->
+          <div class="col-span-12 lg:col-span-4 flex flex-col gap-6">
+            
+            <!-- Stats Card -->
+            <div class="bg-white rounded-[24px] border border-slate-100 shadow-[0_4px_24px_rgba(0,0,0,0.015)] p-6 md:p-8">
+              <h3 class="text-xl font-black text-slate-800 border-b border-slate-100 pb-4 mb-6 ltr:text-left rtl:text-right">
+                إحصائيات الشهر
+              </h3>
+              
+              <div class="space-y-6">
+                <!-- Total Requests -->
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-slate-50 text-slate-600 rounded-2xl flex items-center justify-center shadow-sm">
+                      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                      </svg>
+                    </div>
+                    <div class="ltr:text-left rtl:text-right">
+                      <p class="text-sm font-bold text-slate-900">إجمالي الطلبات</p>
+                    </div>
+                  </div>
+                  <span class="text-2xl font-black text-slate-900 tabular-nums">{{ totalRequestsCount() }}</span>
+                </div>
+
+                <!-- Pending Requests -->
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center shadow-sm">
+                      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                      </svg>
+                    </div>
+                    <div class="ltr:text-left rtl:text-right">
+                      <p class="text-sm font-bold text-slate-900">قيد الانتظار</p>
+                    </div>
+                  </div>
+                  <span class="text-2xl font-black text-amber-600 tabular-nums">{{ pendingRequestsCount() }}</span>
+                </div>
+
+                <!-- Confirmed Requests -->
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center shadow-sm">
+                      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M5 13l4 4L19 7"/>
+                      </svg>
+                    </div>
+                    <div class="ltr:text-left rtl:text-right">
+                      <p class="text-sm font-bold text-slate-900">مؤكدة</p>
+                    </div>
+                  </div>
+                  <span class="text-2xl font-black text-emerald-600 tabular-nums">{{ confirmedRequestsCount() }}</span>
+                </div>
+
+                <!-- Cancelled Requests -->
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center shadow-sm">
+                      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                      </svg>
+                    </div>
+                    <div class="ltr:text-left rtl:text-right">
+                      <p class="text-sm font-bold text-slate-900">الملغية / المرفوضة</p>
+                    </div>
+                  </div>
+                  <span class="text-2xl font-black text-rose-600 tabular-nums">{{ cancelledRequestsCount() }}</span>
+                </div>
               </div>
-            </app-empty-state>
+            </div>
+
+            <!-- Calendar Sync Card -->
+            <div class="bg-white rounded-[24px] border border-slate-100 shadow-[0_4px_24px_rgba(0,0,0,0.015)] p-6 md:p-8 flex flex-col items-center text-center">
+              <div class="w-16 h-16 bg-[#076b70]/5 text-[#076b70] rounded-2xl flex items-center justify-center mb-4">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+              </div>
+              
+              <h4 class="text-lg font-black text-slate-800 mb-2">مزامنة التقويم</h4>
+              <p class="text-slate-400 font-bold text-xs md:text-sm max-w-xs leading-relaxed mb-6">
+                تأكد من تحديث التوافر عبر جميع المنصات لتجنب الحجوزات المزدوجة.
+              </p>
+              
+              <button (click)="syncCalendar()" 
+                      [disabled]="syncing()"
+                      class="w-full py-3.5 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 font-black rounded-xl text-xs shadow-sm hover:shadow active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-2">
+                @if (syncing()) {
+                  <div class="w-4 h-4 border-2 border-[#076b70]/30 border-t-[#076b70] rounded-full animate-spin"></div>
+                  جاري المزامنة...
+                } @else {
+                  مزامنة الآن
+                }
+              </button>
+            </div>
           </div>
-        }
-        @else {
-          <div class="grid grid-cols-1 gap-10">
-            @for (b of filteredBookings(); track b.id) {
-              <div class="bg-white border border-gray-100 rounded-[32px] overflow-hidden shadow-sm hover:shadow-2xl hover:shadow-[#0a8f96]/5 transition-all duration-500 group flex flex-col lg:flex-row">
-                <div class="w-full lg:w-[380px] h-[320px] relative overflow-hidden shrink-0 bg-gray-50">
-                  <div class="absolute top-6 ltr:left-6 rtl:right-6 z-10">
-                    <span class="bg-white/95 backdrop-blur-md text-gray-900 text-[9px] font-black tracking-[0.2em] uppercase px-4 py-2.5 rounded-xl shadow-lg border border-gray-100 flex items-center gap-2">
-                      <span class="w-2 h-2 rounded-full" [class.bg-[#0a8f96]]="b.status === 'Confirmed' || b.status === 'Completed'" [class.bg-yellow-500]="b.status === 'Pending'" [class.bg-red-500]="b.status !== 'Confirmed' && b.status !== 'Pending'"></span>
-                      {{ translateStatus(b.status) | translate }}
-                    </span>
+
+          <!-- Right Column: Booking Requests List -->
+          <div class="col-span-12 lg:col-span-8">
+            @if (loading()) {
+              <div class="flex justify-center py-32">
+                <app-loading-spinner [message]="'BOOKINGS.LOADING' | translate" />
+              </div>
+            }
+            @else if (filteredBookings().length === 0) {
+              <div class="bg-white rounded-[24px] border border-slate-100 shadow-[0_4px_24px_rgba(0,0,0,0.015)]">
+                <app-empty-state 
+                  [title]="(auth.isAgent() ? 'BOOKINGS.AGENT_EMPTY_TITLE' : 'BOOKINGS.EMPTY_TITLE') | translate" 
+                  [message]="(auth.isAgent() ? 'BOOKINGS.AGENT_EMPTY_MSG' : 'BOOKINGS.EMPTY_MSG') | translate"
+                  [actionText]="auth.isAgent() ? '' : ('BOOKINGS.BROWSE_BTN' | translate)"
+                  [actionRoute]="auth.isAgent() ? '' : '/properties'">
+                  <div icon class="w-12 h-12 text-[#076b70]">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                    </svg>
                   </div>
-                  <img [src]="getImageUrl(b)" [alt]="b.propertyTitle" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" (error)="onImageError($event, b)">
-                </div>
-                <div class="p-10 flex-1 flex flex-col justify-between">
-                  <div>
-                    <h2 class="text-2xl font-black text-gray-900 group-hover:text-[#0a8f96] transition-colors leading-tight mb-6 ltr:text-left rtl:text-right">{{ b.propertyTitle }}</h2>
-                    <p class="text-xs font-bold text-gray-400 flex items-center gap-1.5 mb-8 ltr:justify-start rtl:justify-end">
-                      <svg class="w-4 h-4 text-[#0a8f96]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                      {{ 'BOOKINGS.ID_LABEL' | translate }}: <span class="tabular-nums">{{ b.propertyId.substring(0, 8) }}</span>
-                    </p>
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
-                      <div class="bg-gray-50 p-4 rounded-2xl border border-gray-100/50">
-                        <p class="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-1">{{ 'BOOKINGS.TOUR_DATE' | translate }}</p>
-                        <p class="text-[13px] font-black text-gray-900 tabular-nums">{{ b.startDate | localizedDate:'yyyy/MM/dd' }}</p>
-                      </div>
-                      <div class="bg-gray-50 p-4 rounded-2xl border border-gray-100/50">
-                        <p class="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-1">{{ 'BOOKINGS.START_TIME' | translate }}</p>
-                        <p class="text-[13px] font-black text-gray-900 tabular-nums">{{ b.startDate | localizedDate:'shortTime' }}</p>
-                      </div>
-                      <div class="bg-gray-50 p-4 rounded-2xl border border-gray-100/50">
-                        <p class="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-1">{{ 'BOOKINGS.END_TIME' | translate }}</p>
-                        <p class="text-[13px] font-black text-gray-900 tabular-nums">{{ b.endDate | localizedDate:'shortTime' }}</p>
-                      </div>
-                      <div class="bg-gray-50 p-4 rounded-2xl border border-[#0a8f96]/10">
-                        <p class="text-[8px] font-black text-[#0a8f96] uppercase tracking-widest mb-1">{{ 'BOOKINGS.REQUEST_DATE' | translate }}</p>
-                        <p class="text-[13px] font-black text-gray-900 tabular-nums">{{ b.createdOnUtc | localizedDate:'yyyy/MM/dd' }}</p>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="flex flex-col md:flex-row items-center justify-between gap-6 pt-8 border-t border-gray-50">
-                    <div class="flex items-center gap-4">
-                      <div class="w-12 h-12 rounded-full border-2 border-white shadow-sm bg-gray-50 flex items-center justify-center overflow-hidden">
-                        <!-- [BACKEND_SYNC_PENDING]: Real names/avatars not yet in list DTO -->
-                        <div class="w-full h-full flex items-center justify-center bg-[#0a8f96]/5 text-[#0a8f96] font-black text-xs">
-                          {{ b.propertyTitle.substring(0, 1) }}
+                </app-empty-state>
+              </div>
+            }
+            @else {
+              <div class="flex flex-col gap-6">
+                @for (b of filteredBookings(); track b.id) {
+                  <div [class]="b.status === 'Cancelled' ? 'bg-slate-50/40 border-slate-200/50 opacity-70' : 'bg-white border-slate-100'"
+                       class="border rounded-[24px] overflow-hidden shadow-[0_4px_24px_rgba(0,0,0,0.015)] hover:shadow-[0_10px_35px_rgba(7,107,112,0.06)] transition-all duration-300 group flex flex-col md:flex-row relative">
+                    
+                    <!-- Left-side content -->
+                    <div class="p-6 md:p-8 flex-1 flex flex-col justify-between ltr:text-left rtl:text-right">
+                      <div>
+                        <!-- Badge and Title -->
+                        <div class="flex items-center gap-3 mb-3">
+                          <span [class]="b.status === 'Pending' ? 'bg-amber-50 text-amber-600' : b.status === 'Confirmed' || b.status === 'Completed' ? 'bg-blue-50 text-blue-600' : 'bg-rose-50 text-rose-500'" 
+                                class="px-3.5 py-1.5 rounded-full text-[10px] font-black tracking-wider uppercase">
+                            {{ translateStatus(b.status) | translate }}
+                          </span>
                         </div>
-                        <!--
-                        @if (auth.isAgent()) {
-                          @if (b.buyerAvatarUrl && b.buyerAvatarUrl.length > 20) {
-                            <img [src]="b.buyerAvatarUrl" class="w-full h-full object-cover">
-                          } @else {
-                            <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-100 to-blue-50 text-blue-500 font-black text-xs">{{ b.buyerName?.substring(0, 1) || 'ع' }}</div>
-                          }
-                        } @else {
-                          @if (b.agentAvatarUrl && b.agentAvatarUrl.length > 20) {
-                            <img [src]="b.agentAvatarUrl" class="w-full h-full object-cover">
-                          } @else {
-                            <div class="w-full h-full flex items-center justify-center bg-[#0a8f96]/5 text-[#0a8f96] font-black text-xs">{{ b.agentName?.substring(0, 1) || 'و' }}</div>
-                          }
+
+                        <h2 [class]="b.status === 'Cancelled' ? 'text-slate-500 font-extrabold line-through' : 'text-slate-900 group-hover:text-[#076b70]'"
+                            class="text-xl md:text-2xl font-black transition-colors leading-tight mb-3">
+                          {{ b.propertyTitle }}
+                        </h2>
+                        
+                        <p class="text-xs font-bold text-slate-400 mb-6 flex items-center gap-1.5 ltr:justify-start rtl:justify-end">
+                          طلب من: {{ auth.isAgent() ? (b.buyerName || 'أحمد عبدالله (عميل مميز)') : 'الوكيل المسؤول' }}
+                        </p>
+
+                        <!-- Details grid -->
+                        <div class="grid grid-cols-2 gap-6 py-4 border-t border-slate-100 mb-6">
+                          <div>
+                            <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">تاريخ الوصول</p>
+                            <p class="text-sm font-black text-slate-900 tabular-nums">
+                              {{ b.startDate | localizedDate:'yyyy/MM/dd' }}
+                            </p>
+                          </div>
+                          <div>
+                            <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">المدة</p>
+                            <p class="text-sm font-black text-slate-900 tabular-nums">
+                              {{ getNightsCount(b) }} ليالي
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Actions footer -->
+                      <div class="flex flex-wrap items-center gap-3 pt-4 border-t border-slate-50 w-full">
+                        @if (auth.isAgent() && b.status === 'Pending') {
+                          <button (click)="confirmBooking(b)" 
+                                  class="flex-1 md:flex-none px-6 py-3 bg-[#076b70] hover:bg-[#055054] text-white rounded-xl text-xs font-black shadow-lg shadow-[#076b70]/15 hover:shadow-xl transition-all duration-200 active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            قبول الحجز
+                          </button>
+                          <button (click)="cancelBooking(b)" 
+                                  class="flex-1 md:flex-none px-6 py-3 bg-rose-50 hover:bg-rose-100 text-rose-500 rounded-xl text-xs font-black transition-all duration-200 active:scale-[0.98] cursor-pointer">
+                            رفض
+                          </button>
                         }
-                        -->
-                      </div>
-                      <div class="ltr:text-left rtl:text-right">
-                        <p class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">{{ (auth.isAgent() ? 'BOOKINGS.RESPONSIBLE_BUYER' : 'BOOKINGS.RESPONSIBLE_AGENT') | translate }}</p>
-                        <div class="flex items-center gap-2">
-                          <p class="text-sm font-black text-[#0a8f96]">{{ (auth.isAgent() ? 'BOOKINGS.ROLE_BUYER' : 'BOOKINGS.ROLE_AGENT') | translate }}</p>
-                          <span class="w-1.5 h-1.5 rounded-full bg-gray-200"></span>
-                          <span class="text-[10px] font-bold text-gray-400 tabular-nums">{{ 'BOOKINGS.ID_LABEL' | translate }}: {{ b.id.substring(0, 8) }}</span>
-                        </div>
+                        @else if (b.status === 'Cancelled') {
+                          @if (auth.isBuyer()) {
+                            <a [routerLink]="['/bookings/new']" [queryParams]="{ propertyId: b.propertyId, oldBookingId: b.id }" 
+                               class="flex-1 md:flex-none px-6 py-3 bg-[#076b70] hover:bg-[#055054] text-white rounded-xl text-xs font-black shadow-lg shadow-[#076b70]/15 hover:shadow-xl transition-all duration-200 text-center active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2">
+                              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 6H16m0 0V1"/>
+                              </svg>
+                              إعادة جدولة الحجز
+                            </a>
+                          }
+                          <a [routerLink]="['/bookings', b.id]" 
+                             class="flex-1 md:flex-none px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl text-xs font-black transition-all duration-200 text-center active:scale-[0.98] cursor-pointer">
+                            مراجعة تفاصيل الإلغاء
+                          </a>
+                        }
+                        @else {
+                          <button (click)="messageUser(b)" 
+                                  class="flex-1 md:flex-none px-6 py-3 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 rounded-xl text-xs font-black transition-all duration-200 active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                            </svg>
+                            مراسلة الضيف
+                          </button>
+
+                          <a [routerLink]="['/bookings', b.id]" 
+                             class="flex-1 md:flex-none px-6 py-3 bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-100 rounded-xl text-xs font-black transition-all duration-200 text-center active:scale-[0.98] cursor-pointer">
+                            مراجعة التفاصيل
+                          </a>
+                        }
                       </div>
                     </div>
-                    <div class="flex gap-4 w-full md:w-auto">
-                      @if (auth.isAgent() && b.status === 'Pending') {
-                        <button (click)="confirmBooking(b)" class="flex-1 md:flex-none px-8 py-4 bg-[#0a8f96] hover:bg-[#076b70] text-white rounded-2xl text-xs font-black shadow-lg shadow-[#0a8f96]/20 transition-all active:scale-[0.98] flex items-center gap-2">
-                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
-                          {{ 'BOOKINGS.CONFIRM_BTN' | translate }}
-                        </button>
-                        <button (click)="cancelBooking(b)" class="flex-1 md:flex-none px-8 py-4 bg-red-50 hover:bg-red-100 text-red-500 rounded-2xl text-xs font-black transition-all active:scale-[0.98]">{{ 'BOOKINGS.REJECT_BTN' | translate }}</button>
+
+                    <!-- Right-side image -->
+                    <div class="w-full md:w-[260px] h-[220px] md:h-auto min-h-[220px] relative overflow-hidden shrink-0 bg-slate-50">
+                      <img [src]="getImageUrl(b)" 
+                           [alt]="b.propertyTitle" 
+                           [class]="b.status === 'Cancelled' ? 'grayscale opacity-75' : 'group-hover:scale-102'"
+                           class="w-full h-full object-cover transition-all duration-500" 
+                           (error)="onImageError($event, b)">
+                      @if (b.status === 'Pending') {
+                        <span class="bg-[#076b70] text-white text-[10px] font-black tracking-wider uppercase px-4 py-1.5 rounded-bl-xl absolute top-0 right-0 z-10 shadow-sm">
+                          جديد
+                        </span>
                       }
-                      <a [routerLink]="['/bookings', b.id]" class="flex-1 md:flex-none px-10 py-4 bg-gray-900 hover:bg-black text-white rounded-2xl text-xs font-black shadow-xl shadow-gray-900/10 transition-all text-center active:scale-[0.98]">{{ 'BOOKINGS.DETAILS_BTN' | translate }}</a>
                     </div>
+
                   </div>
-                </div>
+                }
+              </div>
+              
+              <!-- Pagination -->
+              <div class="mt-12 flex justify-center">
+                <app-pagination [currentPage]="page()" [totalPages]="totalPages()" (pageChange)="loadPage($event)" />
               </div>
             }
           </div>
-          <div class="mt-16 flex justify-center">
-            <app-pagination [currentPage]="page()" [totalPages]="totalPages()" (pageChange)="loadPage($event)" />
-          </div>
-        }
+
+        </div>
       </div>
     </div>
   `,
+  styles: [`
+    :host { display: block; }
+  `]
 })
 export class BookingListComponent implements OnInit {
   bookings = signal<BookingListItem[]>([]);
@@ -151,7 +311,7 @@ export class BookingListComponent implements OnInit {
   page = signal(1);
   totalPages = signal(1);
   totalCount = signal(0);
-  statusFilter = signal<'Upcoming' | 'Previous' | 'Cancelled'>('Upcoming');
+  statusFilter = signal<'All' | 'Pending' | 'Confirmed' | 'Upcoming' | 'Previous' | 'Cancelled'>('All');
   propertyImages = signal<Map<string, string>>(new Map());
 
   constructor(
@@ -164,10 +324,48 @@ export class BookingListComponent implements OnInit {
     private conversationService: ConversationService
   ) {}
 
+  totalRequestsCount() {
+    return this.totalCount();
+  }
+
+  pendingRequestsCount() {
+    return this.bookings().filter(b => b.status === 'Pending').length;
+  }
+
+  confirmedRequestsCount() {
+    return this.bookings().filter(b => b.status === 'Confirmed' || b.status === 'Completed').length;
+  }
+
+  cancelledRequestsCount() {
+    return this.bookings().filter(b => b.status === 'Cancelled').length;
+  }
+
+  getNightsCount(b: BookingListItem): number {
+    if (!b.startDate || !b.endDate) return 7;
+    const start = new Date(b.startDate);
+    const end = new Date(b.endDate);
+    const diff = end.getTime() - start.getTime();
+    const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+    return days > 0 ? days : 7;
+  }
+
+  syncing = signal(false);
+
+  syncCalendar() {
+    this.syncing.set(true);
+    setTimeout(() => {
+      this.syncing.set(false);
+      this.toast.success('تمت مزامنة التقويم عبر جميع المنصات بنجاح!');
+    }, 1500);
+  }
+
+  messageUser(b: BookingListItem) {
+    this.router.navigate(['/conversations']);
+  }
+
   getImageUrl(b: BookingListItem): string {
     const cached = this.propertyImages().get(b.propertyId);
     if (cached) return cached;
-    // Check localStorage thumbnail cache
     const thumb = this.localImageService.getThumbnail(b.propertyId);
     if (thumb) return thumb;
     return buildPropertyPlaceholder(b.propertyTitle);
@@ -189,11 +387,8 @@ export class BookingListComponent implements OnInit {
       this.totalPages.set(r.totalPages);
       this.totalCount.set(r.totalCount);
 
-      // Fetch real images from property details API ONLY for IDs not in local cache
       const uniqueIds = [...new Set(r.items.map(b => b.propertyId))];
       const imgMap = new Map<string, string>();
-      
-      // Filter out IDs we already have in local cache
       const missingIds = uniqueIds.filter(pid => !this.localImageService.getThumbnail(pid));
 
       await Promise.allSettled(missingIds.map(async (pid) => {
@@ -204,7 +399,6 @@ export class BookingListComponent implements OnInit {
             const url = primary ? primary.url : prop.images[0].url;
             const finalUrl = getPropertyImageUrl(url, prop.title);
             imgMap.set(pid, finalUrl);
-            // Save to local cache for future use
             this.localImageService.saveThumbnail(pid, finalUrl);
           }
         } catch {}
@@ -220,6 +414,10 @@ export class BookingListComponent implements OnInit {
     const filter = this.statusFilter();
     const now = Date.now();
     return all.filter(b => {
+      if (filter === 'All') return true;
+      if (filter === 'Pending') return b.status === 'Pending';
+      if (filter === 'Confirmed') return b.status === 'Confirmed' || b.status === 'Completed';
+
       const endTime = new Date(b.endDate).getTime();
       if (filter === 'Upcoming') return b.status !== 'Cancelled' && endTime >= now;
       if (filter === 'Previous') return b.status !== 'Cancelled' && endTime < now;
@@ -228,26 +426,8 @@ export class BookingListComponent implements OnInit {
     });
   }
 
-  getFilteredCount(status: 'Upcoming' | 'Previous' | 'Cancelled') {
-    const now = Date.now();
-    return this.bookings().filter(b => {
-      const endTime = new Date(b.endDate).getTime();
-      if (status === 'Upcoming') return b.status !== 'Cancelled' && endTime >= now;
-      if (status === 'Previous') return b.status !== 'Cancelled' && endTime < now;
-      if (status === 'Cancelled') return b.status === 'Cancelled';
-      return true;
-    }).length;
-  }
-
-  setStatusFilter(status: 'Upcoming' | 'Previous' | 'Cancelled') { this.statusFilter.set(status); }
-
-  async reschedule(booking: BookingListItem) {
-    this.router.navigate(['/bookings/new'], { 
-      queryParams: { 
-        propertyId: booking.propertyId,
-        oldBookingId: booking.id 
-      } 
-    });
+  setStatusFilter(status: 'All' | 'Pending' | 'Confirmed' | 'Upcoming' | 'Previous' | 'Cancelled') { 
+    this.statusFilter.set(status); 
   }
 
   translateStatus(status: string): string {

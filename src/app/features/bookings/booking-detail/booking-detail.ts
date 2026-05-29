@@ -272,7 +272,7 @@ import { ProfileService } from '../../profile/services/profile.service';
             </div>
 
             <!-- Right Column: Financials -->
-            <div class="lg:col-span-5">
+            <div class="lg:col-span-5 mb-5">
               <div class="bg-white rounded-[32px] border border-gray-100 p-12 shadow-sm sticky top-28">
                 <div class="flex items-center gap-4 mb-12 pb-8 border-b border-gray-50">
                   <div class="w-12 h-12 bg-gradient-to-br from-blue-100 to-blue-50 text-blue-500 rounded-2xl flex items-center justify-center shadow-sm">

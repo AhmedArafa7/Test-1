@@ -81,15 +81,14 @@ import { BookingService } from '../services/booking.service';
                   <textarea [(ngModel)]="notes" name="notes" rows="4" class="w-full bg-gray-50 border-transparent rounded-2xl px-6 py-4 text-sm font-bold focus:bg-white focus:border-[#0a8f96] outline-none transition-all resize-none" [placeholder]="'BOOKINGS.NOTES_PLACEHOLDER' | translate"></textarea>
                 </div>
 
-                <!-- Personal Info (Commented out as backend uses authenticated user profile) -->
-                <!-- 
+                <!-- Personal Info -->
                 <div class="flex items-center justify-end gap-3 mb-8 border-b border-gray-50 pb-6">
                   <h3 class="text-xl font-black text-gray-900">بيانات التواصل</h3>
                   <div class="w-10 h-10 bg-[#0a8f96]/10 text-[#0a8f96] rounded-xl flex items-center justify-center">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                   </div>
                 </div>
-
+ 
                 <div class="space-y-6">
                   <div>
                     <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">الاسم بالكامل <span class="text-red-500">*</span></label>
@@ -102,11 +101,10 @@ import { BookingService } from '../services/booking.service';
                     </div>
                     <div>
                       <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">رقم الهاتف <span class="text-red-500">*</span></label>
-                      <input type="tel" [(ngModel)]="form.payerPhone" name="payerPhone" class="w-full bg-gray-50 border-transparent rounded-2xl px-6 py-4.5 text-sm font-bold focus:bg-white focus:border-[#0a8f96] outline-none transition-all text-left" dir="ltr" placeholder="+971 xx xxx xxxx" required>
+                      <input type="tel" [(ngModel)]="form.payerPhone" name="payerPhone" class="w-full bg-gray-50 border-transparent rounded-2xl px-6 py-4.5 text-sm font-bold focus:bg-white focus:border-[#0a8f96] outline-none transition-all text-left" dir="ltr" placeholder="+20 1x xxxx xxxx" required>
                     </div>
                   </div>
                 </div>
-                -->
 
                 <div class="mt-12 flex flex-col sm:flex-row gap-5">
                   <button type="submit" [disabled]="submitting()" class="flex-[2] bg-[#0a8f96] hover:bg-[#076b70] text-white font-black py-5 px-8 rounded-[22px] shadow-xl shadow-[#0a8f96]/20 transition-all flex items-center justify-center gap-3 active:scale-95">
@@ -134,7 +132,7 @@ import { BookingService } from '../services/booking.service';
                 <h3 class="text-xl font-black text-gray-900 mb-2 truncate">{{ property()!.title }}</h3>
                 <p class="text-gray-400 text-xs font-bold flex items-center gap-2 mb-6 ltr:justify-start rtl:justify-end">
                   <svg class="w-4 h-4 text-[#0a8f96]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                  {{ 'DISTRICTS.' + getDistrictKeyFromValue(property()!.district) | translate }}, {{ 'CITIES.' + getCityKeyFromValue(property()!.city) | translate }}
+                  {{ getDistrictLabel(property()!.district) }}, {{ getCityLabel(property()!.city) }}
                 </p>
 
                 <div class="pt-6 border-t border-gray-50 space-y-4 ltr:text-left rtl:text-right">
@@ -210,13 +208,32 @@ export class CreateBookingComponent implements OnInit {
     return Object.keys(this.districtMap).find(key => this.districtMap[key] === value) || value;
   }
 
+  public getCityLabel(value: string | undefined): string {
+    if (!value) return '';
+    const key = this.getCityKeyFromValue(value);
+    const translationKey = 'CITIES.' + key;
+    const translated = this.translate.instant(translationKey);
+    return translated !== translationKey ? translated : value;
+  }
+
+  public getDistrictLabel(value: string | undefined): string {
+    if (!value) return '';
+    const key = this.getDistrictKeyFromValue(value);
+    const translationKey = 'DISTRICTS.' + key;
+    const translated = this.translate.instant(translationKey);
+    return translated !== translationKey ? translated : value;
+  }
+
   form: CreateBookingRequest = {
     propertyId: '',
     startDate: '',
     endDate: '',
     amount: 100, // Fixed refundable deposit for now
     commissionRate: 0,
-    currency: 'EGP'
+    currency: 'EGP',
+    payerName: '',
+    payerEmail: '',
+    payerPhone: ''
   };
 
   constructor(
@@ -281,7 +298,18 @@ export class CreateBookingComponent implements OnInit {
         return;
       }
 
-      /* Payer info is now handled by the backend using the authenticated session */
+      // Pre-fill payer/contact info from the logged-in user's database profile and session
+      try {
+        const profile = await this.profileService.getMyProfile();
+        this.form.payerName = profile.displayName || this.auth.currentUser()?.displayName || '';
+        this.form.payerEmail = this.auth.currentUser()?.email || '';
+        this.form.payerPhone = profile.phoneNumber || '';
+      } catch (err) {
+        console.error('Failed to pre-fill user profile info:', err);
+        // Fallback to auth session values if profile fetch fails
+        this.form.payerName = this.auth.currentUser()?.displayName || '';
+        this.form.payerEmail = this.auth.currentUser()?.email || '';
+      }
     } catch {
       this.toast.error(this.translate.instant('PROPERTY_DETAIL.MESSAGES.NOT_FOUND'));
     } finally {

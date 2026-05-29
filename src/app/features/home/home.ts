@@ -35,7 +35,7 @@ import { resolveBackendAssetUrl, getPropertyImageUrl, buildPropertyPlaceholder }
           </div>
 
           <!-- Minimalist Luxury Headline -->
-          <div class="mb-6 max-w-4xl opacity-0 animate-[fadeInUp_1s_0.2s_ease_forwards]">
+          <div class="mb-6 max-w-5xl opacity-0 animate-[fadeInUp_1s_0.2s_ease_forwards]">
             <h1 class="text-white tracking-tight">
               <span class="block text-5xl md:text-7xl font-medium mb-4 leading-tight">
                 {{ 'HOME.HERO_TITLE_1' | translate }} <span class="font-extralight opacity-60 italic">{{ 'HOME.HERO_TITLE_2' | translate }}</span> {{ 'HOME.HERO_TITLE_3' | translate }}.
@@ -163,7 +163,7 @@ import { resolveBackendAssetUrl, getPropertyImageUrl, buildPropertyPlaceholder }
                   <div class="flex-1">
                     <div class="flex items-center gap-3 text-white/60 text-xs font-bold mb-4">
                       <svg class="w-4 h-4 text-[#0a8f96]" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>
-                      {{ 'DISTRICTS.' + getDistrictKeyFromValue(featured()[0].district) | translate }} {{ featured()[0].city ? ', ' + ('CITIES.' + getCityKeyFromValue(featured()[0].city) | translate) : '' }}
+                      {{ getDistrictLabel(featured()[0].district) }}{{ featured()[0].city ? ', ' + getCityLabel(featured()[0].city) : '' }}
                     </div>
                     <h3 class="text-4xl md:text-5xl font-black text-white mb-6 leading-tight">{{ featured()[0].title }}</h3>
                     <div class="flex flex-wrap items-center gap-8 text-white text-sm font-bold">
@@ -253,7 +253,7 @@ import { resolveBackendAssetUrl, getPropertyImageUrl, buildPropertyPlaceholder }
                       <h4 class="text-base font-black text-gray-900 mb-2 truncate">{{ rp.title }}</h4>
                       <p class="text-xs font-bold text-gray-400 mb-4 flex items-center gap-1">
                         <svg class="w-3.5 h-3.5 text-[#0a8f96]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/></svg>
-                        {{ 'DISTRICTS.' + getDistrictKeyFromValue(rp.district) | translate }}{{ rp.district && rp.city ? ', ' : '' }}{{ rp.city ? ('CITIES.' + getCityKeyFromValue(rp.city) | translate) : '' }}
+                        {{ getDistrictLabel(rp.district) }}{{ rp.district && rp.city ? ', ' : '' }}{{ rp.city ? getCityLabel(rp.city) : '' }}
                       </p>
                       <div class="flex items-center justify-between">
                         <span class="text-lg font-black text-[#0a8f96]">{{ rp.price | currencyEgp }}</span>
@@ -272,42 +272,43 @@ import { resolveBackendAssetUrl, getPropertyImageUrl, buildPropertyPlaceholder }
       }
 
       <!-- The Difference -->
-      <section class="py-32 bg-gradient-to-br from-[#0c1222] via-[#0f1a2e] to-[#0c1222] relative overflow-hidden">
+      <section class="py-32 bg-sky-50 relative overflow-hidden">
         <div class="absolute inset-0 opacity-[0.03]" style="background-image: radial-gradient(circle at 1px 1px, white 1px, transparent 0); background-size: 32px 32px;"></div>
         <div class="absolute top-20 right-20 w-72 h-72 bg-[#0a8f96]/10 rounded-full blur-[120px]"></div>
         <div class="absolute bottom-20 left-20 w-96 h-96 bg-[#076b70]/10 rounded-full blur-[150px]"></div>
         <div class="max-w-7xl mx-auto px-6 relative z-10">
           <div class="text-center mb-20">
-            <h2 class="text-4xl md:text-5xl font-black text-white mb-6 tracking-tighter">{{ 'HOME.WHY_TITLE' | translate | slice:0:11 }} <span class="text-[#12b5bd]">{{ 'HOME.WHY_TITLE' | translate | slice:11 }}</span></h2>
-            <p class="text-white/40 font-bold max-w-xl mx-auto leading-relaxed">{{ 'HOME.WHY_SUB' | translate }}</p>
+            <h2 class="text-4xl md:text-5xl font-black text-black mb-5 tracking-tighter">{{ 'HOME.WHY_TITLE' | translate | slice:0:11 }} <span class="text-[#12b5bd]">{{ 'HOME.WHY_TITLE' | translate | slice:11 }}</span></h2>
+            <div class="w-40 h-1.5 bg-primary rounded-full mx-auto my-4"></div>
+            <p class="text-gray-600 font-bold max-w-2xl mx-auto leading-relaxed">{{ 'HOME.WHY_SUB' | translate }}</p>
           </div>
 
           <div class="grid md:grid-cols-3 gap-8">
-            <div class="group p-10 bg-white/5 backdrop-blur-xl border border-white/10 rounded-[32px] transition-all duration-500 hover:bg-white/10 hover:border-[#0a8f96]/30 hover:-translate-y-2 hover:shadow-[0_20px_60px_rgba(10,143,150,0.15)] relative overflow-hidden">
+            <div class="group p-10 bg-white backdrop-blur-xl border border-white/10 rounded-[32px] transition-all duration-500 hover:bg-white/10 hover:border-[#0a8f96]/30 hover:-translate-y-2 hover:shadow-[0_20px_60px_rgba(10,143,150,0.15)] relative overflow-hidden">
               <div class="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-[#0a8f96] to-transparent rounded-l-[32px] opacity-0 group-hover:opacity-100 transition-opacity"></div>
               <div class="w-14 h-14 rounded-2xl bg-[#0a8f96]/20 flex items-center justify-center text-[#12b5bd] mb-8 transition-transform group-hover:rotate-12 group-hover:scale-110 border border-[#0a8f96]/20">
                 <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
               </div>
-              <h3 class="text-xl font-black text-white mb-4">{{ 'HOME.WHY_1_TITLE' | translate }}</h3>
-              <p class="text-sm text-white/40 leading-relaxed font-medium">{{ 'HOME.WHY_1_DESC' | translate }}</p>
+              <h3 class="text-xl font-black text-black mb-4">{{ 'HOME.WHY_1_TITLE' | translate }}</h3>
+              <p class="text-sm text-gray-600 leading-relaxed font-medium">{{ 'HOME.WHY_1_DESC' | translate }}</p>
             </div>
             
-            <div class="group p-10 bg-white/5 backdrop-blur-xl border border-white/10 rounded-[32px] transition-all duration-500 hover:bg-white/10 hover:border-[#0a8f96]/30 hover:-translate-y-2 hover:shadow-[0_20px_60px_rgba(10,143,150,0.15)] relative overflow-hidden">
+            <div class="group p-10 bg-white backdrop-blur-xl border border-white/10 rounded-[32px] transition-all duration-500 hover:bg-white/10 hover:border-[#0a8f96]/30 hover:-translate-y-2 hover:shadow-[0_20px_60px_rgba(10,143,150,0.15)] relative overflow-hidden">
               <div class="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-[#0a8f96] to-transparent rounded-l-[32px] opacity-0 group-hover:opacity-100 transition-opacity"></div>
               <div class="w-14 h-14 rounded-2xl bg-[#0a8f96]/20 flex items-center justify-center text-[#12b5bd] mb-8 transition-transform group-hover:rotate-12 group-hover:scale-110 border border-[#0a8f96]/20">
                 <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
               </div>
-              <h3 class="text-xl font-black text-white mb-4">{{ 'HOME.WHY_2_TITLE' | translate }}</h3>
-              <p class="text-sm text-white/40 leading-relaxed font-medium">{{ 'HOME.WHY_2_DESC' | translate }}</p>
+              <h3 class="text-xl font-black text-black mb-4">{{ 'HOME.WHY_2_TITLE' | translate }}</h3>
+              <p class="text-sm text-gray-600 leading-relaxed font-medium">{{ 'HOME.WHY_2_DESC' | translate }}</p>
             </div>
 
-            <div class="group p-10 bg-white/5 backdrop-blur-xl border border-white/10 rounded-[32px] transition-all duration-500 hover:bg-white/10 hover:border-[#0a8f96]/30 hover:-translate-y-2 hover:shadow-[0_20px_60px_rgba(10,143,150,0.15)] relative overflow-hidden">
+            <div class="group p-10 bg-white backdrop-blur-xl border border-white/10 rounded-[32px] transition-all duration-500 hover:bg-white/10 hover:border-[#0a8f96]/30 hover:-translate-y-2 hover:shadow-[0_20px_60px_rgba(10,143,150,0.15)] relative overflow-hidden">
               <div class="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-[#0a8f96] to-transparent rounded-l-[32px] opacity-0 group-hover:opacity-100 transition-opacity"></div>
               <div class="w-14 h-14 rounded-2xl bg-[#0a8f96]/20 flex items-center justify-center text-[#12b5bd] mb-8 transition-transform group-hover:rotate-12 group-hover:scale-110 border border-[#0a8f96]/20">
                 <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
               </div>
-              <h3 class="text-xl font-black text-white mb-4">{{ 'HOME.WHY_3_TITLE' | translate }}</h3>
-              <p class="text-sm text-white/40 leading-relaxed font-medium">{{ 'HOME.WHY_3_DESC' | translate }}</p>
+              <h3 class="text-xl font-black text-black mb-4">{{ 'HOME.WHY_3_TITLE' | translate }}</h3>
+              <p class="text-sm text-gray-600 leading-relaxed font-medium">{{ 'HOME.WHY_3_DESC' | translate }}</p>
             </div>
           </div>
         </div>
@@ -376,6 +377,22 @@ export class HomeComponent implements OnInit, OnDestroy {
       return Object.keys(districtsDict).find(k => (districtsDict as any)[k] === value) || value;
     }
     return value;
+  }
+
+  public getCityLabel(value: string | undefined): string {
+    if (!value) return '';
+    const key = this.getCityKeyFromValue(value);
+    const translationKey = 'CITIES.' + key;
+    const translated = this.translate.instant(translationKey);
+    return translated !== translationKey ? translated : value;
+  }
+
+  public getDistrictLabel(value: string | undefined): string {
+    if (!value) return '';
+    const key = this.getDistrictKeyFromValue(value);
+    const translationKey = 'DISTRICTS.' + key;
+    const translated = this.translate.instant(translationKey);
+    return translated !== translationKey ? translated : value;
   }
 
   cities = [

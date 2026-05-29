@@ -14,6 +14,13 @@
   --color-warning: #f59e0b;
   --color-success: #22c55e;
   --font-family-sans: 'Outfit', 'Cairo', sans-serif;
+  
+  /* Custom spacings and borders for premium layouts */
+  --spacing-4\.5: 1.125rem;
+  --spacing-5\.5: 1.375rem;
+  --spacing-7\.5: 1.875rem;
+  --spacing-9\.5: 2.375rem;
+  --border-width-3: 3px;
 }
 
 /* ─── Design Tokens ─── */

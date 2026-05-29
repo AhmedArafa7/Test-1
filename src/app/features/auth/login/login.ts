@@ -28,90 +28,131 @@ declare global {
   standalone: true,
   imports: [FormsModule, RouterLink, TranslateModule],
   template: `
-    <div class="min-h-screen flex bg-white font-sans selection:bg-[#0a8f96]/20">
-      <!-- Left Side: Visual Panel -->
-      <div class="hidden lg:flex w-[45%] relative overflow-hidden flex-col justify-end p-16">
-        <img src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" 
-             class="absolute inset-0 w-full h-full object-cover">
-        <div class="absolute inset-0 bg-gradient-to-t from-[#0c1222]/90 via-[#0c1222]/40 to-[#0a8f96]/20"></div>
-        <div class="absolute top-20 right-20 w-32 h-32 border border-white/10 rounded-3xl rotate-12 animate-float"></div>
-        <div class="absolute top-40 right-40 w-20 h-20 border border-[#0a8f96]/20 rounded-2xl -rotate-6 animate-float" style="animation-delay: 1s;"></div>
-        <div class="relative z-10">
-          <div class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 backdrop-blur-md border border-white/10 mb-8">
-            <svg class="w-4 h-4 text-[#12b5bd]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-            <span class="text-[10px] font-black uppercase tracking-[0.2em] text-white/90">{{ 'AUTH.LOGIN.SUBTITLE' | translate }}</span>
-          </div>
-          <h2 class="text-4xl font-bold text-white mb-4 leading-tight">{{ 'AUTH.LOGIN.TITLE' | translate }}</h2>
-          <p class="text-white/50 text-base max-w-md leading-relaxed">{{ 'AUTH.LOGIN.SUBTITLE' | translate }}</p>
-        </div>
-      </div>
+    <div class="min-h-screen relative flex items-center justify-center overflow-hidden font-sans selection:bg-[#0c7379]/20 bg-slate-900">
+      
+      <!-- Tiny Blurred Low-Res Background Placeholder -->
+      <div [class]="bgLoaded() ? 'opacity-0' : 'opacity-100'"
+           class="absolute inset-0 transition-opacity duration-1000 bg-cover bg-center filter blur-xl scale-110"
+           style="background-image: url('https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=50&q=10');"></div>
+      
+      <!-- Full-Res Actual Background Image -->
+      <img src="https://images.unsplash.com/photo-1613490493576-7fde63acd811?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" 
+           (load)="bgLoaded.set(true)"
+           class="absolute inset-0 w-full h-full object-cover transition-opacity duration-1000"
+           [class]="bgLoaded() ? 'opacity-100' : 'opacity-0'">
+      <div class="absolute inset-0 bg-slate-950/40 backdrop-blur-[2px]"></div>
 
-      <!-- Right Side: Login Form -->
-      <div class="flex-1 flex flex-col justify-center items-center p-8 md:p-12 lg:p-20">
-        <div class="w-full max-w-[440px]">
-          <div class="mb-12">
-            <div class="inline-flex items-center gap-3 mb-10 group cursor-pointer" routerLink="/">
-              <div class="w-11 h-11 bg-gradient-to-br from-[#0a8f96] to-[#076b70] rounded-xl flex items-center justify-center shadow-lg shadow-[#0a8f96]/20 transition-transform group-hover:rotate-6">
-                <span class="text-white text-xl font-black italic">B</span>
+      <main dir="rtl" class="relative z-10 w-full px-4 animate-scale-in" style="max-width: 440px;">
+        <div class="bg-white/85 backdrop-blur-xl border border-white/50 shadow-[0_20px_50px_rgba(0,0,0,0.12)] rounded-4xl px-8 py-10 my-3 sm:px-10 sm:py-8 relative overflow-hidden transition-all duration-300">
+          
+          <!-- Card Header Logo & Title -->
+          <div class="flex flex-col items-center gap-4 mb-8 select-none">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 bg-gradient-to-br from-[#0a8f96] to-[#076b70] rounded-xl flex items-center justify-center shadow-lg shadow-[#0a8f96]/20 transition-all duration-300 hover:scale-110">
+                <span class="text-white text-lg font-black tracking-tighter italic">B</span>
               </div>
-              <span class="text-2xl font-black tracking-tighter text-gray-900">Baytology</span>
+              <span class="text-2xl font-black tracking-widest text-slate-900 uppercase">
+                {{ 'COMMON.APP_NAME' | translate }}
+              </span>
             </div>
-            <h2 class="text-2xl font-black text-gray-900 mb-2 lg:hidden">{{ 'AUTH.LOGIN.TITLE' | translate }}</h2>
-            <p class="text-gray-400 font-bold text-sm lg:hidden">{{ 'AUTH.LOGIN.SUBTITLE' | translate }}</p>
+            <div class="text-center mt-1">
+              <h1 class="text-[13px] font-black text-slate-400 uppercase tracking-widest">{{ 'AUTH.LOGIN.TITLE' | translate }}</h1>
+            </div>
           </div>
 
-          <form (ngSubmit)="login()" class="space-y-6">
-            <div class="space-y-2">
-              <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest ltr:ml-1 rtl:mr-1">{{ 'AUTH.LOGIN.EMAIL_LABEL' | translate }}</label>
-              <input type="email" [(ngModel)]="email" name="email" 
-                     class="input-field" 
-                     [placeholder]="'AUTH.LOGIN.EMAIL_PLACEHOLDER' | translate" required>
-            </div>
+          <form (ngSubmit)="login()" class="space-y-5">
+             <div class="space-y-2 text-right">
+              <label class="block text-[11px] font-black text-slate-400 uppercase tracking-wider">{{ 'AUTH.LOGIN.EMAIL_LABEL' | translate }}</label>
+              <input type="email"
+                     [(ngModel)]="email"
+                     name="email"
+                     placeholder="admin@baytology.local"
+                     required
+                     class="input-field text-right" />
+             </div>
 
-            <div class="space-y-2">
-              <div class="flex justify-between items-center px-1">
-                <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest">{{ 'AUTH.LOGIN.PASSWORD_LABEL' | translate }}</label>
-                <a routerLink="/auth/forgot-password" class="text-[11px] font-bold text-[#0a8f96] hover:underline">{{ 'AUTH.LOGIN.FORGOT_PASSWORD' | translate }}</a>
-              </div>
-              <input type="password" [(ngModel)]="password" name="password" 
-                     class="input-field" 
-                     [placeholder]="'AUTH.LOGIN.PASSWORD_PLACEHOLDER' | translate" required>
-            </div>
+             <div class="space-y-2 text-right">
+               <div class="flex items-center justify-between">
+                 <label class="text-[11px] font-black text-slate-400 uppercase tracking-wider">{{ 'AUTH.LOGIN.PASSWORD_LABEL' | translate }}</label>
+                 <a routerLink="/auth/forgot-password" class="text-xs font-bold text-[#0c7379] hover:text-[#0b656b] transition-colors">{{ 'AUTH.LOGIN.FORGOT_PASSWORD' | translate }}</a>
+               </div>
+               <div class="relative">
+                 <input [type]="showPassword ? 'text' : 'password'"
+                        [(ngModel)]="password"
+                        name="password"
+                        placeholder="••••••••••"
+                        required
+                        class="input-field rtl:pl-12 ltr:pr-12 text-right" />
+                 <button type="button" (click)="showPassword = !showPassword" class="absolute ltr:right-4 rtl:left-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer">
+                   @if (showPassword) {
+                     <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                       <path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88"/>
+                     </svg>
+                   } @else {
+                     <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                       <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/>
+                       <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                     </svg>
+                   }
+                 </button>
+               </div>
+             </div>
 
-            <button type="submit" [disabled]="loading()" 
-                    class="btn-luxury w-full py-4">
+             <!-- Remember Me Checkbox -->
+             <div class="flex items-center justify-start gap-2.5 py-1 select-none text-right">
+               <input type="checkbox"
+                      id="rememberMe"
+                      [(ngModel)]="rememberMe"
+                      name="rememberMe"
+                      class="w-4 h-4 rounded border-slate-300 text-[#0c7379] focus:ring-2 focus:ring-[#0c7379]/20 transition-all cursor-pointer accent-[#0c7379]" />
+               <label for="rememberMe" class="text-xs font-bold text-slate-500 hover:text-slate-700 transition-colors cursor-pointer">تذكر تسجيل دخولي في هذا المتصفح</label>
+             </div>
+
+            <button type="submit"
+                    [disabled]="loading()"
+                    class="btn-luxury w-full py-4 mt-2 cursor-pointer text-sm font-black tracking-wide">
               @if (loading()) {
-                <div class="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                <div class="w-5.5 h-5.5 border-2 border-white/40 border-t-white rounded-full animate-spin"></div>
+              } @else {
+                <span>{{ 'AUTH.LOGIN.LOGIN_BTN' | translate }}</span>
+                <svg class="w-5 h-5 transition-transform ltr:group-hover:translate-x-1 rtl:group-hover:-translate-x-1 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
               }
-              {{ 'AUTH.LOGIN.LOGIN_BTN' | translate }}
-              <svg class="w-4 h-4 transition-transform ltr:group-hover:translate-x-1 rtl:group-hover:-translate-x-1 ltr:rotate-180 rtl:rotate-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
             </button>
           </form>
 
-          <div class="relative my-10">
-            <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-gray-100"></div></div>
-            <div class="relative flex justify-center text-[9px] font-black uppercase tracking-[0.3em]"><span class="bg-white px-6 text-gray-300">{{ 'AUTH.LOGIN.OR_CONTINUE' | translate }}</span></div>
+          <div class="flex items-center gap-3 py-4 select-none">
+            <div class="flex-1 h-px bg-slate-100"></div>
+            <div class="text-[10px] font-black uppercase tracking-[0.25em] text-slate-400">{{ 'AUTH.LOGIN.OR_CONTINUE' | translate }}</div>
+            <div class="flex-1 h-px bg-slate-100"></div>
           </div>
 
-          <div>
-            <button (click)="loginWithGoogle()" class="flex items-center justify-center gap-3 px-5 py-3.5 bg-gray-50 border border-gray-100 rounded-xl hover:bg-gray-100 transition-all font-bold text-[12px] text-gray-700 active:scale-95 w-full">
-              <img src="https://www.google.com/favicon.ico" class="w-4 h-4">
-              {{ 'AUTH.LOGIN.GOOGLE' | translate }}
-            </button>
-          </div>
+          <button type="button"
+                  (click)="loginWithGoogle()"
+                  class="w-full h-12.5 rounded-2xl border border-slate-200 bg-white text-slate-600 font-bold text-xs hover:bg-slate-50 hover:border-slate-300 active:scale-[0.98] transition-all duration-300 flex items-center justify-center gap-2.5 shadow-sm cursor-pointer">
+            <svg class="w-4.5 h-4.5 shrink-0" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+            </svg>
+            <span>{{ 'AUTH.LOGIN.GOOGLE' | translate }}</span>
+          </button>
 
-          <p class="text-center text-sm font-bold text-gray-400 mt-12">
-            {{ 'AUTH.LOGIN.NO_ACCOUNT' | translate }} 
-            <a routerLink="/auth/register" class="text-[#0a8f96] font-bold hover:underline">{{ 'AUTH.LOGIN.JOIN_NOW' | translate }}</a>
+          <p class="text-center text-xs font-bold text-slate-400 mt-6 select-none">
+            {{ 'AUTH.LOGIN.NO_ACCOUNT' | translate }}
+            <a routerLink="/auth/register" class="text-[#0c7379] hover:text-[#0b656b] hover:underline transition-colors font-bold">{{ 'AUTH.LOGIN.JOIN_NOW' | translate }}</a>
           </p>
-        </div>
-      </div>
+        </div> 
+      </main>
     </div>
   `,
 })
 export class LoginComponent implements OnInit {
   email = '';
   password = '';
+  showPassword = false;
+  rememberMe = true;
+  bgLoaded = signal(false);
   loading = signal(false);
 
   constructor(
@@ -134,7 +175,7 @@ export class LoginComponent implements OnInit {
   async login() {
     this.loading.set(true);
     try {
-      await this.auth.login({ email: this.email, password: this.password });
+      await this.auth.login({ email: this.email, password: this.password }, this.rememberMe);
       this.toast.success('AUTH.LOGIN.SUCCESS');
       this.router.navigate(['/']);
     } catch (e: any) {

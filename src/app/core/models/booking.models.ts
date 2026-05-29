@@ -39,10 +39,9 @@ export interface CreateBookingRequest {
   commissionRate: number;
   currency: string;
   notes?: string;
-  // [BACKEND_MISSING]: The backend doesn't expect payer info during creation yet.
-  /* payerEmail: string;
-  payerName: string;
-  payerPhone: string; */
+  payerName?: string;
+  payerEmail?: string;
+  payerPhone?: string;
 }
 
 export interface CreateBookingResponse {

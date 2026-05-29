@@ -47,6 +47,7 @@ export class ProfileService {
       })
     );
   }
+
   async markNotificationRead(id: string): Promise<void> {
     return firstValueFrom(this.http.patch<void>(`${this.url}/notifications/${id}/read`, {}));
   }

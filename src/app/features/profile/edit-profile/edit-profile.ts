@@ -130,6 +130,83 @@ import { firstValueFrom } from 'rxjs';
                   </div>
                 </div>
 
+                <!-- Sound Settings Section -->
+                <div class="mb-12">
+                  <div class="flex items-center ltr:justify-start rtl:justify-end gap-3 mb-10 border-b border-gray-50 pb-6">
+                    <h3 class="text-2xl font-black text-gray-900">إعدادات تنبيهات الصوت للرسائل</h3>
+                    <div class="w-10 h-10 bg-[#0a8f96]/10 text-[#0a8f96] rounded-xl flex items-center justify-center">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                      </svg>
+                    </div>
+                  </div>
+                  
+                  <div class="space-y-6">
+                    <div class="flex items-center justify-between p-6 bg-gray-50 rounded-2xl">
+                      <div class="ltr:text-left rtl:text-right">
+                        <h4 class="text-sm font-black text-gray-900 mb-1">تشغيل صوت التنبيه</h4>
+                        <p class="text-xs text-gray-400 font-bold">إصدار صوت عند تلقي رسالة جديدة في الخلفية</p>
+                      </div>
+                      <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" 
+                               [checked]="soundEnabled()" 
+                               (change)="toggleSoundEnabled()" 
+                               class="sr-only peer">
+                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#0a8f96]"></div>
+                      </label>
+                    </div>
+
+                    @if (soundEnabled()) {
+                      <div class="p-6 bg-gray-50 rounded-2xl space-y-4 ltr:text-left rtl:text-right">
+                        <label class="block text-xs font-bold text-gray-800 mb-1">اختر نغمة التنبيه المفضلة</label>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          <button type="button"
+                                  (click)="changeSoundType('premium')"
+                                  [class.bg-[#0a8f96]]="soundType() === 'premium'"
+                                  [class.text-white]="soundType() === 'premium'"
+                                  [class.bg-white]="soundType() !== 'premium'"
+                                  [class.text-gray-700]="soundType() !== 'premium'"
+                                  [class.border-gray-200]="soundType() !== 'premium'"
+                                  class="px-4 py-3 rounded-2xl text-xs font-bold border transition-all cursor-pointer flex items-center justify-between shadow-sm active:scale-95">
+                            <span>✨ بلوري (Chime)</span>
+                            @if (soundType() === 'premium') {
+                              <span class="w-2 h-2 rounded-full bg-white shrink-0"></span>
+                            }
+                          </button>
+
+                          <button type="button"
+                                  (click)="changeSoundType('pop')"
+                                  [class.bg-[#0a8f96]]="soundType() === 'pop'"
+                                  [class.text-white]="soundType() === 'pop'"
+                                  [class.bg-white]="soundType() !== 'pop'"
+                                  [class.text-gray-700]="soundType() !== 'pop'"
+                                  [class.border-gray-200]="soundType() !== 'pop'"
+                                  class="px-4 py-3 rounded-2xl text-xs font-bold border transition-all cursor-pointer flex items-center justify-between shadow-sm active:scale-95">
+                            <span>🎈 فقاعة (Pop)</span>
+                            @if (soundType() === 'pop') {
+                              <span class="w-2 h-2 rounded-full bg-white shrink-0"></span>
+                            }
+                          </button>
+
+                          <button type="button"
+                                  (click)="changeSoundType('classic')"
+                                  [class.bg-[#0a8f96]]="soundType() === 'classic'"
+                                  [class.text-white]="soundType() === 'classic'"
+                                  [class.bg-white]="soundType() !== 'classic'"
+                                  [class.text-gray-700]="soundType() !== 'classic'"
+                                  [class.border-gray-200]="soundType() !== 'classic'"
+                                  class="px-4 py-3 rounded-2xl text-xs font-bold border transition-all cursor-pointer flex items-center justify-between shadow-sm active:scale-95">
+                            <span>🤖 كلاسيكي (Beep)</span>
+                            @if (soundType() === 'classic') {
+                              <span class="w-2 h-2 rounded-full bg-white shrink-0"></span>
+                            }
+                          </button>
+                        </div>
+                      </div>
+                    }
+                  </div>
+                </div>
+
                 <!-- Actions -->
                 <div class="flex flex-col sm:flex-row items-center justify-start gap-4 mt-16 pt-10 border-t border-gray-100">
                   <button type="submit" [disabled]="loading()" class="w-full sm:w-auto bg-[#0a8f96] hover:bg-[#076b70] text-white text-sm font-black py-4 px-12 rounded-2xl shadow-lg shadow-[#0a8f96]/20 transition-all flex items-center justify-center gap-3 active:scale-95">
@@ -329,6 +406,8 @@ export class EditProfileComponent implements OnInit {
   reviewCount = signal(0);
   isVerified = signal(false);
   joinedAt = signal<string | null>(null);
+  soundEnabled = signal(true);
+  soundType = signal<'premium' | 'pop' | 'classic'>('premium');
 
   private profileService = inject(ProfileService);
   public auth = inject(AuthService);
@@ -338,6 +417,9 @@ export class EditProfileComponent implements OnInit {
   private translate = inject(TranslateService);
 
   async ngOnInit() {
+    this.soundEnabled.set(localStorage.getItem('baytology_sound_enabled') !== 'false');
+    this.soundType.set((localStorage.getItem('baytology_sound_type') as any) || 'premium');
+
     this.loading.set(true);
     try {
       const p = await this.profileService.getMyProfile();
@@ -561,6 +643,81 @@ export class EditProfileComponent implements OnInit {
       this.toast.error(errorMessage);
     } finally {
       this.loading.set(false);
+    }
+  }
+
+  toggleSoundEnabled() {
+    this.soundEnabled.update(v => !v);
+    localStorage.setItem('baytology_sound_enabled', this.soundEnabled() ? 'true' : 'false');
+    if (this.soundEnabled()) {
+      this.playNotificationSound();
+    }
+  }
+
+  changeSoundType(type: 'premium' | 'pop' | 'classic') {
+    this.soundType.set(type);
+    localStorage.setItem('baytology_sound_type', type);
+    this.playNotificationSound();
+  }
+
+  playNotificationSound() {
+    try {
+      const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+      if (!AudioContextClass) return;
+      const ctx = new AudioContextClass();
+      
+      const soundType = this.soundType();
+      
+      if (soundType === 'premium') {
+        const playTone = (freq: number, start: number, duration: number) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, start);
+          
+          gain.gain.setValueAtTime(0.12, start);
+          gain.gain.exponentialRampToValueAtTime(0.001, start + duration);
+          
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          
+          osc.start(start);
+          osc.stop(start + duration);
+        };
+        playTone(880, ctx.currentTime, 0.4); 
+        playTone(1320, ctx.currentTime + 0.08, 0.5); 
+      } else if (soundType === 'pop') {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(400, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(1200, ctx.currentTime + 0.15);
+        
+        gain.gain.setValueAtTime(0.18, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
+        
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.15);
+      } else if (soundType === 'classic') {
+        const playBeep = (start: number) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'square';
+          osc.frequency.setValueAtTime(2000, start);
+          gain.gain.setValueAtTime(0.04, start);
+          gain.gain.exponentialRampToValueAtTime(0.001, start + 0.1);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(start);
+          osc.stop(start + 0.1);
+        };
+        playBeep(ctx.currentTime);
+        playBeep(ctx.currentTime + 0.12);
+      }
+    } catch (err) {
+      console.warn('Web Audio API chime failed:', err);
     }
   }
 }

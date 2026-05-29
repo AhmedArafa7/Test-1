@@ -1,168 +1,317 @@
-<!-- FINAL LUXURY LIGHT THEME CHAT -->
-<div class="fixed inset-0 top-[72px] bg-[#f8f9fa] grid grid-cols-1 md:grid-cols-[1fr_380px] overflow-hidden z-40 text-gray-800 font-sans">
+<!-- PREMIUM CHAT PLATFORM LAYOUT -->
+<div class="fixed inset-0 top-[72px] bg-[#fafafa] flex flex-row ltr:flex-row rtl:flex-row-reverse overflow-hidden z-40 text-slate-800 font-sans">
   
   <!-- LEFT: Chat Area -->
-  <main class="flex flex-col bg-white overflow-hidden relative border-e border-gray-100 min-w-0 order-2 md:order-1 shadow-[0_0_40px_rgba(0,0,0,0.02)]">
+  <main class="flex-1 flex flex-col bg-white overflow-hidden relative min-w-0 shadow-[0_0_40px_rgba(0,0,0,0.015)]">
     @if (!conversationId) {
-      <div class="flex-1 flex flex-col items-center justify-center p-10 text-center bg-[#fafafa]">
-        <div class="w-32 h-32 mb-8 bg-[#0d7a80]/5 rounded-full flex items-center justify-center text-[#0d7a80]">
-          <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+      <!-- Welcome Screen / Empty Chat State -->
+      <div class="flex-1 flex flex-col items-center justify-center p-10 text-center relative"
+           style="background: linear-gradient(135deg, #c5d2cb 0%, #ebf0ee 30%, #ffffff 50%, #ebf0ee 70%, #c5d2cb 100%);">
+        <div class="w-32 h-32 mb-8 bg-[#0a5c60]/5 rounded-full flex items-center justify-center text-[#0a5c60] shadow-sm">
+          <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+          </svg>
         </div>
-        <h2 class="text-2xl font-bold text-gray-900 mb-3">{{ 'MESSAGES.WELCOME_TITLE' | translate }}</h2>
-        <p class="text-sm text-gray-500 max-w-sm leading-relaxed">{{ 'MESSAGES.WELCOME_MSG' | translate }}</p>
+        <h2 class="text-2xl font-black text-slate-900 mb-3">{{ 'MESSAGES.WELCOME_TITLE' | translate }}</h2>
+        <p class="text-sm font-bold text-slate-500 max-w-sm leading-relaxed">{{ 'MESSAGES.WELCOME_MSG' | translate }}</p>
       </div>
     } @else if (loading()) {
-      <div class="flex-1 flex items-center justify-center bg-white"><app-loading-spinner [message]="'MESSAGES.OPENING_CHAT' | translate" /></div>
+      <div class="flex-1 flex items-center justify-center bg-white">
+        <app-loading-spinner [message]="'MESSAGES.OPENING_CHAT' | translate" />
+      </div>
     } @else {
       <!-- Chat Header -->
-      <header class="h-[72px] flex items-center justify-between px-6 bg-white border-b border-gray-100 shrink-0 z-20 relative">
-        <div class="flex items-center gap-4">
-          <div class="w-12 h-12 rounded-full bg-white border border-gray-100 flex items-center justify-center overflow-hidden shadow-sm">
-            <svg class="w-7 h-7 text-gray-300" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-            </svg>
+      <header class="h-[72px] flex items-center justify-between px-6 bg-white border-b border-slate-100 shrink-0 z-20 relative">
+        <div class="flex items-center gap-3">
+          <!-- Active Recipient Avatar with Online Dot -->
+          <div class="relative">
+            <div class="w-11 h-11 rounded-full bg-slate-100 border border-slate-200/50 flex items-center justify-center overflow-hidden shadow-sm">
+              <svg class="w-6.5 h-6.5 text-slate-300" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+              </svg>
+            </div>
+            <span class="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-green-500 border-2 border-white"></span>
           </div>
           <div>
-            <h2 class="text-lg font-bold text-gray-900 leading-tight ltr:text-left rtl:text-right">{{ recipientName() | translate }}</h2>
+            <div class="flex items-center gap-2">
+              <h2 class="text-base font-extrabold text-slate-900 leading-tight ltr:text-left rtl:text-right">
+                {{ recipientName() | translate }}
+              </h2>
+              @if (isMuted()) {
+                <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-black bg-rose-50 border border-rose-100 text-rose-500 shadow-sm animate-in fade-in zoom-in duration-300" title="تم كتم إشعارات المحادثة">
+                  <svg class="w-3 h-3 text-rose-500 animate-pulse" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                  </svg>
+                  <span>مكتوم</span>
+                </span>
+              }
+            </div>
             <div class="flex items-center gap-1.5 mt-0.5">
-              <span class="w-2 h-2 rounded-full" 
-                    [class.bg-green-500]="chatSignalR.connectionState() === 'Connected'"
-                    [class.bg-yellow-500]="chatSignalR.connectionState() === 'Connecting' || chatSignalR.connectionState() === 'Reconnecting'"
-                    [class.bg-red-500]="chatSignalR.connectionState() === 'Disconnected'"></span>
-              <span class="text-[12px] font-semibold text-gray-500">
-                {{ (chatSignalR.connectionState() === 'Connected' ? 'MESSAGES.ONLINE' : 
-                   chatSignalR.connectionState() === 'Connecting' ? 'MESSAGES.CONNECTING' :
-                   chatSignalR.connectionState() === 'Reconnecting' ? 'MESSAGES.RECONNECTING' : 'MESSAGES.OFFLINE') | translate }}
-              </span>
+              <span class="text-xs font-bold text-green-600">{{ 'MESSAGES.ONLINE' | translate }}</span>
             </div>
           </div>
         </div>
-        <div class="flex items-center gap-3 text-gray-400">
-          <button class="hover:bg-gray-50 hover:text-gray-900 w-10 h-10 rounded-full flex items-center justify-center transition-colors"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg></button>
+        
+        <!-- Header Actions -->
+        <div class="flex items-center gap-2 text-slate-400">
+          
+          <!-- Live Message Search Input Bar -->
+          @if (showMsgSearch()) {
+            <div class="relative flex items-center bg-slate-50 border border-slate-100 rounded-full px-3 py-1 animate-in slide-in-from-left duration-200">
+              <input type="text" 
+                     [ngModel]="msgSearchQuery()"
+                     (ngModelChange)="msgSearchQuery.set($event)"
+                     placeholder="ابحث في الرسائل..." 
+                     class="bg-transparent border-none outline-none text-[11px] text-slate-800 w-32 py-0.5 px-1 ltr:text-left rtl:text-right font-medium">
+              @if (msgSearchQuery()) {
+                <button (click)="msgSearchQuery.set('')" class="text-slate-400 hover:text-slate-600 cursor-pointer">
+                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
+                  </svg>
+                </button>
+              }
+            </div>
+          }
+
+          <button (click)="toggleMsgSearch()" 
+                  [class.text-[#0a8f96]]="showMsgSearch() || msgSearchQuery()"
+                  [class.bg-[#0a8f96]/5]="showMsgSearch()"
+                  class="hover:bg-slate-50 hover:text-slate-900 w-9 h-9 rounded-full flex items-center justify-center transition-colors cursor-pointer">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+          </button>
           <div class="relative">
-            <button (click)="showChatMenu.set(!showChatMenu())" class="hover:bg-gray-50 hover:text-gray-900 w-10 h-10 rounded-full flex items-center justify-center transition-colors"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 7a2 2 0 100-4 2 2 0 000 4zm0 7a2 2 0 100-4 2 2 0 000 4zm0 7a2 2 0 100-4 2 2 0 000 4z"/></svg></button>
+            <button (click)="showChatMenu.set(!showChatMenu())" class="hover:bg-slate-50 hover:text-slate-900 w-9 h-9 rounded-full flex items-center justify-center transition-colors cursor-pointer">
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 7a2 2 0 100-4 2 2 0 000 4zm0 7a2 2 0 100-4 2 2 0 000 4zm0 7a2 2 0 100-4 2 2 0 000 4z"/>
+              </svg>
+            </button>
             @if (showChatMenu()) {
-              <div class="absolute top-12 ltr:right-0 rtl:left-0 w-48 bg-white shadow-xl rounded-xl py-2 z-50 text-[13px] font-semibold border border-gray-100 animate-in fade-in zoom-in-95 duration-100">
-                <button class="w-full text-start px-5 py-2.5 hover:bg-gray-50 transition-colors text-gray-700 ltr:text-left rtl:text-right">{{ 'MESSAGES.CONTACT_INFO' | translate }}</button>
-                <button class="w-full text-start px-5 py-2.5 hover:bg-gray-50 transition-colors text-gray-700 ltr:text-left rtl:text-right">{{ 'MESSAGES.MUTE_NOTIF' | translate }}</button>
-                <div class="h-px bg-gray-100 my-1"></div>
-                <button class="w-full text-start px-5 py-2.5 hover:bg-red-50 transition-colors text-red-600 ltr:text-left rtl:text-right">{{ 'MESSAGES.CLOSE_CHAT' | translate }}</button>
+              <div class="absolute top-11 ltr:right-0 rtl:left-0 w-48 bg-white shadow-xl rounded-2xl py-2.5 z-50 text-[13px] font-bold border border-slate-100 animate-in fade-in duration-100">
+                <button (click)="showContactInfo()" class="w-full text-start px-5 py-2 hover:bg-slate-50 transition-colors text-slate-700 ltr:text-left rtl:text-right">{{ 'MESSAGES.CONTACT_INFO' | translate }}</button>
+                <button (click)="toggleMute()" class="w-full text-start px-5 py-2 hover:bg-slate-50 transition-colors text-slate-700 ltr:text-left rtl:text-right">
+                  {{ isMuted() ? 'تفعيل الإشعارات 🔔' : ('MESSAGES.MUTE_NOTIF' | translate) }}
+                </button>
+                <div class="h-px bg-slate-100 my-1.5"></div>
+                <button (click)="closeChat()" class="w-full text-start px-5 py-2 hover:bg-red-50 transition-colors text-red-600 ltr:text-left rtl:text-right">{{ 'MESSAGES.CLOSE_CHAT' | translate }}</button>
               </div>
             }
           </div>
         </div>
       </header>
 
-      <!-- Chat Messages Area -->
-      <div #scrollContainer class="flex-1 overflow-y-auto p-6 lg:px-20 space-y-4 bg-[#fafafa] relative" (click)="showChatMenu.set(false); showEmojiPicker.set(false)">
+      <!-- Chat Messages Area (with premium sage gradient mesh background pattern) -->
+      <div #scrollContainer 
+           class="flex-1 overflow-y-auto p-6 lg:px-12 space-y-5 relative" 
+           style="background: linear-gradient(135deg, #c5d2cb 0%, #ebf0ee 30%, #ffffff 50%, #ebf0ee 70%, #c5d2cb 100%);"
+           (click)="showChatMenu.set(false); showEmojiPicker.set(false)">
         
-        @for (msg of messages(); track msg.id) {
-          <div [class]="msg.senderId === auth.userId() ? 'justify-end' : 'justify-start'" class="flex w-full mb-2 relative z-10">
-            <div [class]="msg.senderId === auth.userId() ? 'bg-[#0d7a80] text-white rounded-s-2xl rounded-tr-2xl' : 'bg-white text-gray-800 rounded-e-2xl rounded-tl-2xl border border-gray-100 shadow-sm'" 
-                 class="relative px-5 py-3 max-w-[85%] lg:max-w-[70%] min-w-[120px]">
-              
-              @if (isPropertyMessage(msg.content)) {
-                @if (getMessageText(msg.content)) { <p class="text-[14px] mb-3 leading-relaxed whitespace-pre-wrap font-medium">{{ getMessageText(msg.content) }}</p> }
-                <div class="flex flex-row gap-3 mt-2 overflow-x-auto no-scrollbar pb-2 w-full" style="max-width: 100%;">
-                  @for (p of getPropertiesData(msg.content); track p.id) {
-                    <div class="bg-white rounded-xl overflow-hidden border border-gray-200 shrink-0 w-[240px] shadow-sm">
-                      <div class="h-32 w-full bg-gray-50 flex items-center justify-center relative overflow-hidden">
-                        <img [src]="getPropertyImage(p)" 
-                             class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" 
-                             (error)="onImageError($event, p.id)">
-                        <!-- Premium Placeholder Icon -->
-                        <div class="absolute inset-0 -z-10 flex flex-col items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 text-[#0d7a80]/20">
-                          <svg class="w-12 h-12 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
-                          <span class="text-[8px] font-black uppercase tracking-widest opacity-40">Baytology Premium</span>
-                        </div>
-                      </div>                      <div class="p-4">
-                        <h4 class="text-[13px] font-bold truncate text-gray-900 mb-1 ltr:text-left rtl:text-right">{{ p.title }}</h4>
-                        <p class="text-sm font-black text-[#0d7a80] ltr:text-left rtl:text-right tabular-nums">{{ p.price | currencyEgp }}</p>
-                        <a [routerLink]="['/properties', p.id]" class="block w-full mt-3 py-2 bg-gray-50 hover:bg-gray-100 text-gray-700 text-[11px] text-center font-bold rounded-lg transition-colors uppercase tracking-wide border border-gray-200">{{ 'MESSAGES.VIEW_DETAILS' | translate }}</a>
+        <div class="text-center my-4">
+          <span class="bg-slate-200/60 text-slate-600 text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full shadow-sm">
+            اليوم
+          </span>
+        </div>
+
+        @for (msg of filteredMessages(); track msg.id) {
+          <div [class]="msg.senderId === auth.userId() ? 'justify-end' : 'justify-start'" 
+               class="flex w-full mb-2.5 relative z-10 animate-in fade-in slide-in-from-bottom-2 duration-200">
+            
+            @if (isPropertyMessage(msg.content)) {
+              <!-- Standard Property Bubble / Standalone Card -->
+              <div class="flex flex-col gap-2 max-w-[85%] lg:max-w-[70%]">
+                @if (getMessageText(msg.content)) {
+                  <div [class]="msg.senderId === auth.userId() ? 'bg-[#f2f4f6] text-slate-800 rounded-[20px] rounded-br-[4px]' : 'bg-white text-slate-800 rounded-[20px] rounded-bl-[4px] border border-slate-100 shadow-sm'" 
+                       class="px-5 py-3 text-sm leading-relaxed font-semibold shadow-[0_1px_3px_rgba(0,0,0,0.01)] w-fit self-start">
+                    {{ getMessageText(msg.content) }}
+                  </div>
+                }
+                
+                @for (p of getPropertiesData(msg.content); track p.id) {
+                  <div class="bg-white rounded-[24px] overflow-hidden border border-slate-200/60 shadow-[0_8px_30px_rgba(0,0,0,0.03)] shrink-0 w-full text-slate-800 hover:shadow-[0_16px_40px_rgba(0,0,0,0.06)] transition-all duration-300 relative" style="max-width: 340px;">
+                    <!-- Image Block -->
+                    <div class="h-48 w-full bg-slate-50 relative overflow-hidden group">
+                      <img [src]="getPropertyImage(p)" 
+                           class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" 
+                           (error)="onImageError($event, p.id)">
+                      <!-- Premium Label Tag -->
+                      <div class="absolute top-4 right-4 bg-[#0a8f96] text-white text-[10px] font-black tracking-widest px-3.5 py-1.5 rounded-full uppercase shadow-md">
+                        للبيع
                       </div>
+                    </div>
+                    
+                    <!-- Spec & Price Details -->
+                    <div class="p-6">
+                      <h4 class="text-base font-extrabold text-slate-900 mb-1 ltr:text-left rtl:text-right">{{ p.title }}</h4>
+                      <p class="text-xl font-black text-[#0a8f96] mb-5 ltr:text-left rtl:text-right tabular-nums">{{ p.price | currencyEgp }}</p>
+                      
+                      <!-- Premium Specs Grid -->
+                      <div class="grid grid-cols-3 gap-3 mb-6">
+                        <div class="bg-slate-50/50 border border-slate-100 rounded-2xl py-3 flex flex-col items-center justify-center gap-2 shadow-sm hover:bg-slate-50 transition-colors">
+                          <!-- Bed Icon -->
+                          <svg class="w-4.5 h-4.5 text-slate-500" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M2 4v16M2 8h18a2 2 0 0 1 2 2v10M2 17h20M6 8v9"/>
+                          </svg>
+                          <span class="text-[11px] font-black text-slate-700">4 غرف</span>
+                        </div>
+                        <div class="bg-slate-50/50 border border-slate-100 rounded-2xl py-3 flex flex-col items-center justify-center gap-2 shadow-sm hover:bg-slate-50 transition-colors">
+                          <!-- Bath Icon -->
+                          <svg class="w-4.5 h-4.5 text-slate-500" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M2 18a4 4 0 0 0 4 4h12a4 4 0 0 0 4-4v-2H2v2ZM22 14V6a3 3 0 0 0-3-3h-4M19 6h-2"/>
+                          </svg>
+                          <span class="text-[11px] font-black text-slate-700">3 حمام</span>
+                        </div>
+                        <div class="bg-slate-50/50 border border-slate-100 rounded-2xl py-3 flex flex-col items-center justify-center gap-2 shadow-sm hover:bg-slate-50 transition-colors">
+                          <!-- Area Icon -->
+                          <svg class="w-4.5 h-4.5 text-slate-500" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 4h16v16H4zM4 9h16M4 14h16M9 4v16M14 4v16"/>
+                          </svg>
+                          <span class="text-[11px] font-black text-slate-700">450 م²</span>
+                        </div>
+                      </div>
+                      
+                      <a [routerLink]="['/properties', p.id]" 
+                         class="block w-full py-3.5 bg-[#004d4f] hover:bg-[#003638] text-white text-xs text-center font-black rounded-xl transition-all uppercase tracking-wider shadow-md hover:shadow-lg">
+                        {{ 'MESSAGES.VIEW_DETAILS' | translate }} &larr;
+                      </a>
+                    </div>
+                  </div>
+                }
+
+                <!-- Standalone Timestamp and Checkmarks -->
+                <div class="flex items-center justify-end gap-1.5 mt-1 pr-2">
+                  <span class="text-[9px] font-black tracking-wider text-slate-400">
+                    {{ msg.sentAt | relativeTime }}
+                  </span>
+                  @if (msg.senderId === auth.userId()) {
+                    <div class="flex items-center">
+                      <svg class="w-4 h-4 text-emerald-500" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15l-5-5 1.41-1.41L11 14.17l7.59-7.59L20 8l-9 9z"/>
+                      </svg>
                     </div>
                   }
                 </div>
-              } @else {
-                <p class="text-[14px] leading-relaxed whitespace-pre-wrap font-medium">{{ msg.content }}</p>
-                @if (msg.attachmentUrl) {
-                  <div class="mt-3 rounded-xl overflow-hidden border border-white/10 shadow-sm max-w-[280px] bg-black/5 group/img relative">
-                    <img [src]="msg.attachmentUrl" class="w-full h-auto max-h-64 object-cover cursor-pointer hover:opacity-90 transition-all" (click)="openImage(msg.attachmentUrl!)">
-                    <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover/img:opacity-100 bg-black/20 transition-opacity pointer-events-none">
-                       <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                    </div>
-                  </div>
-                }
-              }
-
-              <div class="flex items-center justify-end gap-1.5 mt-2 -mb-1">
-                <span class="text-[10px] font-bold" [class]="msg.senderId === auth.userId() ? 'text-white/70' : 'text-gray-400'">{{ msg.sentAt | relativeTime }}</span>
-                @if (msg.senderId === auth.userId()) {
-                  <div class="flex items-center">
-                    <svg class="w-4 h-4" [class.text-white]="msg.isRead" [class.text-white/50]="!msg.isRead" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15l-5-5 1.41-1.41L11 14.17l7.59-7.59L20 8l-9 9z"/>
-                    </svg>
-                  </div>
-                }
               </div>
-            </div>
+            } @else {
+              <!-- Normal Message Bubble -->
+              <div [class]="msg.senderId === auth.userId() ? 'bg-[#f2f4f6] text-slate-800 rounded-[20px] rounded-br-[4px] border border-slate-200/20' : 'bg-white text-slate-800 rounded-[20px] rounded-bl-[4px] border border-slate-100 shadow-sm'" 
+                   class="relative px-5 py-3.5 max-w-[85%] lg:max-w-[70%] min-w-[140px] shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
+                @if (!isAudio(msg.attachmentUrl)) {
+                  <p class="text-sm leading-relaxed whitespace-pre-wrap font-semibold text-slate-800">{{ msg.content }}</p>
+                }
+                @if (msg.attachmentUrl) {
+                  @if (isAudio(msg.attachmentUrl)) {
+                    <!-- Custom Premium Standalone Audio Player with seeking and AI Speech-to-Text -->
+                    <app-audio-player [audioUrl]="msg.attachmentUrl" [transcript]="getTranscriptText(msg.content)" class="mt-1 block"></app-audio-player>
+                  } @else {
+                    <div class="mt-3 rounded-xl overflow-hidden border border-slate-100 shadow-sm max-w-[280px] bg-slate-50 relative group/img cursor-pointer" 
+                         (click)="openImage(msg.attachmentUrl!)">
+                      <img [src]="msg.attachmentUrl" class="w-full h-auto max-h-64 object-cover hover:opacity-95 transition-all">
+                    </div>
+                  }
+                }
+
+                <!-- Time & Checkmarks -->
+                <div class="flex items-center justify-end gap-1.5 mt-2 -mb-0.5">
+                  <span class="text-[9px] font-black tracking-wider text-slate-400">
+                    {{ msg.sentAt | relativeTime }}
+                  </span>
+                  @if (msg.senderId === auth.userId()) {
+                    <div class="flex items-center">
+                      <svg class="w-4 h-4 text-emerald-500" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15l-5-5 1.41-1.41L11 14.17l7.59-7.59L20 8l-9 9z"/>
+                      </svg>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
           </div>
         }
       </div>
 
       <!-- Emoji Picker Panel -->
       @if (showEmojiPicker()) {
-        <div class="absolute bottom-[80px] right-6 w-72 bg-white border border-gray-100 rounded-2xl shadow-xl p-4 z-50 grid grid-cols-6 gap-2 animate-in slide-in-from-bottom-5">
-          @for (emoji of ['😊','😂','❤️','👍','🙌','🔥','🏠','🏢','🏡','💰','📍','🔑']; track emoji) {
-            <button (click)="addEmoji(emoji)" class="text-2xl hover:bg-gray-50 rounded-xl p-1.5 transition-all">{{ emoji }}</button>
-          }
+        <div class="absolute bottom-[90px] right-6 w-80 bg-[#0c1f20]/95 text-white backdrop-blur-xl border border-[#0a8f96]/30 rounded-3xl shadow-2xl p-4.5 z-50 animate-in slide-in-from-bottom-5 duration-200 flex flex-col gap-3">
+          
+          <!-- Category Selector Tabs -->
+          <div class="flex justify-between items-center bg-slate-800/40 rounded-2xl p-1 border border-slate-700/20 shrink-0">
+            @for (cat of emojiCategories; track cat.id) {
+              <button (click)="activeEmojiCategory.set(cat.id)" 
+                      [class.bg-[#0a8f96]]="activeEmojiCategory() === cat.id"
+                      [class.text-white]="activeEmojiCategory() === cat.id"
+                      [class.text-slate-400]="activeEmojiCategory() !== cat.id"
+                      class="flex-1 py-1.5 rounded-xl text-center text-sm hover:text-white transition-all cursor-pointer flex items-center justify-center"
+                      [title]="cat.name">
+                {{ cat.icon }}
+              </button>
+            }
+          </div>
+
+          <!-- Emojis Grid -->
+          <div class="max-h-56 overflow-y-auto grid grid-cols-6 gap-2 custom-scrollbar pr-1 flex-1 min-h-[180px]">
+            @for (emoji of filteredEmojis(); track emoji) {
+              <button (click)="addEmoji(emoji)" 
+                      class="text-2xl hover:bg-[#0a8f96]/20 hover:scale-120 active:scale-90 rounded-xl p-1.5 transition-all cursor-pointer flex items-center justify-center">
+                {{ emoji }}
+              </button>
+            }
+          </div>
         </div>
       }
 
-      <!-- Property Preview -->
+      <!-- Property Attach Preview (Drawer) -->
       @if (selectedProperties().length > 0) {
-        <div class="px-6 py-4 bg-white border-t border-gray-100 flex gap-3 overflow-x-auto no-scrollbar animate-in slide-in-from-bottom-2 shadow-[0_-4px_10px_rgba(0,0,0,0.02)]">
+        <div class="px-6 py-4 bg-white border-t border-slate-100 flex gap-3 overflow-x-auto no-scrollbar animate-in slide-in-from-bottom-2 shadow-[0_-8px_20px_rgba(0,0,0,0.015)] shrink-0">
           @for (p of selectedProperties(); track p.id) {
-            <div class="relative shrink-0 w-24 h-24 rounded-xl overflow-hidden border-2 border-[#0d7a80] shadow-sm group">
-                <img [src]="getPropertyImage(p)" 
-                     class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-all" 
-                     (error)="onImageError($event, p.id)">
-              <div class="absolute inset-0 -z-10 flex items-center justify-center bg-gray-50 text-[#0d7a80]/10">
-                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
-              </div>              <button (click)="removeSelectedProperty(p.id)" class="absolute top-1 right-1 w-6 h-6 bg-white text-gray-900 rounded-full flex items-center justify-center hover:text-red-500 shadow-sm transition-colors">
-                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            <div class="relative shrink-0 w-24 h-24 rounded-2xl overflow-hidden border-2 border-[#0a8f96] shadow-md group">
+              <img [src]="getPropertyImage(p)" 
+                   class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-all" 
+                   (error)="onImageError($event, p.id)">
+              <button (click)="removeSelectedProperty(p.id)" 
+                      class="absolute top-1.5 right-1.5 w-6 h-6 bg-white/95 text-slate-800 rounded-full flex items-center justify-center hover:text-red-500 shadow-sm transition-colors border border-slate-100 cursor-pointer">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
               </button>
             </div>
           }
         </div>
       }
 
-      <!-- Property Selection Drawer -->
+      <!-- Property Selection List Panel -->
       @if (showPropertyPreview()) {
-        <div class="absolute bottom-[80px] left-0 right-0 bg-white border-t border-gray-100 z-50 animate-in slide-in-from-bottom-10 max-h-[400px] overflow-hidden flex flex-col shadow-[0_-10px_30px_rgba(0,0,0,0.05)]">
-          <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-            <h3 class="text-sm font-bold text-gray-900 ltr:text-left rtl:text-right">{{ 'MESSAGES.SELECT_PROPS_TITLE' | translate }}</h3>
-            <button (click)="togglePropertyPreview()" class="w-8 h-8 rounded-full bg-white border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-50 hover:text-gray-900 transition-colors shadow-sm"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
+        <div class="absolute bottom-[90px] left-6 right-6 bg-white border border-slate-100 rounded-3xl z-50 animate-in slide-in-from-bottom-10 max-h-[360px] overflow-hidden flex flex-col shadow-2xl">
+          <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+            <h3 class="text-sm font-extrabold text-slate-900">{{ 'MESSAGES.SELECT_PROPS_TITLE' | translate }}</h3>
+            <button (click)="togglePropertyPreview()" class="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-50 transition-colors shadow-sm cursor-pointer">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+            </button>
           </div>
-          <div class="flex-1 overflow-y-auto p-6 grid grid-cols-2 lg:grid-cols-3 gap-4 custom-scrollbar">
+          <div class="flex-1 overflow-y-auto p-5 grid grid-cols-2 lg:grid-cols-3 gap-4 custom-scrollbar">
             @for (p of agentProperties(); track p.id) {
-              <div (click)="togglePropertySelection(p)" class="relative cursor-pointer group rounded-xl overflow-hidden border-2 transition-all shadow-sm" [class.border-[#0d7a80]]="isPropertySelected(p.id)" [class.border-gray-100]="!isPropertySelected(p.id)">
-                <div class="h-28 w-full bg-gray-50 relative overflow-hidden">
-                    <img [src]="getPropertyImage(p)" 
-                         class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
-                         (error)="onImageError($event, p.id)">
-                  <div class="absolute inset-0 -z-10 flex items-center justify-center bg-gray-50 text-[#0d7a80]/10">
-                    <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
-                  </div>
-                </div>                <div class="p-3 bg-white">
-                  <h4 class="text-[12px] font-bold text-gray-900 truncate mb-1 ltr:text-left rtl:text-right" [title]="p.title || 'MESSAGES.UNTITLED' | translate">{{ p.title || ('MESSAGES.UNTITLED' | translate) }}</h4>
-                  <p class="text-[11px] text-[#0d7a80] font-black ltr:text-left rtl:text-right tabular-nums">
+              <div (click)="togglePropertySelection(p)" 
+                   class="relative cursor-pointer group rounded-2xl overflow-hidden border-2 transition-all shadow-sm bg-white" 
+                   [class.border-[#0a8f96]]="isPropertySelected(p.id)" 
+                   [class.border-slate-100]="!isPropertySelected(p.id)">
+                <div class="h-28 w-full bg-slate-50 relative overflow-hidden">
+                  <img [src]="getPropertyImage(p)" 
+                       class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
+                       (error)="onImageError($event, p.id)">
+                </div>
+                <div class="p-3">
+                  <h4 class="text-[12px] font-extrabold text-slate-900 truncate mb-1 ltr:text-left rtl:text-right">{{ p.title || ('MESSAGES.UNTITLED' | translate) }}</h4>
+                  <p class="text-xs text-[#0a8f96] font-black ltr:text-left rtl:text-right tabular-nums">
                     {{ p.price ? (p.price | currencyEgp) : ('MESSAGES.PRICE_ON_CALL' | translate) }}
                   </p>
                 </div>
                 @if (isPropertySelected(p.id)) {
-                  <div class="absolute top-2 right-2 w-6 h-6 bg-[#0d7a80] text-white rounded-full flex items-center justify-center shadow-md">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                  <div class="absolute top-2.5 right-2.5 w-6 h-6 bg-[#0a8f96] text-white rounded-full flex items-center justify-center shadow-md">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                    </svg>
                   </div>
                 }
               </div>
@@ -171,48 +320,119 @@
         </div>
       }
 
-      <!-- Footer Bar -->
-      <footer class="min-h-[80px] px-6 py-4 bg-white border-t border-gray-100 flex items-center gap-3 shrink-0 z-30 relative">
-        <button (click)="showEmojiPicker.set(!showEmojiPicker())" class="text-gray-400 hover:text-[#0d7a80] w-10 h-10 rounded-full flex items-center justify-center transition-colors hover:bg-[#0d7a80]/5" [class.text-[#0d7a80]]="showEmojiPicker()">
-          <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3c-4.963 0-9 4.037-9 9s4.037 9 9 9 9-4.037 9-9-4.037-9-9-9zm0 16c-3.859 0-7-3.141-7-7s3.141-7 7-7 7 3.141 7 7-3.141 7-7 7zM9.5 8.5a1.5 1.5 0 100 3 1.5 1.5 0 000-3zm5 0a1.5 1.5 0 100 3 1.5 1.5 0 000-3zM12 17c2.43 0 4.292-1.391 5.034-2.5a.75.75 0 10-1.268-.8C15.223 14.542 13.91 15.5 12 15.5s-3.223-.958-3.766-1.8a.75.75 0 00-1.268.8c.742 1.109 2.604 2.5 5.034 2.5z"/></svg>
-        </button>
-        <button (click)="togglePropertyPreview()" class="text-gray-400 hover:text-[#0d7a80] w-10 h-10 rounded-full flex items-center justify-center transition-colors hover:bg-[#0d7a80]/5" [class.text-[#0d7a80]]="showPropertyPreview()">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+      <!-- Bottom Chat Input Bar -->
+      <footer class="min-h-[88px] px-6 py-4 bg-white border-t border-slate-100 flex items-center gap-3 shrink-0 z-30 relative">
+        <!-- Floating Calendar Button on the far left (RTL: right of input) -->
+        <button (click)="onCalendarClick()" class="bg-[#004d4f] hover:bg-[#003638] text-white w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg shadow-[#004d4f]/15 hover:shadow-xl hover:scale-102 transition-all cursor-pointer">
+          <svg class="w-5.5 h-5.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5m-9-6h.008v.008H12v-.008ZM12 15h.008v.008H12V15Zm0 2.25h.008v.008H12v-.008ZM9.75 15h.008v.008H9.75V15Zm0 2.25h.008v.008H9.75v-.008ZM7.5 15h.008v.008H7.5V15Zm0 2.25h.008v.008H7.5v-.008Zm6.75-4.5h.008v.008h-.008v-.008Zm0 2.25h.008v.008h-.008V15Zm0 2.25h.008v.008h-.008v-.008Zm2.25-4.5h.008v.008H16.5v-.008Zm0 2.25h.008v.008H16.5V15Z"/>
+          </svg>
         </button>
 
-        <button (click)="fileInput.click()" class="text-gray-400 hover:text-[#0d7a80] w-10 h-10 rounded-full flex items-center justify-center transition-colors hover:bg-[#0d7a80]/5" [class.text-[#0d7a80]]="selectedFileUrl">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.414a4 4 0 00-5.656-5.656l-6.415 6.414a6 6 0 108.486 8.486L20.5 13"/></svg>
-        </button>
-        <input #fileInput type="file" (change)="onFileSelected($event)" class="hidden">
-        
-        <div class="flex-1 flex flex-col gap-1">
+        <div class="flex-1 flex flex-col gap-1.5">
           @if (selectedFileUrl) {
-            <div class="px-4 py-2 bg-[#0d7a80]/5 rounded-xl border border-[#0d7a80]/20 flex items-center justify-between animate-in slide-in-from-bottom-1 overflow-hidden relative">
+            <div class="px-4 py-2 bg-[#0a8f96]/5 rounded-2xl border border-[#0a8f96]/20 flex items-center justify-between animate-in slide-in-from-bottom-1 overflow-hidden shrink-0">
               <div class="flex items-center gap-3">
                 @if (selectedFileUrl.startsWith('data:image') || selectedFileUrl.startsWith('https://res.cloudinary.com')) {
-                  <div class="w-10 h-10 rounded-lg overflow-hidden border border-[#0d7a80]/20 shrink-0 shadow-sm">
+                  <div class="w-10 h-10 rounded-xl overflow-hidden border border-[#0a8f96]/20 shrink-0 shadow-sm">
                     <img [src]="selectedFileUrl" class="w-full h-full object-cover">
                   </div>
-                } @else {
-                  <div class="w-10 h-10 bg-white rounded-lg border border-[#0d7a80]/20 flex items-center justify-center shrink-0 shadow-sm text-[#0d7a80]">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                  </div>
                 }
-                <span class="text-[11px] font-bold text-[#0d7a80]">{{ 'MESSAGES.FILE_ATTACHED' | translate }}</span>
+                <span class="text-[11px] font-black text-[#0a8f96]">{{ 'MESSAGES.FILE_ATTACHED' | translate }}</span>
               </div>
-              <button (click)="selectedFileUrl = ''" class="text-gray-400 hover:text-red-500 bg-white/80 backdrop-blur rounded-full w-6 h-6 flex items-center justify-center shadow-sm"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
+              <button (click)="selectedFileUrl = ''" class="text-slate-400 hover:text-red-500 bg-white border border-slate-100 rounded-full w-6 h-6 flex items-center justify-center shadow-sm cursor-pointer">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+              </button>
             </div>
           }
-          <div class="bg-gray-50 border border-gray-200 rounded-full px-5 py-2.5 flex items-center transition-all focus-within:bg-white focus-within:border-[#0d7a80] focus-within:ring-2 focus-within:ring-[#0d7a80]/10 shadow-inner">
-            <textarea [(ngModel)]="newMessage" (keydown.enter)="$event.preventDefault(); send()" class="flex-1 bg-transparent border-0 focus:ring-0 text-gray-900 py-1.5 text-[14px] font-medium placeholder-gray-400 resize-none custom-scrollbar outline-none ltr:text-left rtl:text-right" [placeholder]="'MESSAGES.SEND_PLACEHOLDER' | translate" rows="1" dir="auto"></textarea>
-          </div>
-        </div>
-        
-        <button (click)="newMessage.trim() || selectedProperties().length > 0 || selectedFileUrl ? send() : null" class="w-12 h-12 rounded-full flex items-center justify-center transition-all shadow-md shrink-0" [class.bg-[#0d7a80]]="newMessage.trim() || selectedProperties().length > 0 || selectedFileUrl" [class.text-white]="newMessage.trim() || selectedProperties().length > 0 || selectedFileUrl" [class.bg-gray-100]="!(newMessage.trim() || selectedProperties().length > 0 || selectedFileUrl)" [class.text-gray-400]="!(newMessage.trim() || selectedProperties().length > 0 || selectedFileUrl)">
-          @if (newMessage.trim() || selectedProperties().length > 0 || selectedFileUrl) {
-            <svg class="w-5 h-5 -ml-1 rotate-180" fill="currentColor" viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+          
+          @if (isRecording()) {
+            <!-- Premium Voice Recording UI -->
+            <div class="flex-1 bg-red-50 border border-red-200 rounded-2xl px-4 py-2 flex items-center justify-between transition-all shadow-inner animate-pulse duration-1000">
+              <!-- Pulsing Record Indicator + Timer -->
+              <div class="flex items-center gap-3">
+                <span class="w-2.5 h-2.5 bg-red-500 rounded-full animate-bounce"></span>
+                <span class="text-xs font-black text-red-600 tabular-nums">
+                  {{ formatDuration(recordingDuration()) }}
+                </span>
+                <span class="text-xs font-bold text-red-500 ltr:ml-2 rtl:mr-2">
+                  {{ 'MESSAGES.RECORDING' | translate }}
+                </span>
+              </div>
+
+              <!-- Cancel Button -->
+              <button (click)="cancelRecording()" class="text-red-500 hover:text-red-700 bg-white hover:bg-red-50 rounded-full w-8 h-8 flex items-center justify-center shadow-sm cursor-pointer transition-all active:scale-95">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                </svg>
+              </button>
+            </div>
+          } @else if (isUploadingVoice()) {
+            <!-- Voice message upload loader -->
+            <div class="flex-1 bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 flex items-center justify-center gap-3">
+              <div class="w-4 h-4 border-2 border-[#0a8f96] border-t-transparent rounded-full animate-spin"></div>
+              <span class="text-xs font-bold text-slate-500">{{ 'MESSAGES.UPLOADING_VOICE' | translate }}</span>
+            </div>
           } @else {
-            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 14c1.66 0 2.99-1.34 2.99-3L15 5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"/></svg>
+            <!-- Text Input Container -->
+            <div class="bg-slate-50 border border-slate-200 rounded-2xl px-4 py-1.5 flex items-center transition-all focus-within:bg-white focus-within:border-[#0a8f96] focus-within:ring-2 focus-within:ring-[#0a8f96]/10 shadow-inner">
+              
+              <!-- Attachment clip -->
+              <button (click)="fileInput.click()" class="text-slate-400 hover:text-[#0a8f96] w-9 h-9 rounded-full flex items-center justify-center transition-colors cursor-pointer shrink-0">
+                <svg class="w-5.5 h-5.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="m18.375 12.739-7.693 7.693a4.5 4.5 0 0 1-6.364-6.364l10.94-10.94A3 3 0 1 1 19.5 7.572L8.557 18.514a1.5 1.5 0 1 1-2.12-2.121L15.39 7.438"/>
+                </svg>
+              </button>
+              <input #fileInput type="file" (change)="onFileSelected($event)" class="hidden">
+              
+              <!-- Main Input textarea -->
+              <textarea [(ngModel)]="newMessage" 
+                        (keydown.enter)="$event.preventDefault(); send()" 
+                        class="flex-1 bg-transparent border-0 focus:ring-0 text-slate-800 py-2 px-3 text-sm font-medium placeholder-slate-400 resize-none outline-none custom-scrollbar ltr:text-left rtl:text-right" 
+                        [placeholder]="'MESSAGES.SEND_PLACEHOLDER' | translate" 
+                        rows="1" 
+                        dir="auto"></textarea>
+              
+              <!-- Emoji Button -->
+              <button (click)="showEmojiPicker.set(!showEmojiPicker())" class="text-slate-400 hover:text-[#0a8f96] w-9 h-9 rounded-full flex items-center justify-center transition-colors cursor-pointer shrink-0">
+                <svg class="w-5.5 h-5.5" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 3c-4.963 0-9 4.037-9 9s4.037 9 9 9 9-4.037 9-9-4.037-9-9-9zm0 16c-3.859 0-7-3.141-7-7s3.141-7 7-7 7 3.141 7 7-3.141 7-7 7zM9.5 8.5a1.5 1.5 0 100 3 1.5 1.5 0 000-3zm5 0a1.5 1.5 0 100 3 1.5 1.5 0 000-3zM12 17c2.43 0 4.292-1.391 5.034-2.5a.75.75 0 10-1.268-.8C15.223 14.542 13.91 15.5 12 15.5s-3.223-.958-3.766-1.8a.75.75 0 00-1.268.8c.742 1.109 2.604 2.5 5.034 2.5z"/>
+                </svg>
+              </button>
+              
+              <!-- Property Share Clip -->
+              <button (click)="togglePropertyPreview()" class="text-slate-400 hover:text-[#0a8f96] w-9 h-9 rounded-full flex items-center justify-center transition-colors cursor-pointer shrink-0">
+                <svg class="w-5.5 h-5.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 0 0 8.716-6.747M12 21a9.004 9.004 0 0 1-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 0 1 7.843 4.582M12 3a8.997 8.997 0 0 0-7.843 4.582m15.686 0A11.953 11.953 0 0 1 12 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0 1 21 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0 1 12 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 0 1 3 12c0-.778.099-1.533.284-2.253"/>
+                </svg>
+              </button>
+            </div>
+          }
+        </div>
+
+        <!-- Voice mic / Outgoing Send circular button -->
+        <button (click)="onMicOrSendClick()" 
+                class="w-12 h-12 rounded-full flex items-center justify-center transition-all shadow-md shrink-0 cursor-pointer" 
+                [class.bg-[#004d4f]]="newMessage.trim() || selectedProperties().length > 0 || selectedFileUrl || isRecording()" 
+                [class.text-white]="newMessage.trim() || selectedProperties().length > 0 || selectedFileUrl || isRecording()" 
+                [class.bg-slate-100]="!(newMessage.trim() || selectedProperties().length > 0 || selectedFileUrl || isRecording())" 
+                [class.text-slate-400]="!(newMessage.trim() || selectedProperties().length > 0 || selectedFileUrl || isRecording())">
+          @if (newMessage.trim() || selectedProperties().length > 0 || selectedFileUrl) {
+            <svg class="w-5.5 h-5.5 -ml-0.5 rotate-180" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+            </svg>
+          } @else if (isRecording()) {
+            <!-- Stop Icon -->
+            <svg class="w-5.5 h-5.5 text-red-500 fill-current" viewBox="0 0 24 24">
+              <rect x="5" y="5" width="14" height="14" rx="2" />
+            </svg>
+          } @else {
+            <!-- Mic Icon -->
+            <svg class="w-5.5 h-5.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 18.75a6 6 0 0 0 6-6v-1.5m-6 7.5a6 6 0 0 1-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 0 1-3-3V4.5a3 3 0 1 1 6 0v8.25a3 3 0 0 1-3 3Z"/>
+            </svg>
           }
         </button>
       </footer>
@@ -222,15 +442,17 @@
         <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 md:p-10 animate-in fade-in duration-200">
           <div class="bg-white rounded-3xl w-full max-w-3xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
             <!-- Header -->
-            <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-gray-50/50">
-              <h3 class="font-bold text-gray-900 text-lg ltr:text-left rtl:text-right">{{ 'MESSAGES.CROP_TITLE' | translate }}</h3>
-              <button (click)="cancelCrop()" class="w-8 h-8 rounded-full bg-white border border-gray-200 flex items-center justify-center text-gray-500 hover:text-red-500 hover:bg-red-50 transition-colors shadow-sm">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50/50">
+              <h3 class="font-extrabold text-slate-900 text-lg ltr:text-left rtl:text-right">{{ 'MESSAGES.CROP_TITLE' | translate }}</h3>
+              <button (click)="cancelCrop()" class="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-500 hover:text-red-500 hover:bg-red-50 transition-colors shadow-sm cursor-pointer">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
               </button>
             </div>
             
             <!-- Cropper Area -->
-            <div class="flex-1 bg-gray-100 overflow-hidden relative flex items-center justify-center min-h-[300px]">
+            <div class="flex-1 bg-slate-100 overflow-hidden relative flex items-center justify-center min-h-[300px]">
               <image-cropper
                 [imageFile]="imageFile"
                 [maintainAspectRatio]="false"
@@ -242,10 +464,12 @@
             </div>
 
             <!-- Footer / Actions -->
-            <div class="p-6 bg-white border-t border-gray-100 flex items-center justify-end gap-3">
-              <button (click)="cancelCrop()" class="px-6 py-2.5 rounded-xl font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors">{{ 'MESSAGES.CROP_CANCEL' | translate }}</button>
-              <button (click)="confirmCrop()" class="px-8 py-2.5 rounded-xl font-bold text-white bg-[#0d7a80] hover:bg-[#0a5c60] transition-colors shadow-lg shadow-[#0d7a80]/20 flex items-center gap-2">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+            <div class="p-6 bg-white border-t border-slate-100 flex items-center justify-end gap-3">
+              <button (click)="cancelCrop()" class="px-6 py-2.5 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors cursor-pointer">{{ 'MESSAGES.CROP_CANCEL' | translate }}</button>
+              <button (click)="confirmCrop()" class="px-8 py-2.5 rounded-xl font-bold text-white bg-[#0a8f96] hover:bg-[#076b70] transition-colors shadow-lg shadow-[#0a8f96]/20 flex items-center gap-2 cursor-pointer">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                </svg>
                 <span>{{ 'MESSAGES.CROP_CONFIRM' | translate }}</span>
               </button>
             </div>
@@ -256,69 +480,290 @@
   </main>
 
   <!-- RIGHT: Sidebar (Conversations List) -->
-  <aside class="hidden md:flex flex-col bg-white border-s border-gray-100 overflow-hidden order-1 md:order-2 shadow-sm relative z-30">
-    <header class="h-[72px] flex items-center justify-between px-6 bg-white shrink-0 relative border-b border-gray-100">
-      <div class="flex items-center gap-3">
-        <h2 class="text-xl font-black text-gray-900 tracking-tight ltr:text-left rtl:text-right">{{ 'MESSAGES.MESSAGES_COUNT' | translate }}</h2>
-        <span class="bg-[#0d7a80]/10 text-[#0d7a80] text-[10px] font-black px-2.5 py-1 rounded-full tabular-nums">{{ filteredConversations().length }}</span>
+  <aside class="hidden md:flex flex-col bg-white w-[380px] shrink-0 border-s border-slate-100 overflow-hidden relative z-30">
+    <header class="p-6 bg-white shrink-0 relative border-b border-slate-100 flex flex-col gap-4">
+      <div class="flex items-start justify-between">
+        <div class="ltr:text-left rtl:text-right">
+          <div class="flex items-center gap-3">
+            <h1 class="text-2xl font-black text-slate-900 tracking-tight">{{ 'MESSAGES.MESSAGES_COUNT' | translate }}</h1>
+            @if (unreadMessagesCount() > 0) {
+              <span class="bg-[#0a5c60]/10 text-[#0a5c60] text-xs font-black px-2.5 py-1 rounded-full tabular-nums">{{ unreadMessagesCount() }}</span>
+            }
+          </div>
+          <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-0.5 block">Private Advisory</span>
+        </div>
       </div>
-      <div class="flex items-center gap-2 text-gray-400">
-        <button class="hover:bg-gray-50 hover:text-[#0d7a80] w-10 h-10 rounded-full flex items-center justify-center transition-colors"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg></button>
+      
+      <!-- Filter Tabs pills & Sound settings -->
+      <div class="flex gap-2 items-center">
+        <!-- Sound Settings Button Toggle -->
+        <button (click)="toggleSoundSettings()" 
+                [class.bg-slate-100]="showSoundSettings()"
+                [class.text-[#0a5c60]]="showSoundSettings()"
+                class="p-2 rounded-full border border-slate-200 bg-white hover:bg-slate-50 transition-all text-slate-500 hover:text-slate-700 cursor-pointer" 
+                title="إعدادات صوت التنبيهات">
+          <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+        </button>
+
+        <button (click)="filterType.set('all')" 
+                [class.bg-[#0a5c60]]="filterType() === 'all'" 
+                [class.text-white]="filterType() === 'all'" 
+                [class.bg-white]="filterType() !== 'all'" 
+                [class.text-slate-600]="filterType() !== 'all'" 
+                [class.border-slate-200]="filterType() !== 'all'" 
+                class="px-4 py-1.5 text-[12px] font-bold rounded-full transition-all duration-200 cursor-pointer shadow-sm border border-transparent">
+          {{ 'MESSAGES.FILTER_ALL' | translate }}
+        </button>
+        <button (click)="filterType.set('unread')" 
+                [class.bg-[#0a5c60]]="filterType() === 'unread'" 
+                [class.text-white]="filterType() === 'unread'" 
+                [class.bg-white]="filterType() !== 'unread'" 
+                [class.text-slate-600]="filterType() !== 'unread'" 
+                [class.border-slate-200]="filterType() !== 'unread'" 
+                class="px-4 py-1.5 text-[12px] font-bold rounded-full transition-all duration-200 cursor-pointer shadow-sm border border-transparent">
+          {{ 'MESSAGES.FILTER_UNREAD' | translate }}
+        </button>
       </div>
     </header>
 
-    <div class="px-5 py-4 bg-white border-b border-gray-50">
-      <div class="relative flex items-center bg-gray-50 border border-gray-100 rounded-xl px-4 py-2 mb-4 transition-all focus-within:bg-white focus-within:border-[#0d7a80] focus-within:ring-2 focus-within:ring-[#0d7a80]/10 shadow-inner">
-        <svg class="w-4 h-4 text-gray-400 ltr:mr-3 rtl:ml-3 transition-colors" [class.text-[#0d7a80]]="searchQuery" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-        <input type="text" [(ngModel)]="searchQuery" class="bg-transparent border-0 focus:ring-0 text-[13px] text-gray-800 w-full placeholder-gray-400 py-1 outline-none font-medium ltr:text-left rtl:text-right" [placeholder]="'MESSAGES.SEARCH_PLACEHOLDER' | translate">
-        @if (searchQuery) {
-          <button (click)="searchQuery = ''" class="text-gray-400 hover:text-gray-900"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
+    <!-- Slide-down Sound Settings Panel -->
+    @if (showSoundSettings()) {
+      <div class="px-5 py-4 bg-slate-50 border-b border-slate-100 animate-in slide-in-from-top duration-300">
+        <div class="flex items-center justify-between mb-3.5">
+          <span class="text-xs font-black text-slate-800">تنبيهات الصوت للرسائل</span>
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" 
+                   [checked]="soundEnabled()" 
+                   (change)="toggleSoundEnabled()" 
+                   class="sr-only peer">
+            <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#0a8f96]"></div>
+          </label>
+        </div>
+
+        @if (soundEnabled()) {
+          <div class="space-y-2">
+            <span class="text-[10px] font-black text-slate-400 block mb-1">اختر نغمة التنبيه</span>
+            <div class="grid grid-cols-3 gap-2">
+              <button (click)="changeSoundType('premium')"
+                      [class.bg-[#0a8f96]]="soundType() === 'premium'"
+                      [class.text-white]="soundType() === 'premium'"
+                      [class.bg-white]="soundType() !== 'premium'"
+                      [class.text-slate-700]="soundType() !== 'premium'"
+                      [class.border-slate-200]="soundType() !== 'premium'"
+                      class="px-2 py-2 rounded-xl text-[11px] font-bold border transition-all cursor-pointer flex flex-col items-center gap-1">
+                <span>✨ بلوري</span>
+              </button>
+              <button (click)="changeSoundType('pop')"
+                      [class.bg-[#0a8f96]]="soundType() === 'pop'"
+                      [class.text-white]="soundType() === 'pop'"
+                      [class.bg-white]="soundType() !== 'pop'"
+                      [class.text-slate-700]="soundType() !== 'pop'"
+                      [class.border-slate-200]="soundType() !== 'pop'"
+                      class="px-2 py-2 rounded-xl text-[11px] font-bold border transition-all cursor-pointer flex flex-col items-center gap-1">
+                <span>🎈 فقاعة</span>
+              </button>
+              <button (click)="changeSoundType('classic')"
+                      [class.bg-[#0a8f96]]="soundType() === 'classic'"
+                      [class.text-white]="soundType() === 'classic'"
+                      [class.bg-white]="soundType() !== 'classic'"
+                      [class.text-slate-700]="soundType() !== 'classic'"
+                      [class.border-slate-200]="soundType() !== 'classic'"
+                      class="px-2 py-2 rounded-xl text-[11px] font-bold border transition-all cursor-pointer flex flex-col items-center gap-1">
+                <span>🤖 كلاسيكي</span>
+              </button>
+            </div>
+          </div>
         }
       </div>
-      
-      <div class="flex gap-2 overflow-x-auto no-scrollbar pb-1">
-        <button (click)="filterType.set('all')" [class.bg-[#0d7a80]]="filterType() === 'all'" [class.text-white]="filterType() === 'all'" [class.bg-white]="filterType() !== 'all'" [class.text-gray-600]="filterType() !== 'all'" [class.border]="filterType() !== 'all'" [class.border-gray-200]="filterType() !== 'all'" class="px-4 py-1.5 text-[12px] font-bold rounded-full transition-all shadow-sm">{{ 'MESSAGES.FILTER_ALL' | translate }}</button>
-        <!-- [BACKEND_MISSING]: unreadCount is not returned by the backend yet.
-        <button (click)="filterType.set('unread')" [class.bg-[#0d7a80]]="filterType() === 'unread'" [class.text-white]="filterType() === 'unread'" [class.bg-white]="filterType() !== 'unread'" [class.text-gray-600]="filterType() !== 'unread'" [class.border]="filterType() !== 'unread'" [class.border-gray-200]="filterType() !== 'unread'" class="px-4 py-1.5 text-[12px] font-bold rounded-full transition-all shadow-sm">غير مقروءة</button> -->
+    }
+
+    <!-- Search in Chats -->
+    <div class="px-5 py-3 bg-white border-b border-slate-50">
+      <div class="relative flex items-center bg-slate-50 border border-slate-100 rounded-2xl px-4 py-2 transition-all focus-within:bg-white focus-within:border-[#0a8f96] focus-within:ring-2 focus-within:ring-[#0a8f96]/10 shadow-inner">
+        <svg class="w-4 h-4 text-slate-400 ltr:mr-2.5 rtl:ml-2.5 transition-colors" [class.text-[#0a8f96]]="searchQuery" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+        </svg>
+        <input type="text" 
+               [(ngModel)]="searchQuery" 
+               class="bg-transparent border-0 focus:ring-0 text-[13px] text-slate-800 w-full placeholder-slate-400 py-1 outline-none font-medium ltr:text-left rtl:text-right" 
+               [placeholder]="'MESSAGES.SEARCH_PLACEHOLDER' | translate">
+        @if (searchQuery) {
+          <button (click)="searchQuery = ''" class="text-slate-400 hover:text-slate-900 cursor-pointer">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        }
       </div>
     </div>
 
-    <div class="flex-1 overflow-y-auto custom-scrollbar bg-[#fafafa]">
+    <!-- Conversations List -->
+    <div class="flex-1 overflow-y-auto custom-scrollbar bg-white">
       @for (conv of filteredConversations(); track conv.id) {
-        <a [routerLink]="['/conversations', conv.id]" class="flex items-center gap-4 px-5 py-4 hover:bg-white transition-all border-b border-gray-100/50 cursor-pointer" [class.bg-white]="conv.id === conversationId" [class.border-l-4]="conv.id === conversationId" [class.border-l-[#0d7a80]]="conv.id === conversationId">
+        <a [routerLink]="['/conversations', conv.id]" 
+           class="flex items-center gap-4 px-5 py-4.5 hover:bg-slate-50/50 transition-all border-b border-slate-50 cursor-pointer relative" 
+           [class.bg-slate-50]="conv.id === conversationId" 
+           [class.border-r-4]="conv.id === conversationId" 
+           [class.border-r-[#0a5c60]]="conv.id === conversationId">
+          
+          <!-- Avatar with Online indicator -->
           <div class="relative shrink-0">
-            <div class="w-12 h-12 rounded-full bg-white border border-gray-100 flex items-center justify-center shadow-sm overflow-hidden">
-              <svg class="w-7 h-7 text-gray-300" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-              </svg>
+            <div class="w-12 h-12 rounded-full bg-gradient-to-br from-slate-100 to-slate-200/50 border border-slate-200/30 flex items-center justify-center shadow-sm overflow-hidden text-[#0a5c60] font-black text-sm">
+              {{ getOtherInitials(conv) }}
             </div>
-            <!-- [BACKEND_MISSING]: unreadCount is not returned by ConversationDto yet.
-            @if ((conv.unreadCount ?? 0) > 0) {
-              <div class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center text-[9px] font-bold text-white border-2 border-white">
-                {{ conv.unreadCount }}
-              </div>
-            } -->
+            <!-- Green Online status -->
+            <div class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-green-500 border-2 border-white rounded-full"></div>
           </div>
           
           <div class="flex-1 min-w-0">
             <div class="flex justify-between items-center mb-1">
-              <h3 class="text-[14px] font-bold text-gray-900 truncate pr-2">{{ (conv.buyerUserId === auth.userId() ? conv.agentDisplayName : conv.buyerDisplayName) }}</h3>
-              <span class="text-[10px] text-gray-400 font-bold shrink-0 uppercase tracking-widest">{{ conv.lastMessageAt | relativeTime }}</span>
+              <div class="flex items-center gap-1.5 min-w-0">
+                <h3 class="text-sm font-extrabold text-slate-950 truncate ltr:text-left rtl:text-right">
+                  {{ getOtherName(conv) }}
+                </h3>
+                @if (mutedConversations().includes(conv.id)) {
+                  <svg class="w-3.5 h-3.5 text-slate-400 shrink-0 animate-in fade-in duration-200" fill="none" stroke="currentColor" stroke-width="2.3" viewBox="0 0 24 24" title="كتم الإشعارات">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                  </svg>
+                }
+              </div>
+              <span class="text-[9px] text-slate-400 font-extrabold shrink-0 uppercase tracking-wider">
+                {{ conv.lastMessageAt | relativeTime }}
+              </span>
             </div>
-            <div class="flex items-center gap-1.5">
-              @if (isPropertyMessage(conv.lastMessageContent || '')) {
-                <svg class="w-3.5 h-3.5 text-[#0d7a80] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
-                <p class="text-[12px] text-[#0d7a80] font-bold truncate">{{ 'MESSAGES.PROP_SENT' | translate }}</p>
-              } @else {
-                <p class="text-[12px] text-gray-500 font-medium truncate" [class.text-gray-900]="(conv.unreadCount ?? 0) > 0" [class.font-black]="(conv.unreadCount ?? 0) > 0">
-                  {{ conv.lastMessageContent }}
-                </p>
+            <div class="flex items-center justify-between gap-2 mt-1">
+              <div class="flex items-center gap-1.5 min-w-0">
+                @if (isPropertyMessage(conv.lastMessageContent || '')) {
+                  <svg class="w-3.5 h-3.5 text-[#0d7a80] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                  </svg>
+                  <p class="text-xs text-[#0d7a80] font-extrabold truncate">{{ 'MESSAGES.PROP_SENT' | translate }}</p>
+                } @else {
+                  <p class="text-xs text-slate-500 font-bold truncate ltr:text-left rtl:text-right" 
+                     [class.text-slate-900]="(conv.unreadCount ?? 0) > 0" 
+                     [class.font-black]="(conv.unreadCount ?? 0) > 0">
+                    {{ conv.lastMessageContent || ('MESSAGES.NO_MESSAGES' | translate) }}
+                  </p>
+                }
+              </div>
+
+              <!-- Premium Unread Count Badge Bubble -->
+              @if ((conv.unreadCount ?? 0) > 0) {
+                <span class="bg-[#0a8f96] text-white text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center shrink-0 shadow-sm shadow-[#0a8f96]/20 animate-in zoom-in duration-200">
+                  {{ conv.unreadCount }}
+                </span>
               }
             </div>
           </div>
         </a>
       }
     </div>
+
+    <!-- Bottom sidebar button "+ محادثة جديدة" -->
+    <div class="p-4 border-t border-slate-100 bg-white shrink-0">
+      <button class="w-full py-3.5 bg-slate-100 hover:bg-slate-200/80 text-slate-800 text-xs font-black uppercase tracking-wider rounded-2xl transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer">
+        <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+        </svg>
+        <span>محادثة جديدة</span>
+      </button>
+    </div>
   </aside>
+
+  <!-- PREMIUM CONTACT INFO MODAL -->
+  @if (showContactModal()) {
+    <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center z-50 animate-in fade-in duration-200">
+      <div class="bg-white/95 border border-white/60 shadow-[0_25px_60px_rgba(0,0,0,0.15)] rounded-[32px] p-8 w-full max-w-[400px] mx-4 relative overflow-hidden animate-in scale-in duration-300">
+        <!-- Close Button -->
+        <button (click)="showContactModal.set(false)" class="absolute top-5 left-5 text-slate-400 hover:text-slate-900 transition-colors cursor-pointer p-1.5 rounded-xl hover:bg-slate-100">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+
+        <!-- Accent Gradient Light -->
+        <div class="absolute -right-12 -top-12 w-32 h-32 bg-[#0a8f96]/10 rounded-full blur-2xl"></div>
+
+        <!-- Contact Content (RTL) -->
+        <div dir="rtl" class="flex flex-col items-center text-center pt-4">
+          <!-- Big Premium Avatar with initials -->
+          <div class="w-24 h-24 rounded-full bg-gradient-to-br from-teal-500 to-[#0a8f96] p-1 shadow-lg shadow-[#0a8f96]/10 mb-5">
+            <div class="w-full h-full rounded-full bg-white flex items-center justify-center overflow-hidden">
+              <span class="text-3xl font-black text-[#0a8f96]">
+                {{ (recipientName() || 'B')[0].toUpperCase() }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Name & Role Badge -->
+          <h3 class="text-xl font-extrabold text-slate-900 mb-2">{{ recipientName() | translate }}</h3>
+          <span class="px-4 py-1.5 rounded-full text-xs font-black bg-teal-50 border border-teal-100 text-[#0a8f96] mb-6 uppercase tracking-wider">
+            {{ (activeConversation()?.agentUserId === auth.userId() ? 'مشتري عقارات' : 'وكيل عقاري رئيسي') }}
+          </span>
+
+          <!-- Separator Line -->
+          <div class="w-full h-px bg-slate-100 mb-6"></div>
+
+          <!-- Contact details fields -->
+          <div class="w-full space-y-4 text-right">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-[#0a8f96]">
+                <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                </svg>
+              </div>
+              <div>
+                <span class="text-[9px] font-black text-slate-400 block uppercase tracking-wider">البريد الإلكتروني</span>
+                <span class="text-xs font-bold text-slate-700">
+                  {{ (activeConversation()?.agentUserId === auth.userId() ? 'buyer@baytology.com' : 'agent@baytology.com') }}
+                </span>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-[#0a8f96]">
+                <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.94.725l.548 2.2a1 1 0 01-.321.988l-1.305.98a10.582 10.582 0 004.872 4.872l.98-1.305a1 1 0 01.988-.321l2.2.548a1 1 0 01.725.94V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                </svg>
+              </div>
+              <div>
+                <span class="text-[9px] font-black text-slate-400 block uppercase tracking-wider">رقم الهاتف</span>
+                <span class="text-xs font-bold text-slate-700">+20 102 345 6789</span>
+              </div>
+            </div>
+
+            @if (activeConversation()?.propertyTitle) {
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-[#0a8f96]">
+                  <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                  </svg>
+                </div>
+                <div>
+                  <span class="text-[9px] font-black text-slate-400 block uppercase tracking-wider">العقار المهتم به</span>
+                  <span class="text-xs font-bold text-slate-700 leading-snug">
+                    {{ activeConversation()?.propertyTitle }}
+                  </span>
+                </div>
+              </div>
+            }
+          </div>
+
+          <!-- Quick Action Buttons -->
+          <div class="w-full grid grid-cols-2 gap-3 mt-8">
+            <a href="tel:+201023456789" class="py-3 rounded-2xl bg-[#0a8f96] hover:bg-[#076b70] text-white text-xs font-black shadow-md shadow-[#0a8f96]/15 hover:shadow-lg transition-all duration-200 text-center cursor-pointer">
+              اتصال هاتفي 📞
+            </a>
+            <button (click)="showContactModal.set(false)" class="py-3 rounded-2xl bg-slate-50 hover:bg-slate-100 border border-slate-100 text-slate-700 text-xs font-black transition-all duration-200 cursor-pointer">
+              إغلاق
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
 
 </div>
