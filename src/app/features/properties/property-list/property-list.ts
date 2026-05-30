@@ -799,8 +799,11 @@ export class PropertyListComponent implements OnInit, AfterViewInit {
       zoomControl: false
     });
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; OpenStreetMap contributors'
+    // CartoDB Voyager: premium clean modern tiles (no API key required)
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+      subdomains: 'abcd',
+      maxZoom: 20
     }).addTo(this.map);
 
     L.control.zoom({ position: 'topright' }).addTo(this.map);
@@ -835,17 +838,36 @@ export class PropertyListComponent implements OnInit, AfterViewInit {
 
       bounds.push([lat, lng]);
 
+      const price = p.price.toLocaleString();
+      const currency = this.translate.instant('PROPERTY.CURRENCY');
       const marker = L.divIcon({
-        className: 'custom-div-icon',
-        html: `<div class="bg-white px-2 py-1 rounded-full shadow-lg border border-[#0a8f96]/20 text-[9px] font-black whitespace-nowrap">
-                ${p.price.toLocaleString()} ${this.translate.instant('PROPERTY.CURRENCY')}
-               </div>`,
-        iconSize: [60, 20],
-        iconAnchor: [30, 10]
+        className: '',
+        html: `<div style="
+          background: white;
+          color: #0a8f96;
+          font-size: 10px;
+          font-weight: 900;
+          padding: 4px 10px;
+          border-radius: 999px;
+          box-shadow: 0 4px 16px rgba(10,143,150,0.18), 0 1px 4px rgba(0,0,0,0.10);
+          border: 1.5px solid rgba(10,143,150,0.18);
+          white-space: nowrap;
+          letter-spacing: -0.3px;
+          font-family: inherit;
+          cursor: pointer;
+          transition: transform 0.15s;
+        ">${price} ${currency}</div>`,
+        iconSize: [80, 26],
+        iconAnchor: [40, 13]
       });
 
       L.marker([lat, lng], { icon: marker })
-        .bindPopup(`<b>${p.title}</b><br>${p.price.toLocaleString()} ${this.translate.instant('PROPERTY.CURRENCY')}`)
+        .bindPopup(`
+          <div style="font-family:inherit; padding:4px 2px; min-width:140px">
+            <div style="font-weight:900; font-size:13px; color:#0f172a; margin-bottom:4px">${p.title}</div>
+            <div style="font-weight:800; font-size:12px; color:#0a8f96">${price} ${currency}</div>
+          </div>`
+        )
         .addTo(this.markersLayer);
     });
 

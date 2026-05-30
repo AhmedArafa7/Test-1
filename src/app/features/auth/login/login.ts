@@ -33,30 +33,23 @@ declare global {
       <!-- Tiny Blurred Low-Res Background Placeholder -->
       <div [class]="bgLoaded() ? 'opacity-0' : 'opacity-100'"
            class="absolute inset-0 transition-opacity duration-1000 bg-cover bg-center filter blur-xl scale-110"
-           style="background-image: url('https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=50&q=10');"></div>
+           style="background-image: url('/WhatsApp Image 2026-05-30 at 12.10.21 AM.jpeg?w=20&q=10');"></div>
       
       <!-- Full-Res Actual Background Image -->
-      <img src="https://images.unsplash.com/photo-1613490493576-7fde63acd811?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" 
+      <img src="/WhatsApp Image 2026-05-30 at 12.10.21 AM.jpeg" 
            (load)="bgLoaded.set(true)"
            class="absolute inset-0 w-full h-full object-cover transition-opacity duration-1000"
            [class]="bgLoaded() ? 'opacity-100' : 'opacity-0'">
-      <div class="absolute inset-0 bg-slate-950/40 backdrop-blur-[2px]"></div>
+      <div class="absolute inset-0 bg-slate-950/35 backdrop-blur-[1px]"></div>
 
       <main dir="rtl" class="relative z-10 w-full px-4 animate-scale-in" style="max-width: 440px;">
-        <div class="bg-white/85 backdrop-blur-xl border border-white/50 shadow-[0_20px_50px_rgba(0,0,0,0.12)] rounded-4xl px-8 py-10 my-3 sm:px-10 sm:py-8 relative overflow-hidden transition-all duration-300">
+        <div class="bg-white/85 backdrop-blur-xl border border-white/50 shadow-[0_25px_60px_rgba(0,0,0,0.12)] rounded-4xl px-8 my-3 sm:px-5 sm:py-8 relative overflow-hidden transition-all duration-300">
           
           <!-- Card Header Logo & Title -->
-          <div class="flex flex-col items-center gap-4 mb-8 select-none">
-            <div class="flex items-center gap-3">
-              <div class="w-10 h-10 bg-gradient-to-br from-[#0a8f96] to-[#076b70] rounded-xl flex items-center justify-center shadow-lg shadow-[#0a8f96]/20 transition-all duration-300 hover:scale-110">
-                <span class="text-white text-lg font-black tracking-tighter italic">B</span>
-              </div>
-              <span class="text-2xl font-black tracking-widest text-slate-900 uppercase">
-                {{ 'COMMON.APP_NAME' | translate }}
-              </span>
-            </div>
-            <div class="text-center mt-1">
-              <h1 class="text-[13px] font-black text-slate-400 uppercase tracking-widest">{{ 'AUTH.LOGIN.TITLE' | translate }}</h1>
+          <div class="flex flex-col items-center select-none h-60 overflow-hidden">
+            <img src="./Baytology_image.png" alt="Baytology" class="h-80 w-100 object-contain overflow-hidden transition-transform duration-500 hover:scale-105">
+            <div class="text-center">
+              <h1 class="text-2xl font-black text-slate-900 tracking-tight">{{ 'AUTH.LOGIN.TITLE' | translate }}</h1>
             </div>
           </div>
 
@@ -115,7 +108,7 @@ declare global {
                 <div class="w-5.5 h-5.5 border-2 border-white/40 border-t-white rounded-full animate-spin"></div>
               } @else {
                 <span>{{ 'AUTH.LOGIN.LOGIN_BTN' | translate }}</span>
-                <svg class="w-5 h-5 transition-transform ltr:group-hover:translate-x-1 rtl:group-hover:-translate-x-1 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+                <svg class="w-5 h-5 transition-transform ltr:group-hover:translate-x-1 rtl:group-hover:-translate-x-1 ltr:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
               }
             </button>
           </form>

@@ -50,15 +50,14 @@ import { firstValueFrom } from 'rxjs';
         <form (ngSubmit)="submit()" class="grid grid-cols-1 lg:grid-cols-12 gap-10">
           
           <!-- Main Content (Right) -->
-          <div class="lg:col-span-8 space-y-8">
+          <div class=" space-y-8 ">
             
-            @if (currentStep() === 1) {
-              <!-- Basic Details -->
-              <div class="bg-white rounded-[32px] p-10 shadow-sm border border-gray-100 relative">
+            <!-- Basic Details -->
+            <div [class.hidden]="currentStep() !== 1" class="bg-white rounded-[32px] p-10 shadow-sm border border-gray-100 relative mx-auto">
                 
                 <!-- Draft Restore Alert -->
                 @if (hasDraftAvailable() && !isEdit()) {
-                  <div class="mb-8 p-5 bg-[#0a8f96]/5 border border-[#0a8f96]/10 rounded-2xl flex items-center justify-between gap-4 animate-pulse select-none" dir="rtl">
+                  <div class="mb-8 p-5 bg-[#0a8f96]/5 border border-[#0a8f96]/10 rounded-2xl flex items-center justify-between gap-4 animate-pulse select-none mx-auto" dir="rtl">
                     <div class="flex items-center gap-3">
                       <span class="text-xl">💾</span>
                       <div class="text-right">
@@ -95,7 +94,7 @@ import { firstValueFrom } from 'rxjs';
                     <label class="block text-xs font-black text-gray-800 mb-3 tracking-wide">{{ 'PROPERTY_FORM.LABEL_DESC' | translate }} <span class="text-red-500">*</span></label>
                     <div class="border border-gray-100 rounded-3xl overflow-hidden shadow-sm bg-white">
                       <!-- Toolbar -->
-                      <div class="bg-slate-50/50 border-b border-gray-100 px-4 py-2 flex items-center gap-2 flex-wrap">
+                     <!-- <div class="bg-slate-50/50 border-b border-gray-100 px-4 py-2 flex items-center gap-2 flex-wrap">
                         <button type="button" (click)="execEditorCommand('bold')" class="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm text-slate-700 hover:bg-slate-200 active:scale-95 transition-all cursor-pointer" title="عريض (Bold)">
                           B
                         </button>
@@ -113,7 +112,7 @@ import { firstValueFrom } from 'rxjs';
                         <button type="button" (click)="execEditorCommand('removeFormat')" class="w-8 h-8 rounded-lg flex items-center justify-center text-red-500 hover:bg-red-50 active:scale-95 transition-all cursor-pointer" title="مسح التنسيق">
                           x
                         </button>
-                      </div>
+                      </div> -->
                       <!-- Editor Editable Area -->
                       <div #editorContent 
                            contenteditable="true"
@@ -177,13 +176,13 @@ import { firstValueFrom } from 'rxjs';
                   <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
                     <div class="space-y-3">
                       <label class="block text-xs font-black text-gray-800 mb-1 px-1">الغرف <span class="text-red-500">*</span></label>
-                      <input type="number" [(ngModel)]="form.bedrooms" name="bedrooms" id="bedrooms" min="0"
+                      <input type="number" [(ngModel)]="form.bedrooms" name="bedrooms" id="bedrooms" min="0" placeholder="مثال: 3"
                              class="w-full bg-gray-50 border border-transparent focus:bg-white focus:border-[#0a8f96] focus:ring-4 focus:ring-[#0a8f96]/5 outline-none rounded-2xl px-6 py-4 text-sm font-bold transition-all shadow-inner text-center">
                     </div>
 
                     <div class="space-y-3">
                       <label class="block text-xs font-black text-gray-800 mb-1 px-1">الحمامات <span class="text-red-500">*</span></label>
-                      <input type="number" [(ngModel)]="form.bathrooms" name="bathrooms" id="bathrooms" min="0"
+                      <input type="number" [(ngModel)]="form.bathrooms" name="bathrooms" id="bathrooms" min="0" placeholder="مثال: 2"
                              class="w-full bg-gray-50 border border-transparent focus:bg-white focus:border-[#0a8f96] focus:ring-4 focus:ring-[#0a8f96]/5 outline-none rounded-2xl px-6 py-4 text-sm font-bold transition-all shadow-inner text-center">
                     </div>
 
@@ -201,11 +200,9 @@ import { firstValueFrom } from 'rxjs';
                   </div>
                 </div>
               </div>
-            }
 
-            @if (currentStep() === 2) {
               <!-- Media Section -->
-              <div class="bg-white rounded-[32px] p-8 shadow-sm border border-gray-100">
+              <div [class.hidden]="currentStep() !== 2" class="bg-white rounded-[32px] p-8 shadow-sm border border-gray-100">
                 <div class="flex items-center ltr:justify-start rtl:justify-end gap-3 mb-8 border-b border-gray-50 pb-4 ltr:flex-row rtl:flex-row-reverse">
                   <h3 class="text-lg font-black text-gray-900">{{ 'PROPERTY_FORM.SECTION_MEDIA' | translate }}</h3>
                   <svg class="w-5 h-5 text-[#0a8f96]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
@@ -279,12 +276,10 @@ import { firstValueFrom } from 'rxjs';
                   </div>
                 </div>
               </div>
-            }
 
 
-            @if (currentStep() === 3) {
               <!-- Amenities & Details -->
-              <div class="bg-white rounded-[32px] p-10 shadow-sm border border-gray-100">
+              <div [class.hidden]="currentStep() !== 3" class="bg-white rounded-[32px] p-10 shadow-sm border border-gray-100">
                 <div class="flex items-center ltr:justify-start rtl:justify-end gap-3 mb-10 border-b border-gray-50 pb-6 ltr:flex-row rtl:flex-row-reverse">
                   <h3 class="text-xl font-black text-gray-900">{{ 'PROPERTY_FORM.SECTION_AMENITIES' | translate }}</h3>
                   <div class="w-10 h-10 bg-[#0a8f96]/10 text-[#0a8f96] rounded-xl flex items-center justify-center">
@@ -348,11 +343,9 @@ import { firstValueFrom } from 'rxjs';
                   </div>
                 </div>
               </div>
-            }
-            
-            @if (currentStep() === 4) {
+
               <!-- Location -->
-              <div class="bg-white rounded-[32px] p-10 shadow-sm border border-gray-100">
+              <div [class.hidden]="currentStep() !== 4" class="bg-white rounded-[32px] p-10 shadow-sm border border-gray-100">
                 <div class="flex items-center ltr:justify-start rtl:justify-end gap-3 mb-10 border-b border-gray-50 pb-6 ltr:flex-row rtl:flex-row-reverse">
                   <h3 class="text-xl font-black text-gray-900">{{ 'PROPERTY_FORM.SECTION_LOCATION' | translate }}</h3>
                   <div class="w-10 h-10 bg-[#0a8f96]/10 text-[#0a8f96] rounded-xl flex items-center justify-center">
@@ -461,8 +454,7 @@ import { firstValueFrom } from 'rxjs';
                   <p class="text-[10px] text-gray-400 font-bold mt-3 ltr:text-left rtl:text-right">{{ 'PROPERTY_FORM.COORDINATES_HELP' | translate }}</p>
                 </div>
               </div>
-            }
-            
+
             <!-- Navigation Buttons -->
             <div class="flex justify-between mt-8">
               <button type="button" (click)="currentStep.set(currentStep() - 1)" [disabled]="currentStep() === 1" class="px-8 py-4 rounded-2xl bg-white border border-gray-200 text-gray-600 font-bold disabled:opacity-50">السابق</button>
@@ -497,7 +489,7 @@ import { firstValueFrom } from 'rxjs';
       </div>
     </div>
     
-    <!-- Rich Text Editor CSS styling -->
+    <!-- Rich Text Editor & Form Fields CSS styling -->
     <style>
       [contenteditable]:empty:before {
         content: attr(placeholder);
@@ -515,6 +507,15 @@ import { firstValueFrom } from 'rxjs';
         padding-right: 1.5rem !important;
         margin-top: 0.5rem !important;
         margin-bottom: 0.5rem !important;
+      }
+      /* Disable number spinner arrows for webkit and firefox */
+      input[type="number"]::-webkit-outer-spin-button,
+      input[type="number"]::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+      input[type="number"] {
+        -moz-appearance: textfield;
       }
     </style>
   `,
@@ -581,7 +582,11 @@ export class PropertyFormComponent implements OnInit {
 
 
   form: CreatePropertyRequest = {
-    title: '', description: '', propertyType: PropertyType.Apartment, listingType: ListingType.Sale, price: 0, area: 0, bedrooms: 0, bathrooms: 0,
+    title: '', description: '', propertyType: PropertyType.Apartment, listingType: ListingType.Sale,
+    price: undefined as unknown as number,
+    area: undefined as unknown as number,
+    bedrooms: undefined as unknown as number,
+    bathrooms: undefined as unknown as number,
     hasParking: false, hasPool: false, hasGym: false, hasElevator: false, hasSecurity: false, hasBalcony: false, hasGarden: false, hasCentralAC: false,
     furnishingStatus: FurnishingStatus.Unfurnished,
   };
@@ -650,10 +655,9 @@ export class PropertyFormComponent implements OnInit {
           .map(image => image.url.trim())
           .filter(url => url.length > 0)
       );
-      
-      // Try to load local images if any
-      const stored = await this.localImageService.getImages(id);
-      if (stored) this.localImages.set(stored);
+      // NOTE: In edit mode we do NOT pre-fill localImages from local storage.
+      // Those are already-uploaded Cloudinary URLs and must NOT be re-uploaded.
+      // The user can add genuinely new images (data: URIs) via the file picker.
 
     } catch {
       this.toast.error(this.translate.instant('PROPERTY_FORM.MESSAGES.LOAD_FAILED'));
@@ -792,10 +796,13 @@ export class PropertyFormComponent implements OnInit {
       let resultId = this.propertyId;
       let cloudinaryUrls: string[] = [];
 
-      if (this.localImages().length > 0) {
+      // Only upload genuinely new images that are data: URIs (user added in this session).
+      // Cloudinary URLs that may still be in localImages from a previous session must be skipped.
+      const newLocalImages = this.localImages().filter(img => img.startsWith('data:'));
+      if (newLocalImages.length > 0) {
         this.currentStep.set(2); // Move back to media step to show the upload progress list clearly!
         
-        const progressItems = this.localImages().map((img, i) => ({
+        const progressItems = newLocalImages.map((img, i) => ({
           id: `img_${i}`,
           preview: img,
           index: i + 1,
@@ -804,7 +811,7 @@ export class PropertyFormComponent implements OnInit {
         }));
         this.uploadProgressList.set(progressItems);
 
-        const uploadPromises = this.localImages().map(async (img, i) => {
+        const uploadPromises = newLocalImages.map(async (img, i) => {
           const interval = setInterval(() => {
             this.uploadProgressList.update(list => {
               const item = list.find(x => x.id === `img_${i}`);
