@@ -216,7 +216,7 @@ const PREFS_KEY = 'baytology_notification_prefs';
                     <!-- Sound Selection Subpanel -->
                     @if (prefs.sound) {
                       <div class="py-4 px-5 bg-slate-50 border border-slate-100 rounded-2xl space-y-4 mb-4 ltr:text-left rtl:text-right">
-                        <label class="block text-xs font-bold text-slate-700 mb-1">اختر نغمة الإشعارات المفضلة</label>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">{{ 'SETTINGS.CHOOSE_SOUND_LABEL' | translate }}</label>
                         <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
                           <button type="button"
                                   (click)="changeSoundType('premium')"
@@ -226,7 +226,7 @@ const PREFS_KEY = 'baytology_notification_prefs';
                                   [class.text-gray-700]="soundType() !== 'premium'"
                                   [class.border-gray-200]="soundType() !== 'premium'"
                                   class="px-3 py-2.5 rounded-xl text-xs font-bold border transition-all cursor-pointer flex items-center justify-between shadow-sm active:scale-95">
-                            <span>✨ بلوري</span>
+                            <span>{{ 'SETTINGS.SOUND_PREMIUM_NAME' | translate }}</span>
                           </button>
 
                           <button type="button"
@@ -237,7 +237,7 @@ const PREFS_KEY = 'baytology_notification_prefs';
                                   [class.text-gray-700]="soundType() !== 'pop'"
                                   [class.border-gray-200]="soundType() !== 'pop'"
                                   class="px-3 py-2.5 rounded-xl text-xs font-bold border transition-all cursor-pointer flex items-center justify-between shadow-sm active:scale-95">
-                            <span>🎈 فقاعة</span>
+                            <span>{{ 'SETTINGS.SOUND_POP_NAME' | translate }}</span>
                           </button>
 
                           <button type="button"
@@ -248,7 +248,7 @@ const PREFS_KEY = 'baytology_notification_prefs';
                                   [class.text-gray-700]="soundType() !== 'classic'"
                                   [class.border-gray-200]="soundType() !== 'classic'"
                                   class="px-3 py-2.5 rounded-xl text-xs font-bold border transition-all cursor-pointer flex items-center justify-between shadow-sm active:scale-95">
-                            <span>🤖 كلاسيكي</span>
+                            <span>{{ 'SETTINGS.SOUND_CLASSIC_NAME' | translate }}</span>
                           </button>
 
                           <button type="button"
@@ -261,7 +261,7 @@ const PREFS_KEY = 'baytology_notification_prefs';
                                   [class.border-gray-200]="soundType() !== 'custom'"
 
                                   class="px-3 py-2.5 rounded-xl text-xs font-bold border transition-all cursor-pointer flex items-center justify-between shadow-sm active:scale-95">
-                            <span class="truncate">🎵 &#1605;&#1582;&#1589;&#1589;&#1577;</span>
+                            <span class="truncate">{{ 'SETTINGS.SOUND_CUSTOM_NAME' | translate }}</span>
                           </button>
 
 
@@ -281,17 +281,17 @@ const PREFS_KEY = 'baytology_notification_prefs';
                           <input type="file" #soundUploadInput (change)="onCustomSoundUploaded($event)" class="hidden" accept="audio/*">
                           <button type="button" (click)="soundUploadInput.click()" 
                                   class="w-full sm:w-auto px-4 py-2 bg-white hover:bg-slate-100 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 transition-all flex items-center justify-center gap-2 active:scale-95 cursor-pointer">
-                            📁 رفع نغمة من جهازك
+                            {{ 'SETTINGS.UPLOAD_SOUND_BTN' | translate }}
                           </button>
                           @if (hasCustomSound()) {
                             <span class="text-[10px] text-slate-400 font-bold max-w-[200px] truncate">
-                              الملف المرفوع: {{ customSoundName() }}
+                              {{ 'SETTINGS.CUSTOM_SOUND_NAME_LABEL' | translate }}{{ customSoundName() }}
                             </span>
                           }
                           <div class="flex-1"></div>
                           <button type="button" (click)="playNotificationSound()"
                                   class="w-full sm:w-auto px-4 py-2 bg-[#0a8f96]/10 hover:bg-[#0a8f96]/20 text-[#0a8f96] rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1.5 active:scale-95 cursor-pointer">
-                            🔊 تجربة الصوت
+                            {{ 'SETTINGS.PLAY_SOUND_BTN' | translate }}
                           </button>
                         </div>
                       </div>
@@ -420,7 +420,7 @@ export class SettingsComponent implements OnInit {
 
   changeSoundType(type: 'premium' | 'pop' | 'classic' | 'custom' | 'none') {
     if (type === 'custom' && !this.hasCustomSound()) {
-      this.toast.error('لم تقم برفع أي نغمة مخصصة بعد. يرجى الضغط على زر "رفع نغمة من جهازك" أولاً.');
+      this.toast.error(this.translate.instant('SETTINGS.NO_CUSTOM_TONE'));
       return;
     }
     this.soundType.set(type);
@@ -435,12 +435,12 @@ export class SettingsComponent implements OnInit {
     if (!file) return;
 
     if (!file.type.startsWith('audio/')) {
-      this.toast.error('الرجاء اختيار ملف صوتي صالح.');
+      this.toast.error(this.translate.instant('SETTINGS.INVALID_AUDIO_FILE'));
       return;
     }
 
     if (file.size > 2 * 1024 * 1024) {
-      this.toast.error('حجم ملف الصوت كبير جداً، يرجى اختيار ملف أقل من 2 ميجابايت.');
+      this.toast.error(this.translate.instant('SETTINGS.FILE_TOO_LARGE'));
       return;
     }
 
@@ -454,9 +454,9 @@ export class SettingsComponent implements OnInit {
         this.hasCustomSound.set(true);
         
         this.changeSoundType('custom');
-        this.toast.success('تم رفع نغمة الصوت المخصصة بنجاح!');
+        this.toast.success(this.translate.instant('SETTINGS.CUSTOM_TONE_UPLOAD_SUCCESS'));
       } catch (err) {
-        this.toast.error('حدث خطأ أثناء حفظ نغمة الصوت.');
+        this.toast.error(this.translate.instant('SETTINGS.CUSTOM_TONE_SAVE_ERROR'));
       }
     };
     reader.readAsDataURL(file);
@@ -484,7 +484,7 @@ export class SettingsComponent implements OnInit {
           localStorage.removeItem('baytology_custom_sound_name');
           localStorage.setItem('baytology_sound_type', 'premium');
           
-          this.toast.error('تعذر العثور على ملف النغمة المخصصة (ربما تم مسح بيانات المتصفح). تم الانتقال تلقائياً إلى النغمة الافتراضية "بلوري".');
+          this.toast.error(this.translate.instant('SETTINGS.CUSTOM_TONE_MISSING'));
           
           setTimeout(() => this.playNotificationSound(), 100);
           return;

@@ -97,14 +97,14 @@ import { EGYPT_REGIONS, Governorate, City } from '../../core/constants/egypt-reg
 
                       <!-- Column 2: Cities of Selected Governorate -->
                       <div class="w-1/2 overflow-y-auto custom-scrollbar py-4 bg-slate-50/50">
-                        <div class="px-6 py-2 mb-2 text-[10px] font-black text-gray-400 uppercase tracking-widest">{{ 'PROPERTY_LIST.CITY' | translate }}</div>
+                        <div class="px-6 py-2 mb-2 text-[10px] font-black text-gray-400 uppercase tracking-widest">{{ 'PROPERTY_LIST.LABEL_CITY' | translate }}</div>
                         @if (activeGov(); as gov) {
                           <!-- All Cities option -->
-                          <button type="button" 
-                                  (click)="selectCityOfGov({ id: '', nameAr: 'كل المدن', nameEn: 'All Cities' })"
+                          <button type="button"
+                                  (click)="selectCityOfGov({ id: '', nameAr: '', nameEn: '' })"
                                   class="w-full flex items-center px-6 py-3.5 hover:bg-[#0a8f96]/5 text-[#0a8f96] transition-all ltr:text-left rtl:text-right">
                             <div class="w-1.5 h-1.5 rounded-full bg-[#0a8f96] mr-2 rtl:ml-2 rtl:mr-0"></div>
-                            <span>{{ translate.currentLang === 'ar' ? 'كل المدن' : 'All Cities' }}</span>
+                            <span>{{ 'HOME.ALL_CITIES' | translate }}</span>
                           </button>
                           
                           @for (city of gov.cities; track city.id) {
@@ -385,7 +385,11 @@ export class HomeComponent implements OnInit, OnDestroy {
     });
   });
 
-  // Localization Mappings
+  // Backend Filter Mapping (English key -> Arabic value expected by API).
+  // These are DATA constants used for backend communication, not user-facing text.
+  // They mirror the CITIES/DISTRICTS entries in public/i18n/ar.json and must be
+  // kept in sync when adding new locations. User-facing display uses
+  // translate.instant('CITIES.Cairo') etc. directly.
   private cityMap: Record<string, string> = {
     'Cairo': 'القاهرة', 'Alexandria': 'الإسكندرية', 'Giza': 'الجيزة', 'Mansoura': 'المنصورة',
     'Tanta': 'طنطا', 'Mahalla': 'المحلة الكبرى', 'PortSaid': 'بور سعيد', 'Suez': 'السويس',
@@ -512,7 +516,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       const gov = this.activeGov();
       if (gov) {
         const govName = isAr ? gov.nameAr : gov.nameEn;
-        const allCitiesLabel = `${govName} - ${isAr ? 'كل المدن' : 'All Cities'}`;
+        const allCitiesLabel = `${govName} - ${this.translate.instant('HOME.ALL_CITIES')}`;
         if (query === allCitiesLabel) {
           this.searchCity = '';
           this.citySearchQuery.set(allCitiesLabel);
@@ -557,7 +561,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     if (!city.id) {
       this.searchCity = '';
       const govName = gov ? (isAr ? gov.nameAr : gov.nameEn) : '';
-      this.citySearchQuery.set(govName ? `${govName} - ${isAr ? 'كل المدن' : 'All Cities'}` : '');
+      this.citySearchQuery.set(govName ? `${govName} - ${this.translate.instant('HOME.ALL_CITIES')}` : '');
     } else {
       this.searchCity = city.id;
       this.citySearchQuery.set(isAr ? city.nameAr : city.nameEn);

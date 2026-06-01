@@ -3,6 +3,7 @@ import { LocalImageService } from './local-image.service';
 import { CloudinaryService } from './cloudinary.service';
 import { PropertyService } from '../../features/properties/services/property.service';
 import { ToastService } from './toast.service';
+import { TranslateService } from '@ngx-translate/core';
 import { BehaviorSubject } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
@@ -15,7 +16,8 @@ export class UploadManagerService {
     private localImage: LocalImageService,
     private cloudinary: CloudinaryService,
     private propertyService: PropertyService,
-    private toast: ToastService
+    private toast: ToastService,
+    private translate: TranslateService
   ) {
     // Initial check
     this.processQueue();
@@ -48,7 +50,7 @@ export class UploadManagerService {
           try {
             await this.propertyService.addImages(item.propertyId, [url]);
             await this.localImage.removeFromQueue(item.id);
-            this.toast.success('تم رفع الصورة بنجاح وتحديث قاعدة البيانات');
+            this.toast.success(this.translate.instant('SERVICE_MESSAGES.UPLOAD_QUEUE_SUCCESS'));
           } catch (apiErr) {
             console.error(`[UploadManager] Cloudinary success but Backend save failed for property ${item.propertyId}:`, apiErr);
             // Leave it in queue to retry backend registration

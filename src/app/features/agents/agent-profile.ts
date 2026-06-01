@@ -185,8 +185,8 @@ export interface CalendarSlot {
           <div class="flex items-center gap-3 mb-6 border-b border-slate-100 pb-4">
             <div class="w-10 h-10 rounded-xl bg-[#0a8f96]/10 flex items-center justify-center text-xl text-[#0a8f96]">📅</div>
             <div>
-              <h3 class="text-lg font-black text-slate-800">تقويم حجز المعاينات التفاعلي</h3>
-              <p class="text-[10.5px] text-slate-400 font-bold">يرجى تحديد وقت المعاينة المناسب لك لحجز جولة مع الوكيل فوراً.</p>
+              <h3 class="text-lg font-black text-slate-800">{{ 'AGENT_PROFILE.CALENDAR_TITLE' | translate }}</h3>
+              <p class="text-[10.5px] text-slate-400 font-bold">{{ 'AGENT_PROFILE.CALENDAR_DESC' | translate }}</p>
             </div>
           </div>
 
@@ -204,7 +204,7 @@ export interface CalendarSlot {
                       [class]="slot.available 
                                ? 'bg-[#0a8f96]/10 border-[#0a8f96]/20 text-[#0a8f96]' 
                                : 'bg-red-50/50 border-red-100 text-red-500'">
-                  {{ slot.available ? 'متاح للحجز' : 'محجوز مسبقاً' }}
+                  {{ slot.available ? ('AGENT_PROFILE.SLOT_AVAILABLE' | translate) : ('AGENT_PROFILE.SLOT_BOOKED' | translate) }}
                 </span>
 
                 <div class="mt-2.5">
@@ -232,29 +232,29 @@ export interface CalendarSlot {
                 <div class="flex items-center gap-3 mb-6 border-b border-slate-100 pb-4">
                   <span class="text-2xl">⚡</span>
                   <div>
-                    <h4 class="text-sm font-black text-slate-800">تأكيد حجز موعد المعاينة</h4>
-                    <p class="text-[10px] text-slate-400 font-bold">بموافقتك سيتم حجز الموعد وإرساله للوكيل فوراً.</p>
+                    <h4 class="text-sm font-black text-slate-800">{{ 'AGENT_PROFILE.CONFIRM_BOOKING_TITLE' | translate }}</h4>
+                    <p class="text-[10px] text-slate-400 font-bold">{{ 'AGENT_PROFILE.CONFIRM_BOOKING_DESC' | translate }}</p>
                   </div>
                 </div>
 
                 <div class="bg-slate-50 border border-slate-100 rounded-2xl p-4.5 mb-6 space-y-3">
                   <div class="flex items-center justify-between text-xs">
-                    <span class="text-slate-400 font-bold">الوكيل العقاري:</span>
+                    <span class="text-slate-400 font-bold">{{ 'AGENT_PROFILE.AGENT_NAME_LABEL' | translate }}</span>
                     <span class="text-slate-800 font-black">{{ agent()?.displayName }}</span>
                   </div>
                   <div class="flex items-center justify-between text-xs">
-                    <span class="text-slate-400 font-bold">اليوم والتاريخ:</span>
+                    <span class="text-slate-400 font-bold">{{ 'AGENT_PROFILE.DATE_LABEL' | translate }}</span>
                     <span class="text-slate-800 font-black">{{ slot.dayName }} - {{ slot.dateStr }}</span>
                   </div>
                   <div class="flex items-center justify-between text-xs">
-                    <span class="text-slate-400 font-bold">التوقيت المختار:</span>
+                    <span class="text-slate-400 font-bold">{{ 'AGENT_PROFILE.TIME_SELECTED_LABEL' | translate }}</span>
                     <span class="text-slate-800 font-black">{{ slot.timeStr }}</span>
                   </div>
                 </div>
 
                 <div class="flex gap-3 justify-end">
-                  <button (click)="selectedSlot.set(null)" class="px-5 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-500 text-xs font-bold transition-all cursor-pointer">إلغاء</button>
-                  <button (click)="confirmBooking()" class="px-5 py-3 rounded-xl bg-[#0a8f96] hover:bg-[#076b70] text-white text-xs font-black transition-all active:scale-95 cursor-pointer shadow-lg shadow-[#0a8f96]/20">تأكيد الحجز الفوري</button>
+                  <button (click)="selectedSlot.set(null)" class="px-5 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-500 text-xs font-bold transition-all cursor-pointer">{{ 'AGENT_PROFILE.CANCEL_BTN' | translate }}</button>
+                  <button (click)="confirmBooking()" class="px-5 py-3 rounded-xl bg-[#0a8f96] hover:bg-[#076b70] text-white text-xs font-black transition-all active:scale-95 cursor-pointer shadow-lg shadow-[#0a8f96]/20">{{ 'AGENT_PROFILE.CONFIRM_NOW_BTN' | translate }}</button>
                 </div>
               </div>
             </div>
@@ -306,8 +306,8 @@ export interface CalendarSlot {
             <div class="flex items-center gap-3">
               <div class="w-10 h-10 rounded-xl bg-[#0a8f96]/10 flex items-center justify-center text-lg text-[#0a8f96]">⭐</div>
               <div>
-                <h3 class="text-lg font-black text-slate-800">تقييمات ومراجعات العملاء</h3>
-                <p class="text-[10.5px] text-slate-400 font-bold">شاهد آراء وتجارب العملاء السابقين مع الوكيل.</p>
+                <h3 class="text-lg font-black text-slate-800">{{ 'AGENT_PROFILE.REVIEWS_TITLE' | translate }}</h3>
+                <p class="text-[10.5px] text-slate-400 font-bold">{{ 'AGENT_PROFILE.REVIEWS_DESC' | translate }}</p>
               </div>
             </div>
 
@@ -316,19 +316,19 @@ export interface CalendarSlot {
               <!-- Filter by Rating -->
               <select [value]="ratingFilter()" (change)="setRatingFilter($event)" 
                       class="bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-600 focus:outline-none cursor-pointer">
-                <option value="all">كل التقييمات</option>
-                <option value="5">5 نجوم</option>
-                <option value="4">4 نجوم</option>
-                <option value="3">3 نجوم</option>
-                <option value="2">2 نجوم</option>
-                <option value="1">1 نجوم</option>
+                <option value="all">{{ 'AGENT_PROFILE.ALL_REVIEWS' | translate }}</option>
+                <option value="5">{{ 'AGENT_PROFILE.STARS_PREFIX' | translate:{ count: 5 } }}</option>
+                <option value="4">{{ 'AGENT_PROFILE.STARS_PREFIX' | translate:{ count: 4 } }}</option>
+                <option value="3">{{ 'AGENT_PROFILE.STARS_PREFIX' | translate:{ count: 3 } }}</option>
+                <option value="2">{{ 'AGENT_PROFILE.STARS_PREFIX' | translate:{ count: 2 } }}</option>
+                <option value="1">{{ 'AGENT_PROFILE.STARS_PREFIX' | translate:{ count: 1 } }}</option>
               </select>
 
               <!-- Sort by -->
               <select [value]="sortType()" (change)="setSortType($event)" 
                       class="bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-600 focus:outline-none cursor-pointer">
-                <option value="recent">الأحدث تاريخاً</option>
-                <option value="highest">الأعلى تقييماً</option>
+                <option value="recent">{{ 'AGENT_PROFILE.SORT_RECENT' | translate }}</option>
+                <option value="highest">{{ 'AGENT_PROFILE.SORT_HIGHEST' | translate }}</option>
               </select>
             </div>
           </div>
@@ -354,7 +354,7 @@ export interface CalendarSlot {
                           <svg class="w-3.5 h-3.5" [class.text-slate-200]="review.rating < star" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
                         }
                       </div>
-                      <span class="text-slate-500 text-[10px] font-black">({{ review.rating }} نجوم)</span>
+                      <span class="text-slate-500 text-[10px] font-black">({{ 'AGENT_PROFILE.STARS_PREFIX' | translate:{ count: review.rating } }})</span>
                     </div>
 
                     <p class="text-xs font-medium text-slate-600 leading-relaxed">{{ review.comment }}</p>
@@ -364,7 +364,7 @@ export interface CalendarSlot {
             </div>
           } @else {
             <div class="p-8 text-center bg-slate-50 border border-slate-100 rounded-2xl">
-              <p class="text-xs text-slate-400 font-bold">لا توجد تقييمات مطابقة لتصفيتك الحالية.</p>
+              <p class="text-xs text-slate-400 font-bold">{{ 'AGENT_PROFILE.NO_MATCHING_REVIEWS' | translate }}</p>
             </div>
           }
         </div>
@@ -416,9 +416,9 @@ export class AgentProfileComponent implements OnInit {
     if (count <= 0) return [];
     
     const baseReviews: AgentReview[] = [
-      { id: '1', authorName: 'أحمد الشناوي', rating: Math.round(agentData.rating || 5), comment: 'شخص محترف للغاية وسريع الاستجابة. ساعدني في العثور على شقة أحلامي في التجمع الخامس بأفضل سعر تفاوضي ممكن. أنصح بالتعامل معه بشدة!', createdOnUtc: '2026-05-10T12:00:00Z' },
-      { id: '2', authorName: 'ياسمين صبري', rating: 5, comment: 'دقة في المواعيد وأمانة تامة في توضيح عيوب ومميزات العقار قبل الشراء. تجربة مريحة جداً ونموذجية للوكلاء العقاريين.', createdOnUtc: '2026-05-18T14:30:00Z' },
-      { id: '3', authorName: 'كريم عبد العزيز', rating: 4, comment: 'معاملة راقية جداً ولديه شبكة علاقات قوية سهلت علينا إجراءات التسجيل العقاري والتوثيق.', createdOnUtc: '2026-05-24T09:15:00Z' }
+      { id: '1', authorName: this.translate.instant('AGENT_PROFILE.MOCK_REVIEW_1_AUTHOR'), rating: Math.round(agentData.rating || 5), comment: this.translate.instant('AGENT_PROFILE.MOCK_REVIEW_1_COMMENT'), createdOnUtc: '2026-05-10T12:00:00Z' },
+      { id: '2', authorName: this.translate.instant('AGENT_PROFILE.MOCK_REVIEW_2_AUTHOR'), rating: 5, comment: this.translate.instant('AGENT_PROFILE.MOCK_REVIEW_2_COMMENT'), createdOnUtc: '2026-05-18T14:30:00Z' },
+      { id: '3', authorName: this.translate.instant('AGENT_PROFILE.MOCK_REVIEW_3_AUTHOR'), rating: 4, comment: this.translate.instant('AGENT_PROFILE.MOCK_REVIEW_3_COMMENT'), createdOnUtc: '2026-05-24T09:15:00Z' }
     ];
     
     return baseReviews.slice(0, count);
@@ -434,11 +434,8 @@ export class AgentProfileComponent implements OnInit {
 
   generateDynamicSlots(realBookings: BookingListItem[]): CalendarSlot[] {
     const slots: CalendarSlot[] = [];
-    const daysArabic = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
-    const monthsArabic = [
-      'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
-      'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'
-    ];
+    const daysArabic = this.translate.instant('AGENT_PROFILE.DAYS_OF_WEEK') as string[];
+    const monthsArabic = this.translate.instant('AGENT_PROFILE.MONTHS') as string[];
 
     const today = new Date();
     const listings = this.properties()?.items || [];
@@ -452,8 +449,8 @@ export class AgentProfileComponent implements OnInit {
       const monthIndex = targetDate.getMonth();
 
       let dayName = daysArabic[dayIndex];
-      if (i === 0) dayName = 'اليوم';
-      else if (i === 1) dayName = 'غداً';
+      if (i === 0) dayName = this.translate.instant('AGENT_PROFILE.TODAY');
+      else if (i === 1) dayName = this.translate.instant('AGENT_PROFILE.TOMORROW');
 
       const dateStr = `${daysArabic[dayIndex]} ${dayNum} ${monthsArabic[monthIndex]}`;
 
@@ -476,7 +473,7 @@ export class AgentProfileComponent implements OnInit {
         id: `slot_${i}_am`,
         dayName,
         dateStr,
-        timeStr: '10:00 ص - 11:30 ص',
+        timeStr: this.translate.instant('AGENT_PROFILE.MORNING_SLOT_TIME'),
         available: !isMorningBooked,
         date: morningDate
       });
@@ -500,7 +497,7 @@ export class AgentProfileComponent implements OnInit {
         id: `slot_${i}_pm`,
         dayName,
         dateStr,
-        timeStr: '04:30 م - 06:00 م',
+        timeStr: this.translate.instant('AGENT_PROFILE.AFTERNOON_SLOT_TIME'),
         available: !isAfternoonBooked,
         date: afternoonDate
       });
@@ -600,13 +597,13 @@ export class AgentProfileComponent implements OnInit {
     
     try {
       await this.propertyService.save(id);
-      this.toast.success('تمت إضافة العقار للمفضلة');
+      this.toast.success(this.translate.instant('AGENT_PROFILE.FAV_ADDED'));
     } catch {
       try {
         await this.propertyService.unsave(id);
-        this.toast.success('تمت إزالة العقار من المفضلة');
+        this.toast.success(this.translate.instant('AGENT_PROFILE.FAV_REMOVED'));
       } catch {
-        this.toast.error('فشل في تحديث المفضلات');
+        this.toast.error(this.translate.instant('AGENT_PROFILE.FAV_ERROR'));
       }
     }
   }
@@ -641,7 +638,7 @@ export class AgentProfileComponent implements OnInit {
   // --- Interactive Booking Calendar Methods ---
   selectSlot(slot: CalendarSlot) {
     if (!this.auth.isBuyer()) {
-      this.toast.error('عذراً، حجز مواعيد المعاينات متاح فقط للمشترين المسجلين في الموقع.');
+      this.toast.error(this.translate.instant('AGENT_PROFILE.BOOKING_BUYER_ONLY'));
       return;
     }
     this.selectedSlot.set(slot);
@@ -655,14 +652,14 @@ export class AgentProfileComponent implements OnInit {
     const props = this.properties();
     
     if (!props || props.items.length === 0) {
-      this.toast.error('عذراً، لا يوجد عقارات مسجلة لهذا الوكيل لحجز معاينة عليها.');
+      this.toast.error(this.translate.instant('AGENT_PROFILE.BOOKING_NO_PROPERTIES'));
       return;
     }
 
     const firstProperty = props.items[0];
     
     try {
-      this.toast.info('جاري إرسال طلب حجز المعاينة إلى قاعدة البيانات...');
+      this.toast.info(this.translate.instant('AGENT_PROFILE.BOOKING_SENDING'));
       
       const bookingDate = slot.date || new Date();
       const endDate = new Date(bookingDate.getTime() + 90 * 60 * 1000); // + 1.5 hours
@@ -675,16 +672,16 @@ export class AgentProfileComponent implements OnInit {
         amount: firstProperty.price * 0.01, // Mock viewing cost or 1%
         commissionRate: this.agent()?.commissionRate || 0.025,
         currency: 'EGP',
-        notes: `حجز معاينة مجدولة من تقويم الوكيل: ${slot.dayName} (${slot.dateStr}) الساعة ${slot.timeStr}`
+        notes: `${this.translate.instant('AGENT_PROFILE.BOOKING_NOTES_PREFIX')}: ${slot.dayName} (${slot.dateStr}) ${this.translate.instant('AGENT_PROFILE.TIME_LABEL_SHORT')} ${slot.timeStr}`
       });
 
       // Update local state store
       this.store.bookCalendarSlot(agentId, slot.id);
 
-      this.toast.success(`تم تأكيد حجز موعد المعاينة بنجاح يوم ${slot.dateStr} الساعة ${slot.timeStr}! وتم ربطها بقاعدة البيانات بنجاح.`);
+      this.toast.success(this.translate.instant('AGENT_PROFILE.BOOKING_SUCCESS', { date: slot.dateStr, time: slot.timeStr }));
     } catch (err: any) {
       console.error('Failed to create booking:', err);
-      this.toast.error(err?.error?.detail || 'فشل في تسجيل الحجز بقاعدة البيانات.');
+      this.toast.error(err?.error?.detail || this.translate.instant('AGENT_PROFILE.BOOKING_FAILED'));
     } finally {
       this.selectedSlot.set(null);
     }
@@ -692,8 +689,8 @@ export class AgentProfileComponent implements OnInit {
 
   // --- Web Share API ---
   async shareProfile() {
-    const name = this.agent()?.displayName || 'الوكيل العقاري';
-    const text = `تصفح الملف الشخصي الفاخر للوكيل ${name} على منصة بايتولوجي (Baytology) - لحجز مواعيد معاينات فورية وتصفح فلل حصرية!`;
+    const name = this.agent()?.displayName || this.translate.instant('AGENT_PROFILE.SHARE_DEFAULT_NAME');
+    const text = this.translate.instant('AGENT_PROFILE.SHARE_TEXT_TEMPLATE', { name });
     
     if (navigator.share) {
       try {
@@ -702,18 +699,18 @@ export class AgentProfileComponent implements OnInit {
           text: text,
           url: window.location.href
         });
-        this.toast.success('تمت مشاركة الملف الشخصي بنجاح!');
+        this.toast.success(this.translate.instant('AGENT_PROFILE.SHARE_SUCCESS'));
       } catch (err: any) {
         if (err.name !== 'AbortError') {
-          this.toast.error('حدث خطأ أثناء محاولة المشاركة.');
+          this.toast.error(this.translate.instant('AGENT_PROFILE.SHARE_ERROR'));
         }
       }
     } else {
       try {
         await navigator.clipboard.writeText(window.location.href);
-        this.toast.success('تم نسخ رابط الملف الشخصي بنجاح! يمكنك مشاركته الآن كبطاقة أعمال رقمية.');
+        this.toast.success(this.translate.instant('AGENT_PROFILE.SHARE_COPY_SUCCESS'));
       } catch (e) {
-        this.toast.error('عذراً، لم نتمكن من نسخ الرابط تلقائياً.');
+        this.toast.error(this.translate.instant('AGENT_PROFILE.SHARE_COPY_FAILED'));
       }
     }
   }

@@ -5,7 +5,7 @@ import { ProfileService } from '../../profile/services/profile.service';
 import { NotificationSignalRService } from '../../../core/services/notification-signalr.service';
 import { AppNotification } from '../../../core/models';
 import { RelativeTimePipe } from '../../../shared/pipes/relative-time.pipe';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { EmptyStateComponent } from '../../../shared/components/empty-state/empty-state';
 
 @Component({
@@ -48,15 +48,15 @@ import { EmptyStateComponent } from '../../../shared/components/empty-state/empt
                 </svg>
               </div>
               <div>
-                <h3 class="font-extrabold text-slate-900 text-base mb-1">تفعيل التنبيهات الفورية 🔔</h3>
+                <h3 class="font-extrabold text-slate-900 text-base mb-1">{{ 'NOTIFICATIONS.PUSH_BANNER_TITLE' | translate }}</h3>
                 <p class="text-xs text-slate-500 font-bold leading-relaxed">
-                  احصل على تنبيهات عاجلة للرسائل والحجوزات مباشرة على جهازك حتى عند إغلاق الموقع.
+                  {{ 'NOTIFICATIONS.PUSH_BANNER_DESC' | translate }}
                 </p>
               </div>
             </div>
             <button (click)="requestPushPermission()" 
                     class="bg-[#0a8f96] hover:bg-[#076b70] text-white text-xs font-black px-6 py-3.5 rounded-2xl transition-all shadow-md shadow-[#0a8f96]/15 hover:shadow-lg active:scale-95 shrink-0 cursor-pointer">
-              تفعيل التنبيهات
+              {{ 'NOTIFICATIONS.PUSH_BANNER_BTN' | translate }}
             </button>
           </div>
         }
@@ -81,12 +81,12 @@ import { EmptyStateComponent } from '../../../shared/components/empty-state/empt
               <div class="flex flex-col gap-4">
                 <!-- Group Temporal Heading -->
                 <div class="flex items-center gap-3 px-2">
-                  <h2 class="text-xs font-black uppercase tracking-wider text-[#0a8f96] bg-[#0a8f96]/5 px-3 py-1.5 rounded-lg">
-                    {{ group.title }}
-                  </h2>
+                    <h2 class="text-xs font-black uppercase tracking-wider text-[#0a8f96] bg-[#0a8f96]/5 px-3 py-1.5 rounded-lg">
+                      {{ group.titleKey | translate }}
+                    </h2>
                   <div class="h-px bg-slate-100 flex-1"></div>
                   <span class="text-[10px] font-bold text-slate-400">
-                    {{ group.items.length }} {{ group.items.length === 1 ? 'إشعار' : 'إشعارات' }}
+                    {{ group.items.length }} {{ group.items.length === 1 ? ('NOTIFICATIONS.NOTIFICATION_SINGULAR' | translate) : ('NOTIFICATIONS.NOTIFICATION_PLURAL' | translate) }}
                   </span>
                 </div>
 
@@ -105,7 +105,7 @@ import { EmptyStateComponent } from '../../../shared/components/empty-state/empt
                           <svg class="w-5 h-5 animate-pulse" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                           </svg>
-                          <span class="text-[11px] font-black uppercase tracking-wider">تعيين كمقروء</span>
+                          <span class="text-[11px] font-black uppercase tracking-wider">{{ 'NOTIFICATIONS.MARK_READ_ACTION' | translate }}</span>
                         </div>
                       </div>
 
@@ -114,7 +114,7 @@ import { EmptyStateComponent } from '../../../shared/components/empty-state/empt
                            [class.opacity-100]="getSwipeX(n.id) < -10"
                            [class.opacity-0]="getSwipeX(n.id) >= -10">
                         <div class="flex items-center gap-2">
-                          <span class="text-[11px] font-black uppercase tracking-wider">حذف الإشعار</span>
+                          <span class="text-[11px] font-black uppercase tracking-wider">{{ 'NOTIFICATIONS.DELETE_ACTION' | translate }}</span>
                           <svg class="w-5 h-5 animate-pulse" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                           </svg>
@@ -202,7 +202,7 @@ import { EmptyStateComponent } from '../../../shared/components/empty-state/empt
                   <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                   <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
-                <span>جاري تحميل المزيد من التنبيهات...</span>
+                <span>{{ 'NOTIFICATIONS.LOADING_MORE' | translate }}</span>
               </div>
             }
           </div>
@@ -266,7 +266,8 @@ export class NotificationListComponent implements OnInit, OnDestroy {
   constructor(
     private profileService: ProfileService, 
     private notifService: NotificationSignalRService, 
-    private router: Router
+    private router: Router,
+    private translate: TranslateService
   ) {
     // Reactively initialize the observer as soon as sentinel is rendered
     effect(() => {
@@ -294,7 +295,7 @@ export class NotificationListComponent implements OnInit, OnDestroy {
 
   async requestPushPermission() {
     if (!('Notification' in window)) {
-      alert('متصفحك لا يدعم تنبيهات دفع المتصفح.');
+      alert(this.translate.instant('NOTIFICATIONS.PUSH_NOT_SUPPORTED'));
       return;
     }
 
@@ -308,17 +309,20 @@ export class NotificationListComponent implements OnInit, OnDestroy {
       this.pushPermissionStatus.set(permission);
       
       if (permission === 'granted') {
+        const successTitle = this.translate.instant('NOTIFICATIONS.PUSH_SUCCESS_TITLE');
+        const successBody = this.translate.instant('NOTIFICATIONS.PUSH_SUCCESS_BODY');
+        const fallbackBody = this.translate.instant('NOTIFICATIONS.PUSH_SUCCESS_BODY_FALLBACK');
         if ('serviceWorker' in navigator) {
           const reg = await navigator.serviceWorker.ready;
-          reg.showNotification('تم تفعيل التنبيهات بنجاح! 🔔', {
-            body: 'ستصلك الآن التنبيهات والرسائل العاجلة أولاً بأول حتى عند إغلاق الموقع.',
+          reg.showNotification(successTitle, {
+            body: successBody,
             icon: '/favicon.ico',
             dir: 'rtl',
             vibrate: [100, 50, 100]
           } as any);
         } else {
-          new Notification('تم تفعيل التنبيهات بنجاح! 🔔', {
-            body: 'ستصلك الآن التنبيهات والرسائل العاجلة أولاً بأول.',
+          new Notification(successTitle, {
+            body: fallbackBody,
             icon: '/favicon.ico'
           });
         }
@@ -565,18 +569,18 @@ export class NotificationListComponent implements OnInit, OnDestroy {
       }
     }
 
-    const groups: { key: string; title: string; items: AppNotification[] }[] = [];
+    const groups: { key: string; titleKey: string; items: AppNotification[] }[] = [];
     if (today.length > 0) {
-      groups.push({ key: 'today', title: 'اليوم', items: today });
+      groups.push({ key: 'today', titleKey: 'NOTIFICATIONS.GROUP_TODAY', items: today });
     }
     if (yesterday.length > 0) {
-      groups.push({ key: 'yesterday', title: 'أمس', items: yesterday });
+      groups.push({ key: 'yesterday', titleKey: 'NOTIFICATIONS.GROUP_YESTERDAY', items: yesterday });
     }
     if (lastWeek.length > 0) {
-      groups.push({ key: 'lastWeek', title: 'الأسبوع الماضي', items: lastWeek });
+      groups.push({ key: 'lastWeek', titleKey: 'NOTIFICATIONS.GROUP_LAST_WEEK', items: lastWeek });
     }
     if (older.length > 0) {
-      groups.push({ key: 'older', title: 'أقدم', items: older });
+      groups.push({ key: 'older', titleKey: 'NOTIFICATIONS.GROUP_OLDER', items: older });
     }
 
     return groups;

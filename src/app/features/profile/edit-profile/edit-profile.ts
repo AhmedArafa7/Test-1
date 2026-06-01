@@ -133,7 +133,7 @@ import { firstValueFrom } from 'rxjs';
                 <!-- Sound Settings Section -->
                 <div class="mb-12">
                   <div class="flex items-center ltr:justify-start rtl:justify-end gap-3 mb-10 border-b border-gray-50 pb-6">
-                    <h3 class="text-2xl font-black text-gray-900">إعدادات تنبيهات الصوت للرسائل</h3>
+                    <h3 class="text-2xl font-black text-gray-900">{{ 'PROFILE.EDIT.SOUND_SECTION_TITLE' | translate }}</h3>
                     <div class="w-10 h-10 bg-[#0a8f96]/10 text-[#0a8f96] rounded-xl flex items-center justify-center">
                       <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
@@ -144,8 +144,8 @@ import { firstValueFrom } from 'rxjs';
                   <div class="space-y-6">
                     <div class="flex items-center justify-between p-6 bg-gray-50 rounded-2xl">
                       <div class="ltr:text-left rtl:text-right">
-                        <h4 class="text-sm font-black text-gray-900 mb-1">تشغيل صوت التنبيه</h4>
-                        <p class="text-xs text-gray-400 font-bold">إصدار صوت عند تلقي رسالة جديدة في الخلفية</p>
+                        <h4 class="text-sm font-black text-gray-900 mb-1">{{ 'PROFILE.EDIT.ENABLE_SOUND' | translate }}</h4>
+                        <p class="text-xs text-gray-400 font-bold">{{ 'PROFILE.EDIT.ENABLE_SOUND_DESC' | translate }}</p>
                       </div>
                       <label class="relative inline-flex items-center cursor-pointer">
                         <input type="checkbox" 
@@ -158,7 +158,7 @@ import { firstValueFrom } from 'rxjs';
 
                     @if (soundEnabled()) {
                       <div class="p-6 bg-gray-50 rounded-2xl space-y-4 ltr:text-left rtl:text-right">
-                        <label class="block text-xs font-bold text-gray-800 mb-1">اختر نغمة التنبيه المفضلة</label>
+                        <label class="block text-xs font-bold text-gray-800 mb-1">{{ 'PROFILE.EDIT.CHOOSE_SOUND_LABEL' | translate }}</label>
                         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                           <button type="button"
                                   (click)="changeSoundType('premium')"
@@ -168,7 +168,7 @@ import { firstValueFrom } from 'rxjs';
                                   [class.text-gray-700]="soundType() !== 'premium'"
                                   [class.border-gray-200]="soundType() !== 'premium'"
                                   class="px-4 py-3 rounded-2xl text-xs font-bold border transition-all cursor-pointer flex items-center justify-between shadow-sm active:scale-95">
-                            <span>✨ بلوري (Chime)</span>
+                            <span>{{ 'PROFILE.EDIT.SOUND_PREMIUM_NAME' | translate }}</span>
                             @if (soundType() === 'premium') {
                               <span class="w-2 h-2 rounded-full bg-white shrink-0"></span>
                             }
@@ -182,7 +182,7 @@ import { firstValueFrom } from 'rxjs';
                                   [class.text-gray-700]="soundType() !== 'pop'"
                                   [class.border-gray-200]="soundType() !== 'pop'"
                                   class="px-4 py-3 rounded-2xl text-xs font-bold border transition-all cursor-pointer flex items-center justify-between shadow-sm active:scale-95">
-                            <span>🎈 فقاعة (Pop)</span>
+                            <span>{{ 'PROFILE.EDIT.SOUND_POP_NAME' | translate }}</span>
                             @if (soundType() === 'pop') {
                               <span class="w-2 h-2 rounded-full bg-white shrink-0"></span>
                             }
@@ -670,7 +670,7 @@ export class EditProfileComponent implements OnInit {
 
   changeSoundType(type: 'premium' | 'pop' | 'classic' | 'custom' | 'none') {
     if (type === 'custom' && !localStorage.getItem('baytology_custom_sound_data')) {
-      this.toast.error('لم تقم برفع أي نغمة مخصصة بعد. يرجى الذهاب إلى الإعدادات لرفع نغمة أولاً.');
+      this.toast.error(this.translate.instant('PROFILE.EDIT.NO_CUSTOM_TONE'));
       return;
     }
     this.soundType.set(type);
@@ -700,7 +700,7 @@ export class EditProfileComponent implements OnInit {
           localStorage.removeItem('baytology_custom_sound_name');
           localStorage.setItem('baytology_sound_type', 'premium');
           
-          this.toast.error('تعذر العثور على ملف النغمة المخصصة (ربما تم مسح بيانات المتصفح). تم الانتقال تلقائياً إلى النغمة الافتراضية "بلوري".');
+          this.toast.error(this.translate.instant('PROFILE.EDIT.CUSTOM_TONE_MISSING'));
           
           setTimeout(() => this.playNotificationSound(), 100);
           return;

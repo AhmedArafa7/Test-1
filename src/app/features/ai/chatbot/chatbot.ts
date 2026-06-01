@@ -77,7 +77,7 @@ interface ChatMessage {
               <div [class]="msg.role === 'user' ? 'bg-gradient-to-br from-gray-900 to-gray-800 text-white rounded-[26px] ltr:rounded-bl-md rtl:rounded-br-md max-w-[85%]' : 'bg-white text-gray-900 rounded-[26px] ltr:rounded-br-md rtl:rounded-bl-md max-w-[95%] border border-gray-100/80'" class="px-5 md:px-7 py-5 shadow-sm">
                 @if (msg.imageSrc) {
                   <div [class.mb-3]="msg.content" class="max-w-xs rounded-2xl overflow-hidden border border-white/10 shadow-md bg-white">
-                    <img [src]="msg.imageSrc" class="w-full h-auto object-cover max-h-60" alt="صورة البحث">
+                    <img [src]="msg.imageSrc" class="w-full h-auto object-cover max-h-60" [alt]="'AI.CHATBOT.IMAGE_ALT' | translate">
                   </div>
                 }
                 @if (msg.voiceUrl) {
@@ -150,7 +150,7 @@ interface ChatMessage {
           @if (selectedFileUrl) {
             <div class="max-w-4xl mx-auto mb-3 px-4 py-2 bg-[#0a8f96]/5 rounded-2xl border border-[#0a8f96]/20 flex items-center justify-between animate-in slide-in-from-bottom-1 overflow-hidden shrink-0">
               <div class="flex items-center gap-3">
-                <div (click)="reopenEditor()" class="w-10 h-10 rounded-xl overflow-hidden border border-[#0a8f96]/20 shrink-0 shadow-sm bg-white cursor-pointer hover:opacity-80 active:scale-95 transition-all" title="اضغط للتعديل أو الرسم">
+                <div (click)="reopenEditor()" class="w-10 h-10 rounded-xl overflow-hidden border border-[#0a8f96]/20 shrink-0 shadow-sm bg-white cursor-pointer hover:opacity-80 active:scale-95 transition-all" [title]="'AI.CHATBOT.EDIT_PREVIEW_TITLE' | translate">
                   <img [src]="selectedFileUrl" class="w-full h-full object-cover">
                 </div>
                 <span class="text-[11px] font-black text-[#0a8f96]">{{ 'MESSAGES.FILE_ATTACHED' | translate }}</span>
@@ -189,7 +189,7 @@ interface ChatMessage {
         <div class="bg-white rounded-3xl w-full max-w-3xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
           <!-- Header -->
           <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50/50 ltr:flex-row rtl:flex-row-reverse">
-            <h3 class="font-extrabold text-slate-900 text-lg ltr:text-left rtl:text-right">تعديل وتحرير الصورة</h3>
+            <h3 class="font-extrabold text-slate-900 text-lg ltr:text-left rtl:text-right">{{ 'AI.CHATBOT.EDIT_IMAGE_TITLE' | translate }}</h3>
             <button (click)="cancelCrop()" class="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-500 hover:text-red-500 hover:bg-red-50 transition-colors shadow-sm cursor-pointer">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -206,7 +206,7 @@ interface ChatMessage {
                       [class.text-[#0a8f96]]="activeEditorMode() === 'crop'"
                       [class.text-slate-500]="activeEditorMode() !== 'crop'"
                       class="px-6 py-2.5 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 border-none">
-                📐 قص وأبعاد
+                {{ 'AI.CHATBOT.MODE_CROP' | translate }}
               </button>
               <button (click)="activeEditorMode.set('draw')" 
                       [class.bg-white]="activeEditorMode() === 'draw'" 
@@ -214,7 +214,7 @@ interface ChatMessage {
                       [class.text-[#0a8f96]]="activeEditorMode() === 'draw'"
                       [class.text-slate-500]="activeEditorMode() !== 'draw'"
                       class="px-6 py-2.5 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 border-none">
-                🎨 رسم وقلم
+                {{ 'AI.CHATBOT.MODE_DRAW' | translate }}
               </button>
             </div>
           </div>
@@ -250,9 +250,9 @@ interface ChatMessage {
                   
                   <!-- Brush sizes -->
                   <div class="flex items-center gap-3">
-                    <button (click)="changeWidth(2)" [class.bg-slate-200]="drawingLineWidth === 2" class="px-3 py-1 text-[10px] font-black rounded-lg border border-slate-100 cursor-pointer transition-colors">رفيع</button>
-                    <button (click)="changeWidth(5)" [class.bg-slate-200]="drawingLineWidth === 5" class="px-3 py-1 text-[10px] font-black rounded-lg border border-slate-100 cursor-pointer transition-colors">متوسط</button>
-                    <button (click)="changeWidth(10)" [class.bg-slate-200]="drawingLineWidth === 10" class="px-3 py-1 text-[10px] font-black rounded-lg border border-slate-100 cursor-pointer transition-colors">سميك</button>
+                    <button (click)="changeWidth(2)" [class.bg-slate-200]="drawingLineWidth === 2" class="px-3 py-1 text-[10px] font-black rounded-lg border border-slate-100 cursor-pointer transition-colors">{{ 'AI.CHATBOT.BRUSH_THIN' | translate }}</button>
+                    <button (click)="changeWidth(5)" [class.bg-slate-200]="drawingLineWidth === 5" class="px-3 py-1 text-[10px] font-black rounded-lg border border-slate-100 cursor-pointer transition-colors">{{ 'AI.CHATBOT.BRUSH_MEDIUM' | translate }}</button>
+                    <button (click)="changeWidth(10)" [class.bg-slate-200]="drawingLineWidth === 10" class="px-3 py-1 text-[10px] font-black rounded-lg border border-slate-100 cursor-pointer transition-colors">{{ 'AI.CHATBOT.BRUSH_THICK' | translate }}</button>
                   </div>
                 </div>
 
@@ -277,17 +277,17 @@ interface ChatMessage {
             <!-- Reset Button on Left -->
             <button (click)="resetToOriginal()" class="px-5 py-2.5 rounded-xl font-bold text-rose-600 bg-rose-50 hover:bg-rose-100 border border-rose-100 transition-colors cursor-pointer flex items-center gap-1.5">
               <span>↩️</span>
-              <span>إعادة للأصل</span>
+              <span>{{ 'AI.CHATBOT.RESET_BTN' | translate }}</span>
             </button>
 
             <!-- Action buttons on Right -->
             <div class="flex items-center gap-3">
-              <button (click)="cancelCrop()" class="px-6 py-2.5 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors cursor-pointer">إلغاء</button>
+              <button (click)="cancelCrop()" class="px-6 py-2.5 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors cursor-pointer">{{ 'AI.CHATBOT.CANCEL_BTN' | translate }}</button>
               <button (click)="confirmCrop()" class="px-8 py-2.5 rounded-xl font-bold text-white bg-[#0a8f96] hover:bg-[#076b70] transition-colors shadow-lg shadow-[#0a8f96]/20 flex items-center gap-2 cursor-pointer">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                 </svg>
-                <span>اعتماد التعديل</span>
+                <span>{{ 'AI.CHATBOT.APPLY_BTN' | translate }}</span>
               </button>
             </div>
           </div>
@@ -429,7 +429,7 @@ export class ChatbotComponent {
     
     const fileToUpload = (this.croppedFile || this.croppedImageTemp) as any;
     if (!fileToUpload) {
-      this.toast.error(this.translate.instant('MESSAGES.IMAGE_PROCESS_ERROR') || 'حدث خطأ أثناء معالجة الصورة');
+      this.toast.error(this.translate.instant('MESSAGES.IMAGE_PROCESS_ERROR') || this.translate.instant('AI.CHATBOT.IMAGE_PROCESS_FALLBACK'));
       return;
     }
 

@@ -1,6 +1,6 @@
 import { Component, input, signal, ElementRef, viewChild, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ToastService } from '../../../core/services/toast.service';
 import { AiService } from '../../../features/ai/services/ai.service';
 
@@ -64,7 +64,7 @@ import { AiService } from '../../../features/ai/services/ai.service';
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 21l3.536-1.42 2.73-2.73m-2.58-2.324l6.02-6.02a2.83 2.83 0 10-4-4L8.7 10.51a2.83 2.83 0 00-.819 1.4l-1.1 4.4 4.01-1.002z"/>
           </svg>
-          <span>{{ showTranscription() ? 'إخفاء النص المكتوب' : 'تحويل إلى نص بالذكاء الاصطناعي ✨' }}</span>
+          <span>{{ (showTranscription() ? 'AUDIO_PLAYER.HIDE_TRANSCRIPT' : 'AUDIO_PLAYER.TRANSCRIBE_BTN') | translate }}</span>
         </button>
 
         <!-- Dynamic transcription panel -->
@@ -81,7 +81,7 @@ import { AiService } from '../../../features/ai/services/ai.service';
                   <span class="w-1 h-2.5 bg-[#0a8f96] rounded-full animate-bounce [animation-delay:0.5s]"></span>
                 </div>
                 <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest animate-pulse">
-                  جاري تحليل الصوت وتوليد النص بالذكاء الاصطناعي...
+                  {{ 'AUDIO_PLAYER.TRANSCRIBING_LOADING' | translate }}
                 </span>
               </div>
             } @else {
@@ -89,7 +89,7 @@ import { AiService } from '../../../features/ai/services/ai.service';
               <div class="flex flex-col gap-1.5">
                 <div class="flex items-center justify-between">
                   <span class="text-[9px] font-black text-[#0a8f96] uppercase tracking-wider">
-                    نص التفريغ الصوتي (AI)
+                    {{ 'AUDIO_PLAYER.TRANSCRIPT_LABEL' | translate }}
                   </span>
                   <button (click)="copyTranscript()" 
                           class="text-slate-400 hover:text-[#0a8f96] transition-colors p-1 rounded-lg hover:bg-slate-50 cursor-pointer">
@@ -163,6 +163,7 @@ export class AudioPlayerComponent implements OnInit, OnDestroy {
   
   private toast = inject(ToastService);
   private aiService = inject(AiService);
+  private translate = inject(TranslateService);
 
   ngOnInit() {
     // Initialize component
@@ -180,7 +181,7 @@ export class AudioPlayerComponent implements OnInit, OnDestroy {
         this.isPlaying.set(true);
       }).catch(err => {
         console.error('Audio playback error:', err);
-        this.toast.error('تعذر تشغيل الصوت');
+        this.toast.error(this.translate.instant('AUDIO_PLAYER.PLAYBACK_ERROR'));
       });
     }
   }
@@ -264,13 +265,13 @@ export class AudioPlayerComponent implements OnInit, OnDestroy {
       if (aiResponse && aiResponse.transcription) {
         this.transcriptText.set(aiResponse.transcription.trim());
         this.hasTranscript.set(true);
-        this.toast.success('تم التفريغ الصوتي بالذكاء الاصطناعي بنجاح ✨');
+        this.toast.success(this.translate.instant('AUDIO_PLAYER.TRANSCRIBE_SUCCESS'));
       } else {
         throw new Error('No transcription returned');
       }
     } catch (err) {
       console.error('AI Speech-to-Text model transcription failed:', err);
-      this.toast.error('تعذر الاتصال بخادم الذكاء الاصطناعي للتفريغ');
+      this.toast.error(this.translate.instant('AUDIO_PLAYER.TRANSCRIBE_FAILED'));
       this.showTranscription.set(false);
     } finally {
       this.isTranscribing.set(false);
@@ -281,9 +282,9 @@ export class AudioPlayerComponent implements OnInit, OnDestroy {
     if (!this.transcriptText()) return;
     
     navigator.clipboard.writeText(this.transcriptText()).then(() => {
-      this.toast.success('تم نسخ النص إلى الحافظة');
+      this.toast.success(this.translate.instant('AUDIO_PLAYER.COPY_SUCCESS'));
     }).catch(() => {
-      this.toast.error('فشل نسخ النص');
+      this.toast.error(this.translate.instant('AUDIO_PLAYER.COPY_FAILED'));
     });
   }
 

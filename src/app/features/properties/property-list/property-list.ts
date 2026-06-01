@@ -72,7 +72,7 @@ import { EGYPT_REGIONS, Governorate, City } from '../../../core/constants/egypt-
                       <!-- All Cities option -->
                       <button type="button" (click)="selectCity('')" 
                               class="w-full px-6 py-2.5 text-start hover:bg-slate-50 text-xs font-black text-[#0a8f96] transition-all">
-                        {{ translate.currentLang === 'ar' ? 'كل المحافظات والمدن (الكل)' : 'All Governorates & Cities' }}
+                        {{ 'PROPERTY_LIST.ALL_CITIES' | translate }}
                       </button>
                       <div class="w-full border-t border-slate-100 my-1"></div>
                       
@@ -83,7 +83,7 @@ import { EGYPT_REGIONS, Governorate, City } from '../../../core/constants/egypt-
                         <!-- Option for All Cities in this Governorate -->
                         <button type="button" (click)="selectCity(gov.id)" 
                                 class="w-full px-8 py-2 text-start hover:bg-[#0a8f96]/5 text-xs font-black text-[#0a8f96] transition-all">
-                          {{ translate.currentLang === 'ar' ? 'كل مدن ' + gov.nameAr : 'All ' + gov.nameEn }}
+                          {{ 'PROPERTY_LIST.ALL_CITIES_IN' | translate:{ name: translate.currentLang === 'ar' ? gov.nameAr : gov.nameEn } }}
                         </button>
                         
                         @for (city of gov.cities; track city.id) {
@@ -315,7 +315,7 @@ import { EGYPT_REGIONS, Governorate, City } from '../../../core/constants/egypt-
                             [class.text-white]="isCompared(p.id)"
                             [class.border-[#0a8f96]]="isCompared(p.id)"
                             class="absolute top-5 start-17 z-10 w-10 h-10 bg-white/90 backdrop-blur-md rounded-full flex items-center justify-center text-gray-500 hover:text-[#0a8f96] hover:border-[#0a8f96]/30 transition-all shadow-sm border border-white hover:scale-110 active:scale-95 cursor-pointer"
-                            [title]="'المقارنة جنبًا إلى جنب'">
+                            [title]="'COMPARE.TOOLTIP' | translate">
                       <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
                       </svg>
@@ -989,7 +989,7 @@ export class PropertyListComponent implements OnInit, AfterViewInit {
   locateUser() {
     if (this.map) {
       this.map.locate({ setView: true, maxZoom: 13 });
-      this.toast.info(this.translate.instant('PROPERTY_FORM.MESSAGES.GEO_LOCATING'));
+      this.toast.info(this.translate.instant('MESSAGES.GEO_LOCATING'));
     }
   }
 
@@ -1153,7 +1153,7 @@ export class PropertyListComponent implements OnInit, AfterViewInit {
       if (e?.status === 409) {
         this.toast.info(this.translate.instant('PROPERTY_LIST.MESSAGES.FAV_EXIST'));
       } else {
-        this.toast.error(e?.error?.detail || 'Error');
+        this.toast.error(e?.error?.detail || this.translate.instant('COMMON.ERROR'));
       }
     }
   }

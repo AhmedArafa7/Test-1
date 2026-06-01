@@ -27,9 +27,12 @@ export function resolveBackendAssetUrl(url?: string | null): string | undefined 
   return `${getBackendOrigin()}${normalizedPath}`;
 }
 
-export function buildPropertyPlaceholder(label?: string): string {
+export function buildPropertyPlaceholder(label?: string, placeholderText = ''): string {
   // Generate a clean SVG placeholder instead of fake photos
   const initial = label ? label.charAt(0) : '🏠';
+  const textElement = placeholderText
+    ? `<text x="400" y="350" text-anchor="middle" fill="%2394a3b8" font-family="Arial,sans-serif" font-size="14" font-weight="bold">${placeholderText}</text>`
+    : '';
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600">
     <rect width="800" height="600" fill="%23f1f5f9"/>
     <g transform="translate(400,260)">
@@ -37,13 +40,13 @@ export function buildPropertyPlaceholder(label?: string): string {
       <rect x="-30" y="20" width="60" height="40" fill="none" stroke="%23cbd5e1" stroke-width="3" rx="2"/>
       <rect x="-10" y="35" width="20" height="25" fill="none" stroke="%23cbd5e1" stroke-width="3" rx="1"/>
     </g>
-    <text x="400" y="350" text-anchor="middle" fill="%2394a3b8" font-family="Arial,sans-serif" font-size="14" font-weight="bold">لا توجد صورة</text>
+    ${textElement}
   </svg>`;
   return `data:image/svg+xml,${svg}`;
 }
 
-export function getPropertyImageUrl(url?: string | null, label?: string): string {
-  return resolveBackendAssetUrl(url) ?? buildPropertyPlaceholder(label);
+export function getPropertyImageUrl(url?: string | null, label?: string, placeholderText = ''): string {
+  return resolveBackendAssetUrl(url) ?? buildPropertyPlaceholder(label, placeholderText);
 }
 
 /**

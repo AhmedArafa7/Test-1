@@ -11,7 +11,7 @@ import { RelativeTimePipe } from '../../../shared/pipes/relative-time.pipe';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner';
 import { PropertyService } from '../../properties/services/property.service';
 import { CurrencyEgpPipe } from '../../../shared/pipes/currency-egp.pipe';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { resolveBackendAssetUrl, getPropertyImageUrl, buildPropertyPlaceholder, compressImage } from '../../../core/utils/media';
 import { LocalImageService } from '../../../core/services/local-image.service';
@@ -37,6 +37,7 @@ export class ChatRoomComponent implements OnInit, OnDestroy {
   private cloudinaryService = inject(CloudinaryService);
   private destroyRef = inject(DestroyRef);
   private aiService = inject(AiService);
+  private translate = inject(TranslateService);
 
   croppedFile: File | Blob | string | null = null;
 
@@ -73,11 +74,11 @@ export class ChatRoomComponent implements OnInit, OnDestroy {
   activeEmojiCategory = signal<'all' | 'faces' | 'home' | 'nature' | 'objects'>('all');
   
   emojiCategories: { id: 'all' | 'faces' | 'home' | 'nature' | 'objects', name: string, icon: string }[] = [
-    { id: 'all', name: 'الكل', icon: '✨' },
-    { id: 'faces', name: 'تعبيرات', icon: '😊' },
-    { id: 'home', name: 'عقارات', icon: '🏠' },
-    { id: 'nature', name: 'طبيعة', icon: '🌴' },
-    { id: 'objects', name: 'رموز', icon: '🔑' }
+    { id: 'all', name: this.translate.instant('MESSAGES.EMOJI_CAT_ALL'), icon: '✨' },
+    { id: 'faces', name: this.translate.instant('MESSAGES.EMOJI_CAT_FACES'), icon: '😊' },
+    { id: 'home', name: this.translate.instant('MESSAGES.EMOJI_CAT_HOME'), icon: '🏠' },
+    { id: 'nature', name: this.translate.instant('MESSAGES.EMOJI_CAT_NATURE'), icon: '🌴' },
+    { id: 'objects', name: this.translate.instant('MESSAGES.EMOJI_CAT_OBJECTS'), icon: '🔑' }
   ];
 
   categorizedEmojis = [
@@ -307,9 +308,9 @@ export class ChatRoomComponent implements OnInit, OnDestroy {
 
   getOtherName(c: Conversation): string {
     if (c.buyerUserId === this.auth.userId()) {
-      return c.agentDisplayName || 'وكيل عقاري';
+      return c.agentDisplayName || this.translate.instant('MESSAGES.AGENT');
     }
-    return c.buyerDisplayName || 'مشتري';
+    return c.buyerDisplayName || this.translate.instant('MESSAGES.BUYER');
   }
 
   getOtherInitials(c: Conversation): string {
@@ -928,7 +929,7 @@ export class ChatRoomComponent implements OnInit, OnDestroy {
   onCalendarClick() {
     const conv = this.activeConversation();
     if (!conv) {
-      this.toast.info('الرجاء اختيار محادثة أولاً');
+      this.toast.info(this.translate.instant('MESSAGES.SELECT_CONV_FIRST'));
       return;
     }
 
@@ -953,7 +954,7 @@ export class ChatRoomComponent implements OnInit, OnDestroy {
     } else if (this.auth.isAgent()) {
       this.router.navigate(['/bookings']);
     } else {
-      this.toast.info('ميزة الحجوزات متاحة للمشترين والوكلاء فقط');
+      this.toast.info(this.translate.instant('MESSAGES.BOOKING_BUYERS_AGENTS'));
     }
   }
 
@@ -1092,9 +1093,9 @@ export class ChatRoomComponent implements OnInit, OnDestroy {
             }
           }
           
-          let content = '🎤 رسالة صوتية';
+          let content = this.translate.instant('MESSAGES.VOICE_MESSAGE');
           if (transcriptText) {
-            content = `[TRANSCRIPT:${transcriptText}]🎤 رسالة صوتية`;
+            content = `[TRANSCRIPT:${transcriptText}]` + this.translate.instant('MESSAGES.VOICE_MESSAGE');
           }
           
           await this.chatSignalR.sendMessage(this.conversationId, content, url);
@@ -1152,10 +1153,10 @@ export class ChatRoomComponent implements OnInit, OnDestroy {
       if (!mutedList.includes(this.conversationId)) {
         mutedList.push(this.conversationId);
       }
-      this.toast.success('تم كتم إشعارات هذه المحادثة بنجاح 🔕');
+      this.toast.success(this.translate.instant('MESSAGES.MUTED_SUCCESS'));
     } else {
       mutedList = mutedList.filter(id => id !== this.conversationId);
-      this.toast.success('تم تفعيل إشعارات هذه المحادثة 🔔');
+      this.toast.success(this.translate.instant('MESSAGES.UNMUTED_SUCCESS'));
     }
     
     localStorage.setItem('baytology_muted_conversations', JSON.stringify(mutedList));
@@ -1187,7 +1188,7 @@ export class ChatRoomComponent implements OnInit, OnDestroy {
 
   changeSoundType(type: 'premium' | 'pop' | 'classic' | 'custom' | 'none') {
     if (type === 'custom' && !localStorage.getItem('baytology_custom_sound_data')) {
-      this.toast.error('لم تقم برفع أي نغمة مخصصة بعد. يرجى الذهاب إلى الإعدادات لرفع نغمة أولاً.');
+      this.toast.error(this.translate.instant('MESSAGES.NO_CUSTOM_TONE'));
       return;
     }
     this.soundType.set(type);
@@ -1217,7 +1218,7 @@ export class ChatRoomComponent implements OnInit, OnDestroy {
           localStorage.removeItem('baytology_custom_sound_name');
           localStorage.setItem('baytology_sound_type', 'premium');
           
-          this.toast.error('تعذر العثور على ملف النغمة المخصصة (ربما تم مسح بيانات المتصفح). تم الانتقال تلقائياً إلى النغمة الافتراضية "بلوري".');
+          this.toast.error(this.translate.instant('MESSAGES.CUSTOM_TONE_MISSING'));
           
           setTimeout(() => this.playNotificationSound(), 100);
           return;
@@ -1283,10 +1284,10 @@ export class ChatRoomComponent implements OnInit, OnDestroy {
 
   startNewConversation() {
     if (this.auth.isAgent()) {
-      this.toast.info('وكلاء العقارات لا يمكنهم بدء محادثات جديدة.');
+      this.toast.info(this.translate.instant('MESSAGES.AGENT_CANT_START'));
       return;
     }
-    this.toast.info('الرجاء تصفح العقارات والضغط على "تواصل مع الوكيل" لبدء محادثة جديدة معه.');
+    this.toast.info(this.translate.instant('MESSAGES.BROWSE_TO_START'));
     this.router.navigate(['/properties']);
   }
 

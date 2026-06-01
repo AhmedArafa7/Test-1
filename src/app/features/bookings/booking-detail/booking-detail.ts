@@ -169,10 +169,10 @@ import { ProfileService } from '../../profile/services/profile.service';
                   </div>
                   
                   <div class="w-full sm:w-auto border-t sm:border-t-0 sm:border-r border-gray-100 pt-6 sm:pt-0 sm:pr-8 flex flex-col items-start sm:items-end">
-                    <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">توقيت المعاينة</p>
+                    <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">{{ 'BOOKINGS.DETAIL.TIME_LABEL' | translate }}</p>
                     <p class="text-xl font-black text-gray-900 flex items-center gap-2">
                       <span>{{ b.startDate | localizedDate:'hh:mm a' }}</span>
-                      <span class="text-gray-300 text-sm font-medium">إلى</span>
+                      <span class="text-gray-300 text-sm font-medium">{{ 'BOOKINGS.DETAIL.TIME_TO_SEPARATOR' | translate }}</span>
                       <span>{{ b.endDate | localizedDate:'hh:mm a' }}</span>
                     </p>
                   </div>
@@ -374,7 +374,7 @@ export class BookingDetailComponent implements OnInit {
       const res = await this.profileService.requestRefund({
         paymentId: b.paymentId,
         amount: b.amount,
-        reason: this.translate.instant('BOOKINGS.DETAIL.REFUND_REASON')
+        reason: this.translate.instant('BOOKINGS.DETAIL.MESSAGES.REFUND_REASON')
       });
       this.toast.success(this.translate.instant('BOOKINGS.DETAIL.MESSAGES.REFUND_SUCCESS', { id: res.refundId.substring(0, 8) }));
     } catch (e: any) {

@@ -153,8 +153,8 @@ import { firstValueFrom } from 'rxjs';
                         <input type="number" [(ngModel)]="form.price" name="price" id="price"
                                [class.border-red-500]="validationErrors['price']"
                                class="w-full bg-gray-50 border border-transparent focus:bg-white focus:border-[#0a8f96] focus:ring-4 focus:ring-[#0a8f96]/5 outline-none rounded-2xl px-6 py-4 text-sm font-bold transition-all shadow-inner placeholder:text-gray-300"
-                               placeholder="مثال: 2500000" min="1">
-                        <span class="absolute ltr:right-6 rtl:left-6 text-xs font-extrabold text-[#0a8f96] pointer-events-none">ج.م</span>
+                               [placeholder]="'PROPERTY_FORM.PLACEHOLDER_PRICE' | translate" min="1">
+                        <span class="absolute ltr:right-6 rtl:left-6 text-xs font-extrabold text-[#0a8f96] pointer-events-none">{{ 'PROPERTY.CURRENCY' | translate }}</span>
                       </div>
                     </div>
 
@@ -166,8 +166,8 @@ import { firstValueFrom } from 'rxjs';
                         <input type="number" [(ngModel)]="form.area" name="area" id="area"
                                [class.border-red-500]="validationErrors['area']"
                                class="w-full bg-gray-50 border border-transparent focus:bg-white focus:border-[#0a8f96] focus:ring-4 focus:ring-[#0a8f96]/5 outline-none rounded-2xl px-6 py-4 text-sm font-bold transition-all shadow-inner placeholder:text-gray-300"
-                               placeholder="مثال: 150" min="1">
-                        <span class="absolute ltr:right-6 rtl:left-6 text-xs font-extrabold text-[#0a8f96] pointer-events-none">م²</span>
+                               [placeholder]="'PROPERTY_FORM.PLACEHOLDER_AREA' | translate" min="1">
+                        <span class="absolute ltr:right-6 rtl:left-6 text-xs font-extrabold text-[#0a8f96] pointer-events-none">{{ 'PROPERTY.AREA_UNIT' | translate }}</span>
                       </div>
                     </div>
                   </div>
@@ -175,26 +175,26 @@ import { firstValueFrom } from 'rxjs';
                   <!-- Bedrooms, Bathrooms, Floor & Total Floors Row -->
                   <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
                     <div class="space-y-3">
-                      <label class="block text-xs font-black text-gray-800 mb-1 px-1">الغرف <span class="text-red-500">*</span></label>
-                      <input type="number" [(ngModel)]="form.bedrooms" name="bedrooms" id="bedrooms" min="0" placeholder="مثال: 3"
+                      <label class="block text-xs font-black text-gray-800 mb-1 px-1">{{ 'PROPERTY_FORM.LABEL_BEDROOMS' | translate }} <span class="text-red-500">*</span></label>
+                      <input type="number" [(ngModel)]="form.bedrooms" name="bedrooms" id="bedrooms" min="0" [placeholder]="'PROPERTY_FORM.PLACEHOLDER_BEDROOMS' | translate"
                              class="w-full bg-gray-50 border border-transparent focus:bg-white focus:border-[#0a8f96] focus:ring-4 focus:ring-[#0a8f96]/5 outline-none rounded-2xl px-6 py-4 text-sm font-bold transition-all shadow-inner text-center">
                     </div>
 
                     <div class="space-y-3">
-                      <label class="block text-xs font-black text-gray-800 mb-1 px-1">الحمامات <span class="text-red-500">*</span></label>
-                      <input type="number" [(ngModel)]="form.bathrooms" name="bathrooms" id="bathrooms" min="0" placeholder="مثال: 2"
+                      <label class="block text-xs font-black text-gray-800 mb-1 px-1">{{ 'PROPERTY_FORM.LABEL_BATHROOMS' | translate }} <span class="text-red-500">*</span></label>
+                      <input type="number" [(ngModel)]="form.bathrooms" name="bathrooms" id="bathrooms" min="0" [placeholder]="'PROPERTY_FORM.PLACEHOLDER_BATHROOMS' | translate"
                              class="w-full bg-gray-50 border border-transparent focus:bg-white focus:border-[#0a8f96] focus:ring-4 focus:ring-[#0a8f96]/5 outline-none rounded-2xl px-6 py-4 text-sm font-bold transition-all shadow-inner text-center">
                     </div>
 
                     <div class="space-y-3">
-                      <label class="block text-xs font-black text-gray-800 mb-1 px-1">الطابق</label>
-                      <input type="number" [(ngModel)]="form.floor" name="floor" id="floor" min="0" placeholder="مثال: 3"
+                      <label class="block text-xs font-black text-gray-800 mb-1 px-1">{{ 'PROPERTY_FORM.LABEL_FLOOR' | translate }}</label>
+                      <input type="number" [(ngModel)]="form.floor" name="floor" id="floor" min="0" [placeholder]="'PROPERTY_FORM.PLACEHOLDER_FLOOR' | translate"
                              class="w-full bg-gray-50 border border-transparent focus:bg-white focus:border-[#0a8f96] focus:ring-4 focus:ring-[#0a8f96]/5 outline-none rounded-2xl px-6 py-4 text-sm font-bold transition-all shadow-inner text-center">
                     </div>
 
                     <div class="space-y-3">
-                      <label class="block text-xs font-black text-gray-800 mb-1 px-1">إجمالي الطوابق</label>
-                      <input type="number" [(ngModel)]="form.totalFloors" name="totalFloors" id="totalFloors" min="0" placeholder="مثال: 10"
+                      <label class="block text-xs font-black text-gray-800 mb-1 px-1">{{ 'PROPERTY_FORM.LABEL_TOTAL_FLOORS' | translate }}</label>
+                      <input type="number" [(ngModel)]="form.totalFloors" name="totalFloors" id="totalFloors" min="0" [placeholder]="'PROPERTY_FORM.PLACEHOLDER_TOTAL_FLOORS' | translate"
                              class="w-full bg-gray-50 border border-transparent focus:bg-white focus:border-[#0a8f96] focus:ring-4 focus:ring-[#0a8f96]/5 outline-none rounded-2xl px-6 py-4 text-sm font-bold transition-all shadow-inner text-center">
                     </div>
                   </div>
@@ -214,7 +214,7 @@ import { firstValueFrom } from 'rxjs';
                   @if (uploadProgressList().length > 0) {
                     <div class="p-6 bg-slate-50 border border-slate-100 rounded-3xl space-y-4 mb-6 animate-scale-in" dir="rtl">
                       <h4 class="text-xs font-black text-slate-800 flex items-center gap-2">
-                        <span>📤 جاري رفع الصور الفاخرة إلى السحابة...</span>
+                        <span>{{ 'PROPERTY_FORM.MESSAGES.UPLOADING_CLOUD' | translate }}</span>
                       </h4>
                       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         @for (img of uploadProgressList(); track img.id) {
@@ -224,12 +224,12 @@ import { firstValueFrom } from 'rxjs';
                                 <img [src]="img.preview" class="w-full h-full object-cover">
                               </div>
                               <div class="text-right">
-                                <h5 class="text-[10px] font-black text-slate-700 leading-none mb-1.5">صورة رقم {{ img.index }}</h5>
+                                <h5 class="text-[10px] font-black text-slate-700 leading-none mb-1.5">{{ 'PROPERTY_FORM.IMAGE_NUMBER' | translate:{ index: img.index } }}</h5>
                                 <span class="text-[9px] font-black tracking-wide" 
                                       [class.text-[#0a8f96]]="img.status === 'uploading'" 
                                       [class.text-emerald-500]="img.status === 'success'" 
                                       [class.text-red-500]="img.status === 'error'">
-                                  {{ img.status === 'uploading' ? 'جاري الرفع...' : img.status === 'success' ? 'تم الرفع بنجاح' : 'فشل الرفع' }}
+                                  {{ img.status === 'uploading' ? ('IMAGE.STATUS_UPLOADING' | translate) : img.status === 'success' ? ('IMAGE.STATUS_SUCCESS' | translate) : ('IMAGE.STATUS_FAILED' | translate) }}
                                 </span>
                               </div>
                             </div>
@@ -249,7 +249,7 @@ import { firstValueFrom } from 'rxjs';
                   @if (isEdit() && existingImages().length > 0) {
                     <div class="space-y-4 mb-8">
                       <h4 class="text-xs font-black text-slate-800 flex items-center gap-2">
-                        <span>🖼️ الصور الحالية المرفوعة للعقار (اضغط على 🗑️ لحذف أي صورة)</span>
+                        <span>{{ 'PROPERTY_FORM.CURRENT_IMAGES_HINT' | translate }}</span>
                       </h4>
                       <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                         @for (img of existingImages(); track img.id) {
@@ -379,14 +379,14 @@ import { firstValueFrom } from 'rxjs';
                   
                   <!-- Smart Geocoding search input -->
                   <div class="space-y-3 md:col-span-2">
-                    <label class="block text-[11px] font-black text-[#0a8f96] uppercase tracking-wider mb-1 px-1">🔍 البحث الجغرافي الذكي (اكتب المنطقة واضغط Enter أو بحث)</label>
+                    <label class="block text-[11px] font-black text-[#0a8f96] uppercase tracking-wider mb-1 px-1">{{ 'PROPERTY_FORM.GEO_SEARCH_LABEL' | translate }}</label>
                     <div class="relative flex gap-2">
                       <input type="text" #geoSearchInput (keyup.enter)="searchLocation(geoSearchInput.value)"
-                             placeholder="مثال: الزمالك، القاهرة الجديدة، سموحة..."
+                             [placeholder]="'PROPERTY_FORM.GEO_SEARCH_PLACEHOLDER' | translate"
                              class="w-full bg-slate-50 border border-gray-100 rounded-2xl px-6 py-4 text-gray-900 placeholder:text-gray-300 focus:bg-white focus:border-[#0a8f96] focus:ring-4 focus:ring-[#0a8f96]/5 outline-none transition-all font-bold shadow-sm">
                       <button type="button" (click)="searchLocation(geoSearchInput.value)"
                               class="bg-[#0a8f96] hover:bg-[#076b70] text-white text-xs font-black px-6 py-4 rounded-2xl transition-all active:scale-95 cursor-pointer shrink-0">
-                        بحث جيو
+                        {{ 'PROPERTY_FORM.GEO_SEARCH_BTN' | translate }}
                       </button>
                     </div>
                   </div>
@@ -548,7 +548,11 @@ export class PropertyFormComponent implements OnInit {
   readonly furnishingStatusOptions = Object.values(FurnishingStatus);
   readonly viewTypeOptions = Object.values(ViewType);
 
-  // Localization Mappings (Key -> Arabic Backend Value)
+  // Backend Filter Mapping (English key -> Arabic value expected by API).
+  // These are DATA constants used for backend communication, not user-facing text.
+  // They mirror the CITIES/DISTRICTS entries in public/i18n/ar.json and must be
+  // kept in sync when adding new locations. User-facing display uses
+  // translate.instant('CITIES.Cairo') etc. directly.
   private cityMap: Record<string, string> = {
     'Cairo': 'القاهرة', 'Alexandria': 'الإسكندرية', 'Giza': 'الجيزة', 'Mansoura': 'المنصورة',
     'Tanta': 'طنطا', 'Mahalla': 'المحلة الكبرى', 'PortSaid': 'بور سعيد', 'Suez': 'السويس',
@@ -764,10 +768,10 @@ export class PropertyFormComponent implements OnInit {
   }
 
   removeExistingImage(image: PropertyImage) {
-    if (!confirm('هل أنت متأكد من إزالة هذه الصورة من العقار؟')) return;
+    if (!confirm(this.translate.instant('PROPERTY_FORM.MESSAGES.DELETE_IMAGE_CONFIRM'))) return;
     this.existingImages.update(imgs => imgs.filter(x => x.id !== image.id));
     this.existingImageUrls.update(urls => urls.filter(u => u !== image.url));
-    this.toast.success('تم إزالة الصورة محلياً بنجاح. سيتم تطبيق التغييرات على قاعدة البيانات عند الضغط على تحديث البيانات.');
+    this.toast.success(this.translate.instant('PROPERTY_FORM.MESSAGES.DELETE_IMAGE_LOCAL_SUCCESS'));
   }
 
   async submit() {
@@ -836,7 +840,7 @@ export class PropertyFormComponent implements OnInit {
                         manualImageUrls.length;
 
     if (totalImages === 0) {
-      this.toast.error('يجب إضافة صورة واحدة على الأقل للعقار (إما بتحميل صور أو إضافة روابط).');
+      this.toast.error(this.translate.instant('PROPERTY_FORM.MESSAGES.IMAGE_REQUIRED'));
       this.currentStep.set(2);
       return;
     }
@@ -1057,7 +1061,7 @@ export class PropertyFormComponent implements OnInit {
   // --- 3. Smart Nominatim OpenStreetMap Geocoding ---
   async searchLocation(query: string) {
     if (!query || query.trim().length < 3) {
-      this.toast.error('يرجى كتابة اسم الموقع المكون من 3 أحرف على الأقل.');
+      this.toast.error(this.translate.instant('PROPERTY_FORM.MESSAGES.GEO_MIN_LENGTH'));
       return;
     }
 
@@ -1076,12 +1080,12 @@ export class PropertyFormComponent implements OnInit {
         }
         
         this.triggerDraftSave();
-        this.toast.success('تم تحديد الموقع الجغرافي وتحديث الخريطة بنجاح!');
+        this.toast.success(this.translate.instant('PROPERTY_FORM.MESSAGES.GEO_UPDATED'));
       } else {
-        this.toast.error('لم نتمكن من تحديد هذا الموقع. يرجى كتابة اسم مدينة أو حي معروف.');
+        this.toast.error(this.translate.instant('PROPERTY_FORM.MESSAGES.GEO_NOT_FOUND'));
       }
     } catch (err) {
-      this.toast.error('حدث خطأ أثناء الاتصال بخدمة الخرائط الجغرافية.');
+      this.toast.error(this.translate.instant('PROPERTY_FORM.MESSAGES.GEO_SERVICE_ERROR'));
       console.error(err);
     } finally {
       this.locating = false;

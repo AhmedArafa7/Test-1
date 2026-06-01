@@ -457,6 +457,12 @@ export class PropertyDetailComponent implements OnInit {
   private translate = inject(TranslateService);
 
   // Localization Mappings
+  // NOTE: These maps are static backend API value→Arabic-label mappings used as a
+  // document terminology reference; values come from the backend as English enum
+  // codes (e.g. 'Cairo'). The runtime user-facing display is sourced from
+  // CITIES / DISTRICTS translation files via getCityLabel/getDistrictLabel below.
+  // Kept as constants rather than translation keys because they map backend codes,
+  // not user-facing labels.
   private cityMap: Record<string, string> = {
     'Cairo': 'القاهرة', 'Alexandria': 'الإسكندرية', 'Giza': 'الجيزة', 'Mansoura': 'المنصورة',
     'Tanta': 'طنطا', 'Mahalla': 'المحلة الكبرى', 'PortSaid': 'بور سعيد', 'Suez': 'السويس',
@@ -699,10 +705,10 @@ export class PropertyDetailComponent implements OnInit {
       this.router.navigate(['/conversations', response.conversationId], { queryParams: { propertyId: property.id } });
     } catch (error: any) {
       if (error?.status === 401) {
-        this.toast.error('انتهت جلستك، يرجى تسجيل الدخول مرة أخرى');
+        this.toast.error(this.translate.instant('PROPERTY_DETAIL.MESSAGES.SESSION_EXPIRED'));
         this.router.navigate(['/auth/login']);
       } else {
-        this.toast.error('تعذر بدء المحادثة');
+        this.toast.error(this.translate.instant('PROPERTY_DETAIL.MESSAGES.CONVERSATION_FAILED'));
       }
     }
   }
@@ -712,7 +718,7 @@ export class PropertyDetailComponent implements OnInit {
     if (!property) return;
 
     if (!this.auth.isAuthenticated()) {
-      this.toast.info('يجب تسجيل الدخول لتتمكن من حجز موعد معاينة');
+      this.toast.info(this.translate.instant('PROPERTY_DETAIL.MESSAGES.BOOKING_LOGIN_REQUIRED'));
       setTimeout(() => this.router.navigate(['/auth/login']), 1500);
       return;
     }
@@ -739,7 +745,7 @@ export class PropertyDetailComponent implements OnInit {
         this.toast.success(this.translate.instant('PROPERTY_LIST.MESSAGES.DELETE_SUCCESS'));
         this.router.navigate(['/properties']);
       } catch (error: any) {
-        const message = error?.error?.detail || 'حدث خطأ أثناء حذف العقار';
+        const message = error?.error?.detail || this.translate.instant('PROPERTY_DETAIL.MESSAGES.DELETE_ERROR');
         this.toast.error(message);
       }
     }
@@ -757,12 +763,12 @@ export class PropertyDetailComponent implements OnInit {
         rating: this.reviewRating(),
         comment: this.reviewComment
       });
-      this.toast.success('شكرًا لتقييمك!');
+      this.toast.success(this.translate.instant('PROPERTY_DETAIL.MESSAGES.REVIEW_THANKS'));
       this.reviewRating.set(0);
       this.reviewComment = '';
     } catch (e: any) {
       console.error('Review submission failed:', e);
-      let errorMessage = 'تعذر إرسال التقييم';
+      let errorMessage = this.translate.instant('PROPERTY_DETAIL.MESSAGES.REVIEW_FAILED');
       if (e?.error?.detail) {
         errorMessage = e.error.detail;
       } else if (e?.error?.title) {

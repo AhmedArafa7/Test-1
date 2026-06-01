@@ -1,5 +1,5 @@
 import { Component, signal, OnInit } from '@angular/core';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { RouterLink, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { LocalizedDatePipe } from '../../../shared/pipes/localized-date.pipe';
@@ -36,25 +36,25 @@ import { EmptyStateComponent } from '../../../shared/components/empty-state/empt
           
           <!-- Filter Switcher (Pills) -->
           <div class="flex items-center gap-2 bg-[#f1f5f9] p-1.5 rounded-full border border-slate-100 shadow-sm shrink-0">
-            <button (click)="setStatusFilter('All')" 
-                    [class]="statusFilter() === 'All' ? 'bg-[#076b70] text-white shadow-sm' : 'text-slate-600 hover:text-slate-900 bg-transparent'" 
+            <button (click)="setStatusFilter('All')"
+                    [class]="statusFilter() === 'All' ? 'bg-[#076b70] text-white shadow-sm' : 'text-slate-600 hover:text-slate-900 bg-transparent'"
                     class="px-6 py-2.5 rounded-full text-xs font-black uppercase tracking-wider transition-all duration-300 cursor-pointer">
-              الكل
+              {{ 'BOOKINGS.FILTER_ALL' | translate }}
             </button>
-            <button (click)="setStatusFilter('Pending')" 
-                    [class]="statusFilter() === 'Pending' ? 'bg-[#076b70] text-white shadow-sm' : 'text-slate-600 hover:text-slate-900 bg-transparent'" 
+            <button (click)="setStatusFilter('Pending')"
+                    [class]="statusFilter() === 'Pending' ? 'bg-[#076b70] text-white shadow-sm' : 'text-slate-600 hover:text-slate-900 bg-transparent'"
                     class="px-6 py-2.5 rounded-full text-xs font-black uppercase tracking-wider transition-all duration-300 cursor-pointer">
-              قيد الانتظار
+              {{ 'BOOKINGS.STATUSES.Pending' | translate }}
             </button>
-            <button (click)="setStatusFilter('Confirmed')" 
-                    [class]="statusFilter() === 'Confirmed' ? 'bg-[#076b70] text-white shadow-sm' : 'text-slate-600 hover:text-slate-900 bg-transparent'" 
+            <button (click)="setStatusFilter('Confirmed')"
+                    [class]="statusFilter() === 'Confirmed' ? 'bg-[#076b70] text-white shadow-sm' : 'text-slate-600 hover:text-slate-900 bg-transparent'"
                     class="px-6 py-2.5 rounded-full text-xs font-black uppercase tracking-wider transition-all duration-300 cursor-pointer">
-              مؤكد
+              {{ 'BOOKINGS.STATUSES.Confirmed' | translate }}
             </button>
-            <button (click)="setStatusFilter('Cancelled')" 
-                    [class]="statusFilter() === 'Cancelled' ? 'bg-rose-600 text-white shadow-sm' : 'text-slate-600 hover:text-slate-900 bg-transparent'" 
+            <button (click)="setStatusFilter('Cancelled')"
+                    [class]="statusFilter() === 'Cancelled' ? 'bg-rose-600 text-white shadow-sm' : 'text-slate-600 hover:text-slate-900 bg-transparent'"
                     class="px-6 py-2.5 rounded-full text-xs font-black uppercase tracking-wider transition-all duration-300 cursor-pointer">
-              الملغية
+              {{ 'BOOKINGS.CANCELLED' | translate }}
             </button>
           </div>
         </div>
@@ -68,7 +68,7 @@ import { EmptyStateComponent } from '../../../shared/components/empty-state/empt
             <!-- Stats Card -->
             <div class="bg-white rounded-[24px] border border-slate-100 shadow-[0_4px_24px_rgba(0,0,0,0.015)] p-6 md:p-8">
               <h3 class="text-xl font-black text-slate-800 border-b border-slate-100 pb-4 mb-6 ltr:text-left rtl:text-right">
-                إحصائيات الشهر
+                {{ 'BOOKINGS.MONTH_STATS' | translate }}
               </h3>
               
               <div class="space-y-6">
@@ -81,7 +81,7 @@ import { EmptyStateComponent } from '../../../shared/components/empty-state/empt
                       </svg>
                     </div>
                     <div class="ltr:text-left rtl:text-right">
-                      <p class="text-sm font-bold text-slate-900">إجمالي الطلبات</p>
+                      <p class="text-sm font-bold text-slate-900">{{ 'BOOKINGS.STATS.TOTAL_REQUESTS' | translate }}</p>
                     </div>
                   </div>
                   <span class="text-2xl font-black text-slate-900 tabular-nums">{{ totalRequestsCount() }}</span>
@@ -96,7 +96,7 @@ import { EmptyStateComponent } from '../../../shared/components/empty-state/empt
                       </svg>
                     </div>
                     <div class="ltr:text-left rtl:text-right">
-                      <p class="text-sm font-bold text-slate-900">قيد الانتظار</p>
+                      <p class="text-sm font-bold text-slate-900">{{ 'BOOKINGS.STATS.PENDING_F' | translate }}</p>
                     </div>
                   </div>
                   <span class="text-2xl font-black text-amber-600 tabular-nums">{{ pendingRequestsCount() }}</span>
@@ -111,7 +111,7 @@ import { EmptyStateComponent } from '../../../shared/components/empty-state/empt
                       </svg>
                     </div>
                     <div class="ltr:text-left rtl:text-right">
-                      <p class="text-sm font-bold text-slate-900">مؤكدة</p>
+                      <p class="text-sm font-bold text-slate-900">{{ 'BOOKINGS.STATS.CONFIRMED_F' | translate }}</p>
                     </div>
                   </div>
                   <span class="text-2xl font-black text-emerald-600 tabular-nums">{{ confirmedRequestsCount() }}</span>
@@ -126,7 +126,7 @@ import { EmptyStateComponent } from '../../../shared/components/empty-state/empt
                       </svg>
                     </div>
                     <div class="ltr:text-left rtl:text-right">
-                      <p class="text-sm font-bold text-slate-900">الملغية / المرفوضة</p>
+                      <p class="text-sm font-bold text-slate-900">{{ 'BOOKINGS.STATS.CANCELLED_REJECTED' | translate }}</p>
                     </div>
                   </div>
                   <span class="text-2xl font-black text-rose-600 tabular-nums">{{ cancelledRequestsCount() }}</span>
@@ -205,21 +205,21 @@ import { EmptyStateComponent } from '../../../shared/components/empty-state/empt
                         </h2>
                         
                         <p class="text-xs font-bold text-slate-400 mb-6 flex items-center gap-1.5 ltr:justify-start rtl:justify-end">
-                          طلب من: {{ auth.isAgent() ? (b.buyerName || 'أحمد عبدالله (عميل مميز)') : 'الوكيل المسؤول' }}
+                          {{ 'BOOKINGS.REQUEST_FROM' | translate }} {{ auth.isAgent() ? (b.buyerName || ('BOOKINGS.DEFAULT_BUYER_NAME' | translate)) : ('BOOKINGS.RESPONSIBLE_AGENT' | translate) }}
                         </p>
 
                         <!-- Details grid -->
                         <div class="grid grid-cols-2 gap-6 py-4 border-t border-slate-100 mb-6">
                           <div>
-                            <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">تاريخ الوصول</p>
+                            <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">{{ 'BOOKINGS.ARRIVAL_DATE' | translate }}</p>
                             <p class="text-sm font-black text-slate-900 tabular-nums">
                               {{ b.startDate | localizedDate:'yyyy/MM/dd' }}
                             </p>
                           </div>
                           <div>
-                            <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">المدة</p>
+                            <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">{{ 'BOOKINGS.DURATION' | translate }}</p>
                             <p class="text-sm font-black text-slate-900 tabular-nums">
-                              {{ getNightsCount(b) }} ليالي
+                              {{ getNightsCount(b) }} {{ 'BOOKINGS.NIGHTS_LABEL' | translate }}
                             </p>
                           </div>
                         </div>
@@ -228,45 +228,45 @@ import { EmptyStateComponent } from '../../../shared/components/empty-state/empt
                       <!-- Actions footer -->
                       <div class="flex flex-wrap items-center gap-3 pt-4 border-t border-slate-50 w-full">
                         @if (auth.isAgent() && b.status === 'Pending') {
-                          <button (click)="confirmBooking(b)" 
+                          <button (click)="confirmBooking(b)"
                                   class="flex-1 md:flex-none px-6 py-3 bg-[#076b70] hover:bg-[#055054] text-white rounded-xl text-xs font-black shadow-lg shadow-[#076b70]/15 hover:shadow-xl transition-all duration-200 active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
                             </svg>
-                            قبول الحجز
+                            {{ 'BOOKINGS.ACCEPT_BTN' | translate }}
                           </button>
-                          <button (click)="cancelBooking(b)" 
+                          <button (click)="cancelBooking(b)"
                                   class="flex-1 md:flex-none px-6 py-3 bg-rose-50 hover:bg-rose-100 text-rose-500 rounded-xl text-xs font-black transition-all duration-200 active:scale-[0.98] cursor-pointer">
-                            رفض
+                            {{ 'BOOKINGS.REJECT_BTN' | translate }}
                           </button>
                         }
                         @else if (b.status === 'Cancelled') {
                           @if (auth.isBuyer()) {
-                            <a [routerLink]="['/bookings/new']" [queryParams]="{ propertyId: b.propertyId, oldBookingId: b.id }" 
+                            <a [routerLink]="['/bookings/new']" [queryParams]="{ propertyId: b.propertyId, oldBookingId: b.id }"
                                class="flex-1 md:flex-none px-6 py-3 bg-[#076b70] hover:bg-[#055054] text-white rounded-xl text-xs font-black shadow-lg shadow-[#076b70]/15 hover:shadow-xl transition-all duration-200 text-center active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2">
                               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 6H16m0 0V1"/>
                               </svg>
-                              إعادة جدولة الحجز
+                              {{ 'BOOKINGS.RESCHEDULE' | translate }}
                             </a>
                           }
-                          <a [routerLink]="['/bookings', b.id]" 
+                          <a [routerLink]="['/bookings', b.id]"
                              class="flex-1 md:flex-none px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl text-xs font-black transition-all duration-200 text-center active:scale-[0.98] cursor-pointer">
-                            مراجعة تفاصيل الإلغاء
+                            {{ 'BOOKINGS.REVIEW_CANCEL_DETAILS' | translate }}
                           </a>
                         }
                         @else {
-                          <button (click)="messageUser(b)" 
+                          <button (click)="messageUser(b)"
                                   class="flex-1 md:flex-none px-6 py-3 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 rounded-xl text-xs font-black transition-all duration-200 active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
                             </svg>
-                            مراسلة الوكيل
+                            {{ 'BOOKINGS.MESSAGE_AGENT' | translate }}
                           </button>
 
-                          <a [routerLink]="['/bookings', b.id]" 
+                          <a [routerLink]="['/bookings', b.id]"
                              class="flex-1 md:flex-none px-6 py-3 bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-100 rounded-xl text-xs font-black transition-all duration-200 text-center active:scale-[0.98] cursor-pointer">
-                            مراجعة التفاصيل
+                            {{ 'BOOKINGS.DETAILS_BTN' | translate }}
                           </a>
                         }
                       </div>
@@ -281,7 +281,7 @@ import { EmptyStateComponent } from '../../../shared/components/empty-state/empt
                            (error)="onImageError($event, b)">
                       @if (b.status === 'Pending') {
                         <span class="bg-[#076b70] text-white text-[10px] font-black tracking-wider uppercase px-4 py-1.5 rounded-bl-xl absolute top-0 right-0 z-10 shadow-sm">
-                          جديد
+                          {{ 'BOOKINGS.NEW_BADGE' | translate }}
                         </span>
                       }
                     </div>
@@ -321,7 +321,8 @@ export class BookingListComponent implements OnInit {
     private propertyService: PropertyService,
     private localImageService: LocalImageService,
     private router: Router,
-    private conversationService: ConversationService
+    private conversationService: ConversationService,
+    private translate: TranslateService
   ) {}
 
   totalRequestsCount() {
@@ -355,7 +356,7 @@ export class BookingListComponent implements OnInit {
     this.syncing.set(true);
     setTimeout(() => {
       this.syncing.set(false);
-      this.toast.success('تمت مزامنة التقويم عبر جميع المنصات بنجاح!');
+      this.toast.success(this.translate.instant('BOOKINGS.MESSAGES.SYNC_SUCCESS'));
     }, 1500);
   }
 
@@ -437,20 +438,20 @@ export class BookingListComponent implements OnInit {
   async confirmBooking(booking: BookingListItem) {
     try {
       await this.bookingService.updateStatus(booking.id, { status: BookingStatus.Confirmed });
-      this.toast.success('تم تأكيد الحجز بنجاح');
+      this.toast.success(this.translate.instant('BOOKINGS.MESSAGES.CONFIRM_SUCCESS'));
       await this.loadPage(this.page());
     } catch {
-      this.toast.error('فشل تأكيد الحجز');
+      this.toast.error(this.translate.instant('BOOKINGS.MESSAGES.CONFIRM_ERROR'));
     }
   }
 
   async cancelBooking(booking: BookingListItem) {
     try {
       await this.bookingService.updateStatus(booking.id, { status: BookingStatus.Cancelled });
-      this.toast.success('تم رفض الحجز');
+      this.toast.success(this.translate.instant('BOOKINGS.MESSAGES.REJECT_SUCCESS'));
       await this.loadPage(this.page());
     } catch {
-      this.toast.error('فشل رفض الحجز');
+      this.toast.error(this.translate.instant('BOOKINGS.MESSAGES.REJECT_ERROR'));
     }
   }
 }

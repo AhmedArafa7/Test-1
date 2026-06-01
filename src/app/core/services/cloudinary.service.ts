@@ -3,6 +3,7 @@ import { HttpClient, HttpEventType, HttpRequest } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { Observable, throwError, timer } from 'rxjs';
 import { catchError, map, retry, tap } from 'rxjs/operators';
+import { TranslateService } from '@ngx-translate/core';
 
 export interface UploadProgress {
   status: 'pending' | 'uploading' | 'success' | 'error';
@@ -18,7 +19,7 @@ export class CloudinaryService {
   private readonly uploadPreset = environment.cloudinaryUploadPreset;
   private readonly uploadUrl = `https://api.cloudinary.com/v1_1/${this.cloudName}/image/upload`;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private translate: TranslateService) {}
 
   /**
    * Uploads a single image to Cloudinary with automatic retry on network failure.
@@ -47,7 +48,7 @@ export class CloudinaryService {
       }),
       catchError(err => {
         console.error('Cloudinary upload error after retries:', err);
-        return throwError(() => new Error('فشل رفع الصورة إلى السحابة. سيتم المحاولة لاحقاً.'));
+        return throwError(() => new Error(this.translate.instant('SERVICE_MESSAGES.CLOUDINARY_UPLOAD_FAILED')));
       })
     );
   }
@@ -71,7 +72,7 @@ export class CloudinaryService {
       }),
       catchError(err => {
         console.error('Cloudinary audio upload error after retries:', err);
-        return throwError(() => new Error('فشل رفع الملف الصوتي إلى السحابة. سيتم المحاولة لاحقاً.'));
+        return throwError(() => new Error(this.translate.instant('SERVICE_MESSAGES.CLOUDINARY_AUDIO_FAILED')));
       })
     );
   }

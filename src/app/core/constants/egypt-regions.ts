@@ -1,3 +1,14 @@
+// Egypt Regions Reference Data
+// NOTE: This is a static reference data file containing the canonical Arabic and
+// English names of Egyptian governorates and cities. The data lives in
+// core/constants/ because it represents geographic terminology, not user-facing
+// UI labels.
+//
+// Runtime user-facing display is handled by consumers (e.g. home.ts,
+// property-list.ts) which already select nameAr or nameEn dynamically based on
+// translate.currentLang. Storing both languages in the data avoids depending on
+// translation files for canonical region names that must remain stable across
+// locales (e.g. when used as search queries or filter values).
 export interface City {
   id: string;
   nameAr: string;

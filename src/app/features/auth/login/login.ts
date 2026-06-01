@@ -98,7 +98,7 @@ declare global {
                       [(ngModel)]="rememberMe"
                       name="rememberMe"
                       class="w-4 h-4 rounded border-slate-300 text-[#0c7379] focus:ring-2 focus:ring-[#0c7379]/20 transition-all cursor-pointer accent-[#0c7379]" />
-               <label for="rememberMe" class="text-xs font-bold text-slate-500 hover:text-slate-700 transition-colors cursor-pointer">تذكر تسجيل دخولي في هذا المتصفح</label>
+                <label for="rememberMe" class="text-xs font-bold text-slate-500 hover:text-slate-700 transition-colors cursor-pointer">{{ 'AUTH.LOGIN.REMEMBER_ME' | translate }}</label>
              </div>
 
             <button type="submit"

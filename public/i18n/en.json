@@ -130,7 +130,9 @@
     "EMPTY": {
       "TITLE": "No Data Found",
       "MESSAGE": "We couldn't find any information in this section at the moment."
-    }
+    },
+    "NO_RESULTS": "No results",
+    "PROPERTY": "Property"
   },
   "HOME": {
     "BADGE": "🤖 AI-Powered Platform",
@@ -187,7 +189,8 @@
       "SUBTITLE": "Join Baytology today and experience the future of real estate.",
       "REGISTER": "Create Account",
       "AI_SEARCH": "Try AI Search"
-    }
+    },
+    "ALL_CITIES": "All Cities"
   },
   "STATS": {
     "PROPERTIES": "Properties",
@@ -294,7 +297,8 @@
       "ERROR_FACEBOOK_CONFIG": "Facebook login is not configured on this client.",
       "ERROR_FACEBOOK_SDK": "Facebook SDK is not loaded yet. Please try again.",
       "ERROR_FACEBOOK_LOAD": "Failed to load Facebook login.",
-      "ERROR_FACEBOOK_CANCEL": "Facebook login was cancelled."
+      "ERROR_FACEBOOK_CANCEL": "Facebook login was cancelled.",
+      "REMEMBER_ME": "Remember me on this browser"
     },
     "REGISTER": {
       "LEFT_TITLE": "Curated Spaces for a Better Life.",
@@ -484,7 +488,8 @@
       "FullyFurnished": "Furnished",
       "Unfurnished": "Unfurnished",
       "SemiFurnished": "Semi-Furnished"
-    }
+    },
+    "ASKING_PRICE": "Asking Price"
   },
   "LISTING_TYPES": {
     "Sale": "Sale",
@@ -568,6 +573,8 @@
     "QUICK_VILLAS": "Villas",
     "QUICK_OFFICES": "Offices",
     "QUICK_LANDS": "Lands",
+    "ALL_CITIES": "All Governorates & Cities",
+    "ALL_CITIES_IN": "All {{ name }} cities",
     "EMPTY_TITLE": "No Results Found",
     "EMPTY_MSG": "Try changing your search criteria or explore another area",
     "LOADING_DB": "Scanning real estate database...",
@@ -582,7 +589,10 @@
       "FAV_REMOVED": "Property removed from favorites.",
       "FAV_ADDED": "Property saved successfully!",
       "FAV_EXIST": "This property is already in your list."
-    }
+    },
+    "MIN_PRICE": "Min Price",
+    "MAX_PRICE": "Max Price",
+    "GOVERNORATE": "Governorate"
   },
   "MESSAGES": {
     "LOCATING": "Locating you...",
@@ -676,6 +686,19 @@
     "UPLOADING_VOICE": "Sending voice message...",
     "RECORDING_ERROR": "An error occurred during voice recording. Please try again.",
     "MIC_PERMISSION_ERROR": "Please allow microphone access to record voice.",
+    "SELECT_CONV_FIRST": "Please select a conversation first",
+    "BOOKING_BUYERS_AGENTS": "Bookings are available for buyers and agents only",
+    "MUTED_SUCCESS": "Notifications muted for this conversation 🔕",
+    "UNMUTED_SUCCESS": "Notifications enabled for this conversation 🔔",
+    "NO_CUSTOM_TONE": "You haven't uploaded a custom tone yet. Please go to settings to upload a tone first.",
+    "CUSTOM_TONE_MISSING": "Custom tone file not found (browser data may have been cleared). Automatically reverted to default tone.",
+    "AGENT_CANT_START": "Real estate agents cannot start new conversations.",
+    "BROWSE_TO_START": "Please browse properties and tap \"Contact Agent\" to start a new conversation.",
+    "EMOJI_CAT_ALL": "All",
+    "EMOJI_CAT_FACES": "Faces",
+    "EMOJI_CAT_HOME": "Properties",
+    "EMOJI_CAT_NATURE": "Nature",
+    "EMOJI_CAT_OBJECTS": "Symbols",
     "VOICE_MESSAGE": "🎤 Voice message"
   },
   "PROPERTY_DETAIL": {
@@ -700,7 +723,15 @@
       "LOGIN_REQUIRED": "You must be logged in to contact the agent",
       "CONVERSATION_STARTED": "Conversation started!",
       "LINK_COPIED": "Property link copied to clipboard",
-      "COPY_FAILED": "Failed to copy link"
+      "COPY_FAILED": "Failed to copy link",
+      "NOT_FOUND": "Property not available",
+      "NOT_FOUND_DESC": "The requested property is no longer available or has been removed",
+      "SESSION_EXPIRED": "Your session has expired, please log in again",
+      "CONVERSATION_FAILED": "Could not start conversation",
+      "BOOKING_LOGIN_REQUIRED": "You must be logged in to book a viewing",
+      "DELETE_ERROR": "An error occurred while deleting the property",
+      "REVIEW_THANKS": "Thank you for your rating!",
+      "REVIEW_FAILED": "Could not submit review"
     },
     "UPDATING": "Updating...",
     "CONTACT_AGENT": "Contact Agent",
@@ -861,8 +892,27 @@
       "GEO_ERROR": "An unexpected error occurred during location determination.",
       "DRAFT_RESTORED": "Autosaved draft successfully restored!",
       "DRAFT_RESTORE_FAILED": "Failed to restore draft.",
-      "DRAFT_DISCARDED": "Saved draft has been discarded."
-    }
+      "DRAFT_DISCARDED": "Saved draft has been discarded.",
+      "UPLOADING_CLOUD": "📤 Uploading premium images to the cloud...",
+      "DELETE_IMAGE_CONFIRM": "Are you sure you want to remove this image from the property?",
+      "DELETE_IMAGE_LOCAL_SUCCESS": "Image removed locally. Changes will be applied to the database on update.",
+      "IMAGE_REQUIRED": "At least one image is required (upload files or add URLs).",
+      "GEO_MIN_LENGTH": "Please type a location name of at least 3 characters.",
+      "GEO_UPDATED": "Location identified and map updated successfully!",
+      "GEO_NOT_FOUND": "Could not locate this place. Please type a known city or district.",
+      "GEO_SERVICE_ERROR": "Error connecting to the geographic service."
+    },
+    "PLACEHOLDER_PRICE": "e.g. 2500000",
+    "PLACEHOLDER_AREA": "e.g. 150",
+    "PLACEHOLDER_BEDROOMS": "e.g. 3",
+    "PLACEHOLDER_BATHROOMS": "e.g. 2",
+    "PLACEHOLDER_FLOOR": "e.g. 3",
+    "PLACEHOLDER_TOTAL_FLOORS": "e.g. 10",
+    "IMAGE_NUMBER": "Image #{{ index }}",
+    "CURRENT_IMAGES_HINT": "🖼️ Existing uploaded images (click 🗑️ to remove)",
+    "GEO_SEARCH_LABEL": "🔍 Smart geographic search (type area and press Enter or search)",
+    "GEO_SEARCH_PLACEHOLDER": "e.g. Zamalek, New Cairo, Smouha...",
+    "GEO_SEARCH_BTN": "Geo Search"
   },
   "VALIDATION": {
     "TITLE_REQ": "Title is required.",
@@ -894,7 +944,7 @@
     "EMPTY_MSG": "Explore our exclusive collection of properties and book your first viewing tour today to start your journey home.",
     "AGENT_EMPTY_TITLE": "No booking requests",
     "AGENT_EMPTY_MSG": "No booking requests received yet. When buyers schedule viewings for your properties, they will appear here.",
-    "CONFIRM_BTN": "Confirm",
+    "CONFIRM_BTN": "Confirm Booking & Continue",
     "REJECT_BTN": "Reject",
     "BROWSE_BTN": "Browse Properties",
     "LOADING": "Loading bookings...",
@@ -918,7 +968,6 @@
     "TOTAL_PRICE_LABEL": "Total Property Price",
     "FEE_HELP": "The booking fee acts as a security deposit and is fully refundable if the deal is not completed.",
     "SUBMITTING": "Processing request...",
-    "CONFIRM_BTN": "Confirm Booking & Continue",
     "UNAVAILABLE_TITLE": "Booking Unavailable",
     "BACK_TO_PROPERTY": "Back to Property Page",
     "RESPONSIBLE_AGENT": "Responsible Agent",
@@ -941,7 +990,12 @@
       "REQUIRED_DATES": "Please select both the tour date and time.",
       "INVALID_RANGE": "End date must be after start date.",
       "CREATE_SUCCESS": "Booking rescheduled successfully! Redirecting to payment...",
-      "CREATE_ERROR": "Failed to complete the request. Please try again."
+      "CREATE_ERROR": "Failed to complete the request. Please try again.",
+      "SYNC_SUCCESS": "Calendar synced across all platforms successfully!",
+      "CONFIRM_SUCCESS": "Booking confirmed successfully",
+      "CONFIRM_ERROR": "Failed to confirm booking",
+      "REJECT_SUCCESS": "Booking rejected",
+      "REJECT_ERROR": "Failed to reject booking"
     },
     "CREATE": {
       "TITLE": "Book a Viewing",
@@ -971,7 +1025,9 @@
         "DATE_RANGE": "End date must be after the start date.",
         "COMMISSION_RANGE": "Commission rate must be between 0 and 99.99%.",
         "SUCCESS_REDIRECT": "Booking created! Redirecting to payment..."
-      }
+      },
+      "CONTACT_INFO_TITLE": "Contact Information",
+      "NAME_PLACEHOLDER": "Enter your full name"
     },
     "DETAIL": {
       "TITLE": "Booking Details",
@@ -1039,8 +1095,29 @@
         "REVIEW_ERROR": "Could not submit review",
         "GEO_LOCATING": "Locating you...",
         "REFUND_REASON": "Customer cancellation"
-      }
-    }
+      },
+      "AGENT_CHAT_LIMIT": "Agents cannot start booking chats. Please contact the buyer",
+      "PDF_HINT": "The invoice will be sent via email",
+      "TIME_LABEL": "Viewing Time",
+      "TIME_TO_SEPARATOR": "to"
+    },
+    "FILTER_ALL": "All",
+    "MONTH_STATS": "Monthly Statistics",
+    "STATS": {
+      "TOTAL_REQUESTS": "Total Requests",
+      "PENDING_F": "Pending",
+      "CONFIRMED_F": "Confirmed",
+      "CANCELLED_REJECTED": "Cancelled / Rejected"
+    },
+    "REQUEST_FROM": "Request from:",
+    "DEFAULT_BUYER_NAME": "Ahmed Abdullah (Premium Client)",
+    "ARRIVAL_DATE": "Arrival Date",
+    "DURATION": "Duration",
+    "NIGHTS_LABEL": "nights",
+    "ACCEPT_BTN": "Accept Booking",
+    "REVIEW_CANCEL_DETAILS": "Review Cancellation Details",
+    "MESSAGE_AGENT": "Message Agent",
+    "NEW_BADGE": "New"
   },
   "CREATE": {
     "TITLE": "Book a Viewing",
@@ -1190,11 +1267,79 @@
     "EMPTY_PROPERTIES_DESC": "This agent has no properties available at the moment.",
     "NOT_FOUND": "Agent Not Found",
     "BROWSE_BTN": "Browse Properties",
-    "SHARE_SUCCESS": "Profile link copied!",
+    "SHARE_SUCCESS": "Profile shared successfully!",
     "LOGIN_REQUIRED_CONTACT": "You must login before messaging the agent",
     "BUYER_ONLY_CONTACT": "Contacting agents is only available for buyer accounts",
     "NO_PROPERTIES_CONTACT": "No current properties to contact about",
-    "STARTING_CHAT": "Starting conversation about one of the agent's properties..."
+    "STARTING_CHAT": "Starting conversation about one of the agent's properties...",
+    "START_CHAT_FAILED": "Failed to start chat",
+    "CALENDAR_TITLE": "Interactive Booking Calendar",
+    "CALENDAR_DESC": "Please select a suitable viewing time to instantly book a tour with the agent.",
+    "SLOT_AVAILABLE": "Available",
+    "SLOT_BOOKED": "Already Booked",
+    "CONFIRM_BOOKING_TITLE": "Confirm Viewing Booking",
+    "CONFIRM_BOOKING_DESC": "By your approval, the appointment will be booked and sent to the agent immediately.",
+    "AGENT_NAME_LABEL": "Real Estate Agent:",
+    "DATE_LABEL": "Day and Date:",
+    "TIME_SELECTED_LABEL": "Selected Time:",
+    "CANCEL_BTN": "Cancel",
+    "CONFIRM_NOW_BTN": "Confirm Now",
+    "REVIEWS_TITLE": "Customer Ratings & Reviews",
+    "REVIEWS_DESC": "See what previous clients have to say about this agent.",
+    "ALL_REVIEWS": "All Reviews",
+    "STARS_PREFIX": "{{ count }} stars",
+    "SORT_RECENT": "Most Recent",
+    "SORT_HIGHEST": "Highest Rated",
+    "STARS_LABEL": "stars",
+    "NO_MATCHING_REVIEWS": "No reviews match your current filter.",
+    "TODAY": "Today",
+    "TOMORROW": "Tomorrow",
+    "MORNING_SLOT_TIME": "10:00 AM - 11:30 AM",
+    "AFTERNOON_SLOT_TIME": "04:30 PM - 06:00 PM",
+    "MOCK_REVIEW_1_AUTHOR": "Ahmed El-Shennawy",
+    "MOCK_REVIEW_1_COMMENT": "Extremely professional and very responsive. Helped me find my dream apartment in Fifth Settlement at the best negotiable price. I highly recommend dealing with him!",
+    "MOCK_REVIEW_2_AUTHOR": "Yasmine Sabri",
+    "MOCK_REVIEW_2_COMMENT": "Punctual and very honest in explaining the pros and cons of the property before purchase. A very comfortable and exemplary experience with real estate agents.",
+    "MOCK_REVIEW_3_AUTHOR": "Karim Abdel Aziz",
+    "MOCK_REVIEW_3_COMMENT": "Very classy treatment and he has a strong network that facilitated our real estate registration and documentation procedures.",
+    "FAV_ADDED": "Property added to favorites",
+    "FAV_REMOVED": "Property removed from favorites",
+    "FAV_ERROR": "Failed to update favorites",
+    "BOOKING_BUYER_ONLY": "Sorry, booking viewing appointments is only available for registered buyers on the site.",
+    "BOOKING_NO_PROPERTIES": "Sorry, there are no properties listed for this agent to book a viewing on.",
+    "BOOKING_SENDING": "Sending the viewing booking request to the database...",
+    "BOOKING_NOTES_PREFIX": "Scheduled viewing booking from agent calendar",
+    "BOOKING_SUCCESS": "Viewing appointment confirmed for {{ date }} at {{ time }}! It has been linked to the database successfully.",
+    "BOOKING_FAILED": "Failed to register booking in the database.",
+    "SHARE_DEFAULT_NAME": "Real Estate Agent",
+    "SHARE_TEXT_TEMPLATE": "Browse the premium profile of agent {{ name }} on Baytology - for instant viewing bookings and exclusive villa browsing!",
+    "SHARE_ERROR": "An error occurred while trying to share.",
+    "SHARE_COPY_SUCCESS": "Profile link copied successfully! You can share it now as a digital business card.",
+    "SHARE_COPY_FAILED": "Sorry, we couldn't copy the link automatically.",
+    "DAYS_OF_WEEK": [
+      "Sunday",
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday"
+    ],
+    "MONTHS": [
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December"
+    ],
+    "TIME_LABEL_SHORT": "at"
   },
   "AI": {
     "BADGE": "AI POWERED",
@@ -1239,7 +1384,19 @@
       "VOICE_PREPARING": "Whisper large-v3 is still being prepared. You can use text or image search now, then try voice again when the download finishes.",
       "VOICE_ERROR": "Failed to send the voice message to AI.",
       "IMAGE_USER_MESSAGE": "Image search: {{name}}",
-      "IMAGE_ERROR": "Failed to send the image to AI."
+      "IMAGE_ERROR": "Failed to send the image to AI.",
+      "IMAGE_ALT": "Search image",
+      "EDIT_PREVIEW_TITLE": "Click to edit or draw",
+      "EDIT_IMAGE_TITLE": "Edit image",
+      "MODE_CROP": "📐 Crop & dimensions",
+      "MODE_DRAW": "🎨 Draw & pen",
+      "BRUSH_THIN": "Thin",
+      "BRUSH_MEDIUM": "Medium",
+      "BRUSH_THICK": "Thick",
+      "RESET_BTN": "↩️ Reset to original",
+      "CANCEL_BTN": "Cancel",
+      "APPLY_BTN": "Apply edit",
+      "IMAGE_PROCESS_FALLBACK": "An error occurred while processing the image"
     },
     "RECOMMENDATIONS": {
       "TITLE_PREFIX": "Recommendations ",
@@ -1258,7 +1415,8 @@
       "RESULTS_COUNT": "results",
       "MATCH_LABEL": "Match",
       "EMPTY_TITLE": "No recommendations yet",
-      "EMPTY_DESC": "Click \"Get Recommendations\" to start discovering properties that suit your taste"
+      "EMPTY_DESC": "Click \"Get Recommendations\" to start discovering properties that suit your taste",
+      "ERROR_GENERIC": "An error occurred while loading recommendations"
     },
     "TITLE": "AI Analytics",
     "DESC": "Monitor AI search engine performance and AI-powered property recommendations.",
@@ -1409,7 +1567,15 @@
       "FIRST_NAME_MIN": "First name must be at least 2 characters",
       "LAST_NAME_MIN": "Last name must be at least 2 characters",
       "COMMISSION_ERROR": "Commission rate must be between 0 and 100",
-      "UPLOAD_ERROR": "Failed to upload image, please try again"
+      "UPLOAD_ERROR": "Failed to upload image, please try again",
+      "SOUND_SECTION_TITLE": "Message sound alert settings",
+      "ENABLE_SOUND": "Enable notification sound",
+      "ENABLE_SOUND_DESC": "Play a sound when receiving a new message in the background",
+      "CHOOSE_SOUND_LABEL": "Choose your preferred notification tone",
+      "SOUND_PREMIUM_NAME": "✨ Crystal (Chime)",
+      "SOUND_POP_NAME": "🎈 Bubble (Pop)",
+      "NO_CUSTOM_TONE": "You haven't uploaded a custom tone yet. Please go to settings to upload a tone first.",
+      "CUSTOM_TONE_MISSING": "Custom tone file not found (browser data may have been cleared). Automatically reverted to default tone."
     },
     "CROP": {
       "TITLE": "Adjust Photo Appearance",
@@ -1438,7 +1604,74 @@
       "ERROR_CHAT": "Could not start conversation",
       "VALIDATION": {
         "COMMISSION_RANGE": "Commission rate must be between 0.01% and 99.99%."
-      }
+      },
+      "CALENDAR_TITLE": "Interactive Booking Calendar",
+      "CALENDAR_DESC": "Please select a suitable viewing time to instantly book a tour with the agent.",
+      "SLOT_AVAILABLE": "Available",
+      "SLOT_BOOKED": "Already Booked",
+      "CONFIRM_BOOKING_TITLE": "Confirm Viewing Booking",
+      "CONFIRM_BOOKING_DESC": "By your approval, the appointment will be booked and sent to the agent immediately.",
+      "AGENT_NAME_LABEL": "Real Estate Agent:",
+      "DATE_LABEL": "Day and Date:",
+      "TIME_SELECTED_LABEL": "Selected Time:",
+      "CANCEL_BTN": "Cancel",
+      "CONFIRM_NOW_BTN": "Confirm Now",
+      "REVIEWS_TITLE": "Customer Ratings & Reviews",
+      "REVIEWS_DESC": "See what previous clients have to say about this agent.",
+      "ALL_REVIEWS": "All Reviews",
+      "STARS_PREFIX": "{{ count }} stars",
+      "SORT_RECENT": "Most Recent",
+      "SORT_HIGHEST": "Highest Rated",
+      "STARS_LABEL": "stars",
+      "NO_MATCHING_REVIEWS": "No reviews match your current filter.",
+      "TODAY": "Today",
+      "TOMORROW": "Tomorrow",
+      "MORNING_SLOT_TIME": "10:00 AM - 11:30 AM",
+      "AFTERNOON_SLOT_TIME": "04:30 PM - 06:00 PM",
+      "MOCK_REVIEW_1_AUTHOR": "Ahmed El-Shennawy",
+      "MOCK_REVIEW_1_COMMENT": "Extremely professional and very responsive. Helped me find my dream apartment in Fifth Settlement at the best negotiable price. I highly recommend dealing with him!",
+      "MOCK_REVIEW_2_AUTHOR": "Yasmine Sabri",
+      "MOCK_REVIEW_2_COMMENT": "Punctual and very honest in explaining the pros and cons of the property before purchase. A very comfortable and exemplary experience with real estate agents.",
+      "MOCK_REVIEW_3_AUTHOR": "Karim Abdel Aziz",
+      "MOCK_REVIEW_3_COMMENT": "Very classy treatment and he has a strong network that facilitated our real estate registration and documentation procedures.",
+      "SHARE_PROFILE_BTN": "Share Profile",
+      "BOOKING_BUYER_ONLY": "Sorry, booking viewing appointments is only available for registered buyers on the site.",
+      "BOOKING_NO_PROPERTIES": "Sorry, there are no properties listed for this agent to book a viewing on.",
+      "BOOKING_SENDING": "Sending the viewing booking request to the database...",
+      "BOOKING_SUCCESS_GENERIC": "Viewing appointment confirmed successfully!",
+      "BOOKING_SUCCESS_DETAILED": "Viewing appointment confirmed for {{ date }} at {{ time }}!",
+      "BOOKING_FAILED": "An error occurred while trying to book the appointment.",
+      "SHARE_DEFAULT_NAME": "Real Estate Agent",
+      "SHARE_TEXT_TEMPLATE": "Browse the premium profile of agent {{ name }} on Baytology - for instant viewing bookings and exclusive villa browsing!",
+      "SHARE_SUCCESS": "Profile shared successfully!",
+      "SHARE_ERROR": "An error occurred while trying to share.",
+      "SHARE_COPY_SUCCESS": "Profile link copied successfully!",
+      "SHARE_COPY_FAILED": "Sorry, we couldn't copy the link automatically.",
+      "DAYS_OF_WEEK": [
+        "Sunday",
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday"
+      ],
+      "MONTHS": [
+        "January",
+        "February",
+        "March",
+        "April",
+        "May",
+        "June",
+        "July",
+        "August",
+        "September",
+        "October",
+        "November",
+        "December"
+      ],
+      "TIME_LABEL_SHORT": "at",
+      "BOOKING_NOTES_PREFIX": "Interactive viewing booking from agent calendar"
     }
   },
   "EDIT": {
@@ -1769,7 +2002,8 @@
         "PROCESSING": "Processing",
         "TOTAL_SPEED": "Total Response Speed",
         "SEARCH_ENGINE": "Search Engine",
-        "CLOSE": "Close"
+        "CLOSE": "Close",
+        "NOT_AVAILABLE": "N/A"
       },
       "LAG": {
         "MS": "ms",
@@ -2571,7 +2805,67 @@
       "MATCHING": "Matching results with AI...",
       "RANKING": "Ranking the most suitable properties...",
       "FINALIZING": "Preparing final results..."
-    }
+    },
+    "HEADER_TITLE": "Search for your dream home with unprecedented intelligence",
+    "HEADER_SUBTITLE": "Browse thousands of properties using advanced AI technologies. Describe what you're looking for and we'll find it in seconds.",
+    "RECORDING_ACTIVE_TITLE": "Recording your voice now...",
+    "RECORDING_ACTIVE_DESC": "Duration: {{ duration }} seconds. Speak clearly then press the stop button to save the clip.",
+    "STOP_RECORDING_BTN": "Stop Recording",
+    "IMAGE_ATTACHED_SUCCESS": "Image attached for search successfully!",
+    "IMAGE_DROP_HERE": "Click to upload or drag image here",
+    "IMAGE_SEARCH_DESC": "Search using property images (JPG, PNG)",
+    "AUDIO_RECORDED_SUCCESS": "Audio clip recorded successfully!",
+    "DURATION_LABEL": "Duration: {{ duration }} seconds",
+    "DELETE_BTN": "Delete",
+    "SEARCH_PLACEHOLDER": "Example: 3 bedroom apartment in Dubai Marina with sea view and pool...",
+    "FALLBACK_PROPERTY_TITLE": "Property Unit",
+    "STATUS_AVAILABLE": "Available",
+    "STATUS_SOLD": "Sold",
+    "MATCH_LABEL": "Amazing Match",
+    "PROPERTY_TYPE_FALLBACK": "Property Type",
+    "CITIES_LIST": [
+      "Cairo",
+      "Alexandria",
+      "Giza",
+      "Mansoura",
+      "Tanta",
+      "Mahalla",
+      "Port Said",
+      "Suez",
+      "Ismailia",
+      "Hurghada",
+      "Sharm El Sheikh",
+      "6 October",
+      "Sheikh Zayed"
+    ],
+    "DISTRICTS_LIST": [
+      "Zamalek",
+      "Smouha",
+      "Sheikh Zayed",
+      "6 October"
+    ],
+    "PROPERTY_TYPES": [
+      {
+        "id": "Apartment",
+        "label": "Apartments",
+        "icon": "🏢"
+      },
+      {
+        "id": "Villa",
+        "label": "Villas",
+        "icon": "🏡"
+      },
+      {
+        "id": "Office",
+        "label": "Office",
+        "icon": "💼"
+      },
+      {
+        "id": "Land",
+        "label": "Land",
+        "icon": "🏜️"
+      }
+    ]
   },
   "MODES": {
     "Text": "Text",
@@ -2593,7 +2887,10 @@
     "HINT": "JPG, PNG, WebP - Max 10MB",
     "URL_LABEL": "Or paste an image URL",
     "URL_PLACEHOLDER": "https://example.com/property.jpg",
-    "ERROR_LARGE": "Image too large. Max 10MB."
+    "ERROR_LARGE": "Image too large. Max 10MB.",
+    "STATUS_UPLOADING": "Uploading...",
+    "STATUS_SUCCESS": "Uploaded successfully",
+    "STATUS_FAILED": "Upload failed"
   },
   "STEPS": {
     "ANALYZING": "Analyzing your inquiry...",
@@ -2639,7 +2936,23 @@
     "LOADING": "Loading...",
     "NO_MORE": "No More Notifications",
     "VIEW_DETAILS": "View Details",
-    "RESCHEDULE": "Reschedule"
+    "RESCHEDULE": "Reschedule",
+    "PUSH_BANNER_TITLE": "Enable Push Notifications 🔔",
+    "PUSH_BANNER_DESC": "Get urgent alerts for messages and bookings directly on your device, even when the site is closed.",
+    "PUSH_BANNER_BTN": "Enable Notifications",
+    "NOTIFICATION_SINGULAR": "notification",
+    "NOTIFICATION_PLURAL": "notifications",
+    "MARK_READ_ACTION": "Mark as read",
+    "DELETE_ACTION": "Delete notification",
+    "LOADING_MORE": "Loading more notifications...",
+    "PUSH_NOT_SUPPORTED": "Your browser does not support push notifications.",
+    "PUSH_SUCCESS_TITLE": "Notifications enabled successfully! 🔔",
+    "PUSH_SUCCESS_BODY": "You will now receive urgent alerts and messages first-hand, even when the site is closed.",
+    "PUSH_SUCCESS_BODY_FALLBACK": "You will now receive urgent alerts and messages first-hand.",
+    "GROUP_TODAY": "Today",
+    "GROUP_YESTERDAY": "Yesterday",
+    "GROUP_LAST_WEEK": "Last Week",
+    "GROUP_OLDER": "Older"
   },
   "EMPTY": {
     "TITLE": "No Data Found",
@@ -2675,7 +2988,21 @@
     "ENABLE_QUIET_DESC": "Mute notifications during a set period",
     "FROM": "From",
     "TO": "To",
-    "SAVED_AUTO": "Settings saved automatically"
+    "SAVED_AUTO": "Settings saved automatically",
+    "CHOOSE_SOUND_LABEL": "Choose your preferred notification tone",
+    "SOUND_PREMIUM_NAME": "✨ Crystal",
+    "SOUND_POP_NAME": "🎈 Bubble",
+    "SOUND_CLASSIC_NAME": "🤖 Classic",
+    "SOUND_CUSTOM_NAME": "🎵 Custom",
+    "UPLOAD_SOUND_BTN": "📁 Upload tone from your device",
+    "CUSTOM_SOUND_NAME_LABEL": "Uploaded file: ",
+    "PLAY_SOUND_BTN": "🔊 Test sound",
+    "NO_CUSTOM_TONE": "You haven't uploaded a custom tone yet. Please click the \"Upload tone from your device\" button first.",
+    "INVALID_AUDIO_FILE": "Please select a valid audio file.",
+    "FILE_TOO_LARGE": "Audio file is too large. Please select a file under 2 MB.",
+    "CUSTOM_TONE_UPLOAD_SUCCESS": "Custom tone uploaded successfully!",
+    "CUSTOM_TONE_SAVE_ERROR": "Failed to save the custom tone.",
+    "CUSTOM_TONE_MISSING": "Custom tone file not found (browser data may have been cleared). Automatically reverted to default tone."
   },
   "PRIVACY": {
     "BADGE": "Legal & Privacy",
@@ -2725,6 +3052,7 @@
     "AVAILABLE": "Available",
     "UNAVAILABLE": "Unavailable",
     "CLOSE": "Close",
+    "TOOLTIP": "Compare side by side",
     "TOAST_MAX": "You can select a maximum of 3 properties to compare",
     "TOAST_MIN": "Please select at least 2 properties to start comparison",
     "TOAST_ERROR": "An error occurred while loading comparison details",
@@ -2739,5 +3067,77 @@
     "VIEW_BACK": "Back",
     "VIEW_ROAD": "Main Road",
     "NOT_SPECIFIED": "Not Specified"
+  },
+  "PROPERTIES": {
+    "LIST": {
+      "LOGIN_REQUIRED_SAVE": "You must log in to save properties to favorites"
+    }
+  },
+  "EDITOR": {
+    "BOLD": "Bold",
+    "ITALIC": "Italic",
+    "BULLET_LIST": "Bullet List",
+    "BULLET_LABEL": "• Bullet List",
+    "NUMBERED_LIST": "Numbered List",
+    "NUMBERED_LABEL": "1. Numbered List",
+    "REMOVE_FORMAT": "Remove Formatting"
+  },
+  "ABOUT": {
+    "BADGE": "Our Story & Vision",
+    "HERO_TITLE_START": "We are shaping the",
+    "HERO_TITLE_HIGHLIGHT": "future",
+    "HERO_TITLE_END": "of smart real estate.",
+    "HERO_DESC": "baytology is not just a real estate platform — it's a tech revolution aimed at simplifying the search for your ideal home using the most powerful AI tools.",
+    "STAT_PROPERTIES": "Listed Properties",
+    "STAT_ACCURACY": "Recommendation Accuracy",
+    "STAT_AGENTS": "Verified Agents",
+    "VISION_TITLE": "Our Vision",
+    "VISION_TEXT": "To become the first and only platform that comes to mind for property seekers in the Middle East, by offering a clutter-free user experience, rich in precision, and powered by extraordinary human and technical intelligence.",
+    "PILLAR_SPEED_TITLE": "Speed",
+    "PILLAR_SPEED_DESC": "Find what you're looking for in seconds.",
+    "PILLAR_TRUST_TITLE": "Trust",
+    "PILLAR_TRUST_DESC": "Verified agents and carefully inspected properties.",
+    "PILLAR_SMART_TITLE": "Smart",
+    "PILLAR_SMART_DESC": "Algorithms that understand your needs beyond imagination.",
+    "CTA_TITLE": "Are you ready to start your journey?",
+    "CTA_BTN": "Join us now for free"
+  },
+  "FAQ": {
+    "BADGE": "Help & Support",
+    "TITLE_START": "Frequently",
+    "TITLE_HIGHLIGHT": "Asked",
+    "TITLE_END": " Questions",
+    "DESCRIPTION": "Everything you need to know about using Baytology",
+    "HELP_TITLE": "Still need help?",
+    "HELP_DESC": "Our support team is always available to answer your complex queries and provide technical assistance.",
+    "HELP_CHAT_BTN": "Chat with AI Assistant",
+    "HELP_EMAIL_BTN": "Email us",
+    "Q1": "How does the AI recommendation engine work?",
+    "A1": "Our system uses advanced algorithms to analyze your browsing history, properties you spent more time viewing, and your geographic and material preferences to deliver an accurate list of properties matching your personal taste.",
+    "Q2": "Can I contact agents directly?",
+    "A2": "Yes, the platform provides a built-in instant chat system that lets you communicate directly with agents, share images, and exchange property links to discuss details before any booking.",
+    "Q3": "How are property tour bookings confirmed?",
+    "A3": "Once you select a tour time, the agent receives an instant notification. Upon accepting, you'll get a confirmation message and a reminder on your phone before the appointment.",
+    "Q4": "What is the \"Smart Search\" feature?",
+    "A4": "It allows you to search using natural language — e.g., \"I want a spacious apartment in Cairo with Nile view at a fair price\" — and the search engine will understand your requirements precisely and show matching results.",
+    "Q5": "Are my personal data and profile photos secure?",
+    "A5": "Absolutely. We use SSL encryption and Cloudinary cloud services to secure all files and images, and we follow strict privacy protection standards."
+  },
+  "AUDIO_PLAYER": {
+    "HIDE_TRANSCRIPT": "Hide transcript",
+    "TRANSCRIBE_BTN": "Transcribe with AI ✨",
+    "TRANSCRIBING_LOADING": "Analyzing audio and generating transcript with AI...",
+    "TRANSCRIPT_LABEL": "Audio transcript (AI)",
+    "PLAYBACK_ERROR": "Failed to play audio",
+    "TRANSCRIBE_SUCCESS": "Audio transcribed successfully with AI ✨",
+    "TRANSCRIBE_FAILED": "Failed to connect to the AI server for transcription",
+    "COPY_SUCCESS": "Text copied to clipboard",
+    "COPY_FAILED": "Failed to copy text"
+  },
+  "SERVICE_MESSAGES": {
+    "CLOUDINARY_UPLOAD_FAILED": "Failed to upload image to cloud. Will retry later.",
+    "CLOUDINARY_AUDIO_FAILED": "Failed to upload audio file to cloud. Will retry later.",
+    "UPLOAD_QUEUE_SUCCESS": "Image uploaded and database updated successfully",
+    "NO_IMAGE": "No image"
   }
 }

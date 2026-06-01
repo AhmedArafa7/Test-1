@@ -83,7 +83,7 @@ import { BookingService } from '../services/booking.service';
 
                 <!-- Personal Info -->
                 <div class="flex items-center justify-end gap-3 mb-8 border-b border-gray-50 pb-6">
-                  <h3 class="text-xl font-black text-gray-900">بيانات التواصل</h3>
+                  <h3 class="text-xl font-black text-gray-900">{{ 'BOOKINGS.CREATE.CONTACT_INFO_TITLE' | translate }}</h3>
                   <div class="w-10 h-10 bg-[#0a8f96]/10 text-[#0a8f96] rounded-xl flex items-center justify-center">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                   </div>
@@ -91,16 +91,16 @@ import { BookingService } from '../services/booking.service';
  
                 <div class="space-y-6">
                   <div>
-                    <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">الاسم بالكامل <span class="text-red-500">*</span></label>
-                    <input type="text" [(ngModel)]="form.payerName" name="payerName" class="w-full bg-gray-50 border-transparent rounded-2xl px-6 py-4.5 text-sm font-bold focus:bg-white focus:border-[#0a8f96] outline-none transition-all" placeholder="أدخل اسمك بالكامل" required>
+                    <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">{{ 'BOOKINGS.CREATE.FULL_NAME' | translate }} <span class="text-red-500">*</span></label>
+                    <input type="text" [(ngModel)]="form.payerName" name="payerName" class="w-full bg-gray-50 border-transparent rounded-2xl px-6 py-4.5 text-sm font-bold focus:bg-white focus:border-[#0a8f96] outline-none transition-all" [placeholder]="'BOOKINGS.CREATE.NAME_PLACEHOLDER' | translate" required>
                   </div>
                   <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div>
-                      <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">البريد الإلكتروني <span class="text-red-500">*</span></label>
+                      <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">{{ 'BOOKINGS.CREATE.EMAIL' | translate }} <span class="text-red-500">*</span></label>
                       <input type="email" [(ngModel)]="form.payerEmail" name="payerEmail" class="w-full bg-gray-50 border-transparent rounded-2xl px-6 py-4.5 text-sm font-bold focus:bg-white focus:border-[#0a8f96] outline-none transition-all text-left" dir="ltr" placeholder="you@example.com" required>
                     </div>
                     <div>
-                      <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">رقم الهاتف <span class="text-red-500">*</span></label>
+                      <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">{{ 'BOOKINGS.CREATE.PHONE' | translate }} <span class="text-red-500">*</span></label>
                       <input type="tel" [(ngModel)]="form.payerPhone" name="payerPhone" class="w-full bg-gray-50 border-transparent rounded-2xl px-6 py-4.5 text-sm font-bold focus:bg-white focus:border-[#0a8f96] outline-none transition-all text-left" dir="ltr" placeholder="+20 1x xxxx xxxx" required>
                     </div>
                   </div>
@@ -172,6 +172,12 @@ export class CreateBookingComponent implements OnInit {
   private translate = inject(TranslateService);
 
   // Localization Mappings
+  // NOTE: These maps are static backend API value→Arabic-label mappings used as a
+  // document terminology reference; values come from the backend as English enum
+  // codes (e.g. 'Cairo'). The runtime user-facing display is sourced from
+  // CITIES / DISTRICTS translation files via getCityLabel/getDistrictLabel below.
+  // Kept as constants rather than translation keys because they map backend codes,
+  // not user-facing labels.
   private cityMap: Record<string, string> = {
     'Cairo': 'القاهرة', 'Alexandria': 'الإسكندرية', 'Giza': 'الجيزة', 'Mansoura': 'المنصورة',
     'Tanta': 'طنطا', 'Mahalla': 'المحلة الكبرى', 'PortSaid': 'بور سعيد', 'Suez': 'السويس',

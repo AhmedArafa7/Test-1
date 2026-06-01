@@ -1,5 +1,5 @@
 import { Component, signal, inject, DestroyRef } from '@angular/core';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 
@@ -24,10 +24,10 @@ import { compressImage } from '../../../core/utils/media';
             <span class="text-[10px] font-black uppercase tracking-[0.25em]">AI-Powered Search</span>
           </div>
           <h1 class="text-4xl md:text-[50px] font-black text-gray-900 leading-tight mb-4 tracking-tight">
-            ابحث عن منزل أحلامك بذكاء غير مسبوق
+            {{ 'AI_SEARCH.HEADER_TITLE' | translate }}
           </h1>
           <p class="text-gray-500 text-sm md:text-base max-w-xl mx-auto leading-relaxed font-bold">
-            تصفح آلاف العقارات باستخدام تقنيات الذكاء الاصطناعي المتقدمة. صف ما تبحث عنه وسنجده لك في ثوانٍ.
+            {{ 'AI_SEARCH.HEADER_SUBTITLE' | translate }}
           </p>
         </div>
 
@@ -42,10 +42,10 @@ import { compressImage } from '../../../core/utils/media';
                   <path stroke-linecap="round" stroke-linejoin="round" d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 01-3-3V4.5a3 3 0 116 0v8.25a3 3 0 01-3 3z" />
                 </svg>
               </div>
-              <h4 class="text-xs font-black text-red-700">جاري تسجيل صوتك الآن...</h4>
-              <p class="text-[10px] text-red-500 font-bold mt-1">المدة: {{ recordingDuration() }} ثانية. تحدث بوضوح ثم اضغط على زر الإيقاف لحفظ المقطع.</p>
+              <h4 class="text-xs font-black text-red-700">{{ 'AI_SEARCH.RECORDING_ACTIVE_TITLE' | translate }}</h4>
+              <p class="text-[10px] text-red-500 font-bold mt-1">{{ 'AI_SEARCH.RECORDING_ACTIVE_DESC' | translate:{ duration: recordingDuration() } }}</p>
               <button (click)="stopRecording()" class="mt-4 bg-red-600 hover:bg-red-700 text-white text-[10px] font-black uppercase tracking-wider px-5 py-2.5 rounded-xl transition-all shadow-md active:scale-95 cursor-pointer">
-                إيقاف التسجيل 🟥
+                {{ 'AI_SEARCH.STOP_RECORDING_BTN' | translate }} 🟥
               </button>
             </div>
           }
@@ -67,15 +67,15 @@ import { compressImage } from '../../../core/utils/media';
                     ✕
                   </button>
                 </div>
-                <p class="text-[#0a8f96] text-[11px] font-black mt-3">تم إرفاق الصورة للبحث بنجاح! ✨</p>
+                <p class="text-[#0a8f96] text-[11px] font-black mt-3">{{ 'AI_SEARCH.IMAGE_ATTACHED_SUCCESS' | translate }} ✨</p>
               } @else {
                 <div class="w-14 h-14 mx-auto mb-4 bg-gradient-to-br from-[#0a8f96]/10 to-[#0a8f96]/5 rounded-2xl flex items-center justify-center border border-[#0a8f96]/10 group-hover:scale-105 transition-transform duration-300">
                   <svg class="w-6 h-6 text-[#0a8f96]" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
                   </svg>
                 </div>
-                <p class="text-gray-900 font-extrabold text-sm mb-1">انقر للتحميل أو اسحب الصورة هنا</p>
-                <p class="text-gray-400 text-[10px] font-bold">البحث باستخدام صور العقارات (JPG, PNG)</p>
+                <p class="text-gray-900 font-extrabold text-sm mb-1">{{ 'AI_SEARCH.IMAGE_DROP_HERE' | translate }}</p>
+                <p class="text-gray-400 text-[10px] font-bold">{{ 'AI_SEARCH.IMAGE_SEARCH_DESC' | translate }}</p>
               }
             </div>
             <input #imageInput type="file" accept="image/*" (change)="onImageSelect($event)" class="hidden">
@@ -91,13 +91,13 @@ import { compressImage } from '../../../core/utils/media';
                   </svg>
                 </div>
                 <div class="ltr:text-left rtl:text-right">
-                  <p class="text-[11px] font-black text-gray-900">تم تسجيل مقطع صوتي بنجاح!</p>
-                  <p class="text-[9px] font-bold text-gray-400">المدة: {{ recordingDuration() }} ثانية</p>
+                  <p class="text-[11px] font-black text-gray-900">{{ 'AI_SEARCH.AUDIO_RECORDED_SUCCESS' | translate }}</p>
+                  <p class="text-[9px] font-bold text-gray-400">{{ 'AI_SEARCH.DURATION_LABEL' | translate:{ duration: recordingDuration() } }}</p>
                 </div>
               </div>
               <div class="flex items-center gap-3">
                 <audio [src]="audioPreviewUrl()" controls class="h-8 max-w-[150px] md:max-w-[200px]"></audio>
-                <button (click)="clearRecording()" class="text-[10px] font-black text-red-500 hover:text-red-600 transition-colors uppercase tracking-wider cursor-pointer">حذف</button>
+                <button (click)="clearRecording()" class="text-[10px] font-black text-red-500 hover:text-red-600 transition-colors uppercase tracking-wider cursor-pointer">{{ 'AI_SEARCH.DELETE_BTN' | translate }}</button>
               </div>
             </div>
           }
@@ -118,7 +118,7 @@ import { compressImage } from '../../../core/utils/media';
             <input
               [(ngModel)]="rawQuery"
               class="w-full bg-transparent border-none text-xs font-black text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-0 px-3 rtl:text-right ltr:text-left h-12"
-              [placeholder]="'مثال: شقة 3 غرف نوم في دبي مارينا مع إطلالة بحرية ومسبح...'"
+              [placeholder]="'AI_SEARCH.SEARCH_PLACEHOLDER' | translate"
             >
 
             <!-- Search Icon (Right) -->
@@ -199,7 +199,7 @@ import { compressImage } from '../../../core/utils/media';
                 </div>
                 <!-- Price Range Filters -->
                 <div>
-                  <label class="block text-[10px] font-bold text-gray-400 uppercase mb-2">{{ 'PROPERTY_LIST.PRICE_RANGE' | translate }}</label>
+                  <label class="block text-[10px] font-bold text-gray-400 uppercase mb-2">{{ 'PROPERTY_LIST.LABEL_PRICE' | translate }}</label>
                   <div class="grid grid-cols-2 gap-2">
                     <input type="number" [(ngModel)]="filters.minPrice" [placeholder]="'PROPERTY_LIST.MIN_PRICE' | translate" class="bg-gray-50 border-none rounded-xl text-xs font-bold p-3 w-full outline-none">
                     <input type="number" [(ngModel)]="filters.maxPrice" [placeholder]="'PROPERTY_LIST.MAX_PRICE' | translate" class="bg-gray-50 border-none rounded-xl text-xs font-bold p-3 w-full outline-none">
@@ -216,7 +216,7 @@ import { compressImage } from '../../../core/utils/media';
               <div class="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
               <span>{{ searchStepMessage() | translate }}</span>
             } @else {
-              <span>بحث بالذكاء الاصطناعي</span>
+              <span>{{ 'AI_SEARCH.SEARCH_BTN' | translate }}</span>
               <svg class="w-4 h-4 transition-transform group-hover:translate-x-1 rtl:rotate-180" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
               </svg>
@@ -250,19 +250,19 @@ import { compressImage } from '../../../core/utils/media';
                 <a [routerLink]="['/properties', sr.propertyId]" class="block bg-white rounded-2xl border border-slate-100 p-6 hover:shadow-lg hover:shadow-[#0a8f96]/5 hover:-translate-y-0.5 transition-all duration-300">
                   <div class="flex items-center justify-between">
                     <div>
-                      <h3 class="font-black text-gray-900 text-lg">{{ sr.snapshotTitle || 'وحدة عقارية' }}</h3>
+                      <h3 class="font-black text-gray-900 text-lg">{{ sr.snapshotTitle || ('AI_SEARCH.FALLBACK_PROPERTY_TITLE' | translate) }}</h3>
                       <div class="flex items-center gap-4 mt-2 text-xs font-bold text-gray-400">
                         <span class="flex items-center gap-1">
                           <svg class="w-3 h-3 text-[#0a8f96]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/></svg>
                           {{ sr.snapshotCity }}
                         </span>
                         <span class="text-gray-900">{{ sr.snapshotPrice | currencyEgp }}</span>
-                        <span class="text-[9px] font-black uppercase tracking-[0.2em] bg-gray-50 text-gray-400 px-3 py-1 rounded-lg border border-gray-100">{{ sr.snapshotStatus === 'Available' ? 'متاح' : 'تم البيع' }}</span>
+                        <span class="text-[9px] font-black uppercase tracking-[0.2em] bg-gray-50 text-gray-400 px-3 py-1 rounded-lg border border-gray-100">{{ sr.snapshotStatus === 'Available' ? ('AI_SEARCH.STATUS_AVAILABLE' | translate) : ('AI_SEARCH.STATUS_SOLD' | translate) }}</span>
                       </div>
                     </div>
                     <div class="text-right shrink-0">
                       <p class="text-2xl font-black text-[#0a8f96]">{{ (sr.relevanceScore * 100).toFixed(0) }}%</p>
-                      <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">تطابق مذهل</p>
+                      <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{{ 'AI_SEARCH.MATCH_LABEL' | translate }}</p>
                     </div>
                   </div>
                 </a>
@@ -328,24 +328,17 @@ export class AiSearchComponent {
   imagePreviewUrl = signal<string>('');
   private imageFile: File | null = null;
 
-  constructor(private aiService: AiService, private toast: ToastService) {
-    this.destroyRef.onDestroy(() => this.destroyed = true);
-  }
-
+  private translate = inject(TranslateService);
   private destroyRef = inject(DestroyRef);
   private destroyed = false;
 
-  cities = [
-    'القاهرة', 'الإسكندرية', 'الجيزة', 'المنصورة', 'طنطا', 'المحلة الكبرى', 
-    'بور سعيد', 'السويس', 'الإسماعيلية', 'الغردقة', 'شرم الشيخ', '6 أكتوبر', 'الشيخ زايد'
-  ];
+  cities: string[] = (this.translate.instant('AI_SEARCH.CITIES_LIST') as string[]) || [];
 
-  propertyTypes = [
-    { id: 'Apartment', label: 'شقق', icon: '🏢' },
-    { id: 'Villa', label: 'فيلات', icon: '🏡' },
-    { id: 'Office', label: 'مكتب', icon: '💼' },
-    { id: 'Land', label: 'أراضي', icon: '🏜️' }
-  ];
+  propertyTypes: { id: string; label: string; icon: string }[] = (this.translate.instant('AI_SEARCH.PROPERTY_TYPES') as { id: string; label: string; icon: string }[]) || [];
+
+  constructor(private aiService: AiService, private toast: ToastService) {
+    this.destroyRef.onDestroy(() => this.destroyed = true);
+  }
 
   selectCity(city: string) {
     this.filters.city = city;
@@ -358,11 +351,11 @@ export class AiSearchComponent {
   }
 
   getDistricts() {
-    return ['الزمالك', 'سموحة', 'الشيخ زايد', '6 أكتوبر'];
+    return (this.translate.instant('AI_SEARCH.DISTRICTS_LIST') as string[]) || [];
   }
 
   getSelectedTypeLabel() {
-    if (!this.filters.propertyType) return 'Property Type';
+    if (!this.filters.propertyType) return this.translate.instant('AI_SEARCH.PROPERTY_TYPE_FALLBACK');
     return this.propertyTypes.find(t => t.id === this.filters.propertyType)?.label || this.filters.propertyType;
   }
 
