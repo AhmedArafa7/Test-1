@@ -5,7 +5,7 @@ import { CommonModule, DecimalPipe } from '@angular/common';
 import { LocalizedDatePipe } from '../../shared/pipes/localized-date.pipe';
 import { AgentService } from './services/agent.service';
 import { PropertyService } from '../properties/services/property.service';
-import { AgentDetail, PropertyListItem, PaginatedList } from '../../core/models';
+import { AgentDetail, PropertyListItem, PaginatedList, BookingListItem } from '../../core/models';
 import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner/loading-spinner';
 import { PropertyCardComponent } from '../../shared/components/property-card/property-card';
 import { ConversationService } from '../conversations/services/conversation.service';
@@ -28,6 +28,7 @@ export interface CalendarSlot {
   dateStr: string;
   timeStr: string;
   available: boolean;
+  date?: Date;
 }
 
 @Component({
@@ -319,6 +320,8 @@ export interface CalendarSlot {
                 <option value="5">5 نجوم</option>
                 <option value="4">4 نجوم</option>
                 <option value="3">3 نجوم</option>
+                <option value="2">2 نجوم</option>
+                <option value="1">1 نجوم</option>
               </select>
 
               <!-- Sort by -->
@@ -429,23 +432,86 @@ export class AgentProfileComponent implements OnInit {
 
   selectedSlot = signal<CalendarSlot | null>(null);
 
+  generateDynamicSlots(realBookings: BookingListItem[]): CalendarSlot[] {
+    const slots: CalendarSlot[] = [];
+    const daysArabic = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+    const monthsArabic = [
+      'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
+      'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'
+    ];
+
+    const today = new Date();
+    const listings = this.properties()?.items || [];
+
+    for (let i = 0; i < 4; i++) {
+      const targetDate = new Date();
+      targetDate.setDate(today.getDate() + i);
+
+      const dayIndex = targetDate.getDay();
+      const dayNum = targetDate.getDate();
+      const monthIndex = targetDate.getMonth();
+
+      let dayName = daysArabic[dayIndex];
+      if (i === 0) dayName = 'اليوم';
+      else if (i === 1) dayName = 'غداً';
+
+      const dateStr = `${daysArabic[dayIndex]} ${dayNum} ${monthsArabic[monthIndex]}`;
+
+      // Morning slot
+      const morningDate = new Date(targetDate);
+      morningDate.setHours(10, 0, 0, 0);
+
+      const morningStart = morningDate.getTime();
+      const morningEnd = morningStart + 90 * 60 * 1000;
+      const isMorningBooked = realBookings.some(b => {
+        const isAgentProperty = listings.some(p => p.id === b.propertyId);
+        if (!isAgentProperty) return false;
+        if (b.status === 'Cancelled') return false;
+        const bStart = new Date(b.startDate).getTime();
+        const bEnd = new Date(b.endDate).getTime();
+        return morningStart < bEnd && bStart < morningEnd;
+      });
+
+      slots.push({
+        id: `slot_${i}_am`,
+        dayName,
+        dateStr,
+        timeStr: '10:00 ص - 11:30 ص',
+        available: !isMorningBooked,
+        date: morningDate
+      });
+
+      // Afternoon slot
+      const afternoonDate = new Date(targetDate);
+      afternoonDate.setHours(16, 30, 0, 0);
+
+      const afternoonStart = afternoonDate.getTime();
+      const afternoonEnd = afternoonStart + 90 * 60 * 1000;
+      const isAfternoonBooked = realBookings.some(b => {
+        const isAgentProperty = listings.some(p => p.id === b.propertyId);
+        if (!isAgentProperty) return false;
+        if (b.status === 'Cancelled') return false;
+        const bStart = new Date(b.startDate).getTime();
+        const bEnd = new Date(b.endDate).getTime();
+        return afternoonStart < bEnd && bStart < afternoonEnd;
+      });
+
+      slots.push({
+        id: `slot_${i}_pm`,
+        dayName,
+        dateStr,
+        timeStr: '04:30 م - 06:00 م',
+        available: !isAfternoonBooked,
+        date: afternoonDate
+      });
+    }
+
+    return slots;
+  }
+
   async ngOnInit() {
     const userId = this.route.snapshot.params['id'];
     if (!userId) return;
-
-    // Initialize central calendar slots for this agent if not already done
-    if (!this.store.calendarSlots()[userId]) {
-      this.store.initializeCalendarSlots(userId, [
-        { id: 'slot_1', dayName: 'اليوم', dateStr: 'الخميس 28 مايو', timeStr: '10:00 ص - 11:30 ص', available: true },
-        { id: 'slot_2', dayName: 'اليوم', dateStr: 'الخميس 28 مايو', timeStr: '04:30 م - 06:00 م', available: false },
-        { id: 'slot_3', dayName: 'غداً', dateStr: 'الجمعة 29 مايو', timeStr: '02:00 م - 03:30 م', available: true },
-        { id: 'slot_4', dayName: 'غداً', dateStr: 'الجمعة 29 مايو', timeStr: '07:00 م - 08:30 م', available: true },
-        { id: 'slot_5', dayName: 'السبت', dateStr: 'السبت 30 مايو', timeStr: '11:00 ص - 12:30 م', available: true },
-        { id: 'slot_6', dayName: 'السبت', dateStr: 'السبت 30 مايو', timeStr: '05:00 م - 06:30 م', available: false },
-        { id: 'slot_7', dayName: 'الأحد', dateStr: 'الأحد 31 مايو', timeStr: '01:00 م - 02:30 م', available: true },
-        { id: 'slot_8', dayName: 'الأحد', dateStr: 'الأحد 31 مايو', timeStr: '06:00 م - 07:30 م', available: true },
-      ]);
-    }
 
     this.loading.set(true);
     try {
@@ -453,9 +519,15 @@ export class AgentProfileComponent implements OnInit {
       const agentData = await this.agentService.getById(userId);
       this.agent.set(agentData);
       
-      // Load properties
-      this.loadProperties(userId);
+      // Load properties (await to populate listings for generateDynamicSlots)
+      await this.loadProperties(userId);
       
+      // Fetch database bookings
+      const bookingsResponse = await this.bookingService.getMyBookings(1, 100).catch(() => null);
+      const realBookings = bookingsResponse ? bookingsResponse.items : [];
+
+      // Always initialize/re-initialize slots dynamically with actual bookings
+      this.store.initializeCalendarSlots(userId, this.generateDynamicSlots(realBookings));
     } catch (error) {
       console.error('Error loading agent profile:', error);
     } finally {
@@ -592,43 +664,16 @@ export class AgentProfileComponent implements OnInit {
     try {
       this.toast.info('جاري إرسال طلب حجز المعاينة إلى قاعدة البيانات...');
       
-      // Dynamic Date Calculation
-      let dateStr = '2026-05-28';
-      if (slot.dayName === 'غداً') {
-        dateStr = '2026-05-29';
-      } else if (slot.dayName === 'السبت') {
-        dateStr = '2026-05-30';
-      } else if (slot.dayName === 'الأحد') {
-        dateStr = '2026-05-31';
-      }
+      const bookingDate = slot.date || new Date();
+      const endDate = new Date(bookingDate.getTime() + 90 * 60 * 1000); // + 1.5 hours
       
-      let startHour = 10;
-      let startMinute = 0;
-      if (slot.timeStr.includes('م')) {
-        const matches = slot.timeStr.match(/(\d+):(\d+)/);
-        if (matches) {
-          startHour = parseInt(matches[1], 10) + 12;
-          if (startHour === 24) startHour = 12;
-          startMinute = parseInt(matches[2], 10);
-        }
-      } else {
-        const matches = slot.timeStr.match(/(\d+):(\d+)/);
-        if (matches) {
-          startHour = parseInt(matches[1], 10);
-          startMinute = parseInt(matches[2], 10);
-        }
-      }
-      
-      const startDate = `${dateStr}T${startHour.toString().padStart(2, '0')}:${startMinute.toString().padStart(2, '0')}:00.000Z`;
-      const endDate = `${dateStr}T${(startHour + 1).toString().padStart(2, '0')}:${startMinute.toString().padStart(2, '0')}:00.000Z`;
-
       // Call API Service
       await this.bookingService.create({
         propertyId: firstProperty.id,
-        startDate: startDate,
-        endDate: endDate,
-        amount: 0,
-        commissionRate: this.agent()?.commissionRate || 0.035,
+        startDate: bookingDate.toISOString(),
+        endDate: endDate.toISOString(),
+        amount: firstProperty.price * 0.01, // Mock viewing cost or 1%
+        commissionRate: this.agent()?.commissionRate || 0.025,
         currency: 'EGP',
         notes: `حجز معاينة مجدولة من تقويم الوكيل: ${slot.dayName} (${slot.dateStr}) الساعة ${slot.timeStr}`
       });

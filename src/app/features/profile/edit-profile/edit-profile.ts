@@ -159,7 +159,7 @@ import { firstValueFrom } from 'rxjs';
                     @if (soundEnabled()) {
                       <div class="p-6 bg-gray-50 rounded-2xl space-y-4 ltr:text-left rtl:text-right">
                         <label class="block text-xs font-bold text-gray-800 mb-1">اختر نغمة التنبيه المفضلة</label>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                           <button type="button"
                                   (click)="changeSoundType('premium')"
                                   [class.bg-[#0a8f96]]="soundType() === 'premium'"
@@ -196,8 +196,22 @@ import { firstValueFrom } from 'rxjs';
                                   [class.text-gray-700]="soundType() !== 'classic'"
                                   [class.border-gray-200]="soundType() !== 'classic'"
                                   class="px-4 py-3 rounded-2xl text-xs font-bold border transition-all cursor-pointer flex items-center justify-between shadow-sm active:scale-95">
-                            <span>🤖 كلاسيكي (Beep)</span>
+                            <span>🤖 &#1603;&#1604;&#1575;&#1587;&#1610;&#1603;&#1610; (Beep)</span>
                             @if (soundType() === 'classic') {
+                              <span class="w-2 h-2 rounded-full bg-white shrink-0"></span>
+                            }
+                          </button>
+
+                          <button type="button"
+                                  (click)="changeSoundType('custom')"
+                                  [class.bg-[#0a8f96]]="soundType() === 'custom'"
+                                  [class.text-white]="soundType() === 'custom'"
+                                  [class.bg-white]="soundType() !== 'custom'"
+                                  [class.text-gray-700]="soundType() !== 'custom'"
+                                  [class.border-gray-200]="soundType() !== 'custom'"
+                                  class="px-4 py-3 rounded-2xl text-xs font-bold border transition-all cursor-pointer flex items-center justify-between shadow-sm active:scale-95">
+                            <span>🎵 &#1605;&#1582;&#1589;&#1589;&#1577; (Custom)</span>
+                            @if (soundType() === 'custom') {
                               <span class="w-2 h-2 rounded-full bg-white shrink-0"></span>
                             }
                           </button>
@@ -407,7 +421,7 @@ export class EditProfileComponent implements OnInit {
   isVerified = signal(false);
   joinedAt = signal<string | null>(null);
   soundEnabled = signal(true);
-  soundType = signal<'premium' | 'pop' | 'classic'>('premium');
+  soundType = signal<'premium' | 'pop' | 'classic' | 'custom' | 'none'>('premium');
 
   private profileService = inject(ProfileService);
   public auth = inject(AuthService);
@@ -654,19 +668,48 @@ export class EditProfileComponent implements OnInit {
     }
   }
 
-  changeSoundType(type: 'premium' | 'pop' | 'classic') {
+  changeSoundType(type: 'premium' | 'pop' | 'classic' | 'custom' | 'none') {
+    if (type === 'custom' && !localStorage.getItem('baytology_custom_sound_data')) {
+      this.toast.error('لم تقم برفع أي نغمة مخصصة بعد. يرجى الذهاب إلى الإعدادات لرفع نغمة أولاً.');
+      return;
+    }
     this.soundType.set(type);
     localStorage.setItem('baytology_sound_type', type);
-    this.playNotificationSound();
+    if (type !== 'none') {
+      this.playNotificationSound();
+    }
   }
 
   playNotificationSound() {
     try {
+      const soundType = this.soundType();
+      
+      if (soundType === 'none') {
+        return;
+      }
+      
+      if (soundType === 'custom') {
+        const customData = localStorage.getItem('baytology_custom_sound_data');
+        if (customData) {
+          const audio = new Audio(customData);
+          audio.volume = 0.5;
+          audio.play().catch(e => console.warn('Custom audio playback failed:', e));
+          return;
+        } else {
+          this.soundType.set('premium');
+          localStorage.removeItem('baytology_custom_sound_name');
+          localStorage.setItem('baytology_sound_type', 'premium');
+          
+          this.toast.error('تعذر العثور على ملف النغمة المخصصة (ربما تم مسح بيانات المتصفح). تم الانتقال تلقائياً إلى النغمة الافتراضية "بلوري".');
+          
+          setTimeout(() => this.playNotificationSound(), 100);
+          return;
+        }
+      }
+
       const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
       if (!AudioContextClass) return;
       const ctx = new AudioContextClass();
-      
-      const soundType = this.soundType();
       
       if (soundType === 'premium') {
         const playTone = (freq: number, start: number, duration: number) => {

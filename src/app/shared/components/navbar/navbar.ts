@@ -1,5 +1,6 @@
 import { Component, HostListener, computed, signal, effect, inject, OnInit } from '@angular/core';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import { RouterLink, RouterLinkActive, Router, NavigationEnd } from '@angular/router';
+import { filter } from 'rxjs';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { AuthService } from '../../../core/auth/auth.service';
@@ -61,8 +62,10 @@ import { ChatSignalRService } from '../../../core/services/chat-signalr.service'
                      [routerLinkActiveOptions]="{exact: true}"
                      class="px-5 py-2.5 rounded-full text-sm font-bold text-gray-500 hover:text-gray-900 transition-all flex items-center gap-2">
                     <span>{{ 'NAV.MESSAGES' | translate }}</span>
-                    @if (hasUnreadMessages()) {
-                      <span class="w-2.5 h-2.5 rounded-full bg-[#0a8f96] animate-pulse shrink-0"></span>
+                    @if (unreadMessagesCount() > 0) {
+                      <span class="bg-[#0a8f96] text-white text-[10px] font-black px-2 py-0.5 rounded-full min-w-5 h-5 flex items-center justify-center shadow-sm tabular-nums animate-pulse shrink-0">
+                        {{ unreadMessagesCount() > 9 ? '9+' : unreadMessagesCount() }}
+                      </span>
                     }
                   </a>
                 }
@@ -187,8 +190,10 @@ import { ChatSignalRService } from '../../../core/services/chat-signalr.service'
                    (click)="mobileOpen = false; clearUnreadMessagesDot()" 
                    class="p-4 rounded-2xl hover:bg-gray-50 text-gray-700 font-bold flex items-center justify-between">
                   <span>{{ 'NAV.MESSAGES' | translate }}</span>
-                  @if (hasUnreadMessages()) {
-                    <span class="w-2.5 h-2.5 rounded-full bg-[#0a8f96] animate-pulse shrink-0"></span>
+                  @if (unreadMessagesCount() > 0) {
+                    <span class="bg-[#0a8f96] text-white text-[10px] font-black px-2 py-0.5 rounded-full min-w-5 h-5 flex items-center justify-center shadow-sm tabular-nums animate-pulse shrink-0">
+                      {{ unreadMessagesCount() > 9 ? '9+' : unreadMessagesCount() }}
+                    </span>
                   }
                 </a>
               }
@@ -204,9 +209,10 @@ import { ChatSignalRService } from '../../../core/services/chat-signalr.service'
 export class NavbarComponent implements OnInit {
   menuOpen = false;
   mobileOpen = false;
-  hasUnreadMessages = signal(false);
+  unreadMessagesCount = signal(0);
 
   private chatSignalR = inject(ChatSignalRService);
+  private router = inject(Router);
 
   displayIdentity = computed(() => {
     const user = this.auth.currentUser();
@@ -245,6 +251,11 @@ export class NavbarComponent implements OnInit {
 
   ngOnInit() {
     this.updateUnreadStatus();
+    this.router.events.pipe(
+      filter(event => event instanceof NavigationEnd)
+    ).subscribe(() => {
+      this.updateUnreadStatus();
+    });
   }
 
   updateUnreadStatus() {
@@ -255,17 +266,17 @@ export class NavbarComponent implements OnInit {
       
       const currentRoute = window.location.pathname;
       if (currentRoute.includes('/conversations')) {
-        this.hasUnreadMessages.set(false);
+        this.unreadMessagesCount.set(0);
       } else {
-        this.hasUnreadMessages.set(total > 0);
+        this.unreadMessagesCount.set(total);
       }
     } catch {
-      this.hasUnreadMessages.set(false);
+      this.unreadMessagesCount.set(0);
     }
   }
 
   clearUnreadMessagesDot() {
-    this.hasUnreadMessages.set(false);
+    this.unreadMessagesCount.set(0);
   }
 
   @HostListener('document:click', ['$event'])

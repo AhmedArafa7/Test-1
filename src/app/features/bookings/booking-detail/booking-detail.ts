@@ -58,7 +58,7 @@ import { ProfileService } from '../../profile/services/profile.service';
               <div>
                 <p class="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2">{{ 'BOOKINGS.DETAIL.CURRENT_STATUS' | translate }}</p>
                 <div class="flex items-center gap-4">
-                  <h2 class="text-3xl font-black text-gray-900 leading-none">{{ 'PROPERTY.STATUSES.' + b.status | translate }}</h2>
+                  <h2 class="text-3xl font-black text-gray-900 leading-none">{{ 'STATUSES.' + b.status | translate }}</h2>
                   <span class="text-[10px] bg-gray-50 text-gray-400 font-black px-4 py-1.5 rounded-xl uppercase tracking-widest border border-gray-100">BK-{{ b.id.substring(0,6).toUpperCase() }}</span>
                 </div>
               </div>
@@ -125,8 +125,13 @@ import { ProfileService } from '../../profile/services/profile.service';
                     <a [routerLink]="['/agents', b.agentUserId]" class="flex items-center gap-4 group">
                       <div class="w-14 h-14 rounded-full border-4 border-white shadow-lg overflow-hidden ring-1 ring-gray-100 flex items-center justify-center bg-gray-50 transition-transform group-hover:scale-105">
                         @if (agent()) {
-                          <img *ngIf="agent()?.avatarUrl" [src]="agent()?.avatarUrl" class="w-full h-full object-cover">
-                          <span *ngIf="!agent()?.avatarUrl" class="text-xl font-black text-[#0a8f96]">{{ (agent()?.displayName || 'A')[0] }}</span>
+                          @if (agent()?.avatarUrl) {
+                            <img [src]="agent()?.avatarUrl" class="w-full h-full object-cover" (error)="onAvatarError($event)">
+                          } @else {
+                            <svg class="w-8 h-8 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+                              <path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" />
+                            </svg>
+                          }
                         } @else {
                           <div class="w-5 h-5 border-2 border-[#0a8f96]/30 border-t-[#0a8f96] rounded-full animate-spin"></div>
                         }
@@ -142,28 +147,34 @@ import { ProfileService } from '../../profile/services/profile.service';
                 </div>
               </div>
 
-              <!-- Time Details -->
+              <!-- Unified Time Card -->
               <div class="bg-white rounded-[32px] border border-gray-100 p-12 shadow-sm">
-                <div class="flex items-center justify-between mb-10">
-                  <div class="flex items-center gap-4">
-                    <div class="w-12 h-12 bg-gradient-to-br from-[#0a8f96]/10 to-[#0a8f96]/5 rounded-2xl flex items-center justify-center text-[#0a8f96] border border-[#0a8f96]/10">
-                      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                    </div>
-                    <h3 class="text-2xl font-black text-gray-900 tracking-tight">{{ 'BOOKINGS.DETAIL.TOUR_TIMES' | translate }}</h3>
+                <div class="flex items-center gap-4 mb-8">
+                  <div class="w-12 h-12 bg-gradient-to-br from-[#0a8f96]/10 to-[#0a8f96]/5 rounded-2xl flex items-center justify-center text-[#0a8f96] border border-[#0a8f96]/10">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                   </div>
+                  <h3 class="text-2xl font-black text-gray-900 tracking-tight">{{ 'BOOKINGS.DETAIL.BOOKED_TOUR' | translate }}</h3>
                 </div>
                 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 relative">
-                  <div class="bg-gray-50/50 border border-gray-50 rounded-[32px] p-10 text-center transition-all hover:bg-white hover:shadow-[0_16px_48px_rgba(10,143,150,0.1)] group">
-                    <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-4 group-hover:text-[#0a8f96] transition-colors">{{ 'BOOKINGS.DETAIL.START_TIME' | translate }}</p>
-                    <p class="text-3xl font-black text-gray-900 mb-2">{{ b.startDate | localizedDate:'yyyy/MM/dd' }}</p>
-                    <p class="text-sm font-bold text-gray-400">{{ b.startDate | localizedDate:'hh:mm a' }}</p>
+                <div class="bg-gray-50/50 border border-gray-50 rounded-[32px] p-8 flex flex-col sm:flex-row items-center justify-between gap-6 hover:bg-white hover:shadow-[0_16px_48px_rgba(10,143,150,0.08)] transition-all">
+                  <div class="flex items-center gap-6">
+                    <div class="w-16 h-16 bg-gradient-to-br from-[#0a8f96]/10 to-[#0a8f96]/5 rounded-[22px] flex flex-col items-center justify-center text-[#0a8f96] font-black">
+                      <span class="text-[10px] leading-none text-gray-400 mb-1 font-bold">{{ 'BOOKINGS.DETAIL.DAY' | translate }}</span>
+                      <span class="text-xl leading-none">{{ b.startDate | localizedDate:'dd' }}</span>
+                    </div>
+                    <div class="text-start">
+                      <p class="text-[10px] font-black uppercase tracking-widest text-[#0a8f96] mb-1">{{ 'BOOKINGS.DETAIL.TOUR_DATE' | translate }}</p>
+                      <p class="text-2xl font-black text-gray-900 leading-none">{{ b.startDate | localizedDate:'EEEE، dd MMMM yyyy' }}</p>
+                    </div>
                   </div>
                   
-                  <div class="bg-gray-50/50 border border-gray-50 rounded-[32px] p-10 text-center transition-all hover:bg-white hover:shadow-[0_16px_48px_rgba(10,143,150,0.1)] group">
-                    <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-4 group-hover:text-[#0a8f96] transition-colors">{{ 'BOOKINGS.DETAIL.END_TIME' | translate }}</p>
-                    <p class="text-3xl font-black text-gray-900 mb-2">{{ b.endDate | localizedDate:'yyyy/MM/dd' }}</p>
-                    <p class="text-sm font-bold text-gray-400">{{ b.endDate | localizedDate:'hh:mm a' }}</p>
+                  <div class="w-full sm:w-auto border-t sm:border-t-0 sm:border-r border-gray-100 pt-6 sm:pt-0 sm:pr-8 flex flex-col items-start sm:items-end">
+                    <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">توقيت المعاينة</p>
+                    <p class="text-xl font-black text-gray-900 flex items-center gap-2">
+                      <span>{{ b.startDate | localizedDate:'hh:mm a' }}</span>
+                      <span class="text-gray-300 text-sm font-medium">إلى</span>
+                      <span>{{ b.endDate | localizedDate:'hh:mm a' }}</span>
+                    </p>
                   </div>
                 </div>
               </div>
@@ -286,12 +297,10 @@ import { ProfileService } from '../../profile/services/profile.service';
                     <span class="text-[11px] font-black text-gray-400 uppercase tracking-widest">{{ 'BOOKINGS.DETAIL.TOUR_FEE' | translate }}</span>
                     <span class="text-lg font-black text-gray-900">{{ b.amount | currencyEgp }}</span>
                   </div>
-                  @if (auth.isAgent()) {
-                    <div class="flex justify-between items-center">
-                      <span class="text-[11px] font-black text-gray-400 uppercase tracking-widest">{{ 'BOOKINGS.DETAIL.COMMISSION' | translate:{ rate: (b.commissionRate * 100) | number:'1.0-2' } }}</span>
-                      <span class="text-lg font-black text-[#0a8f96]">+{{ (b.amount * b.commissionRate) | currencyEgp }}</span>
-                    </div>
-                  }
+                  <div class="flex justify-between items-center">
+                    <span class="text-[11px] font-black text-gray-400 uppercase tracking-widest">{{ 'BOOKINGS.DETAIL.COMMISSION' | translate:{ rate: (b.commissionRate * 100) | number:'1.0-2' } }}</span>
+                    <span class="text-lg font-black text-[#0a8f96]">+{{ (b.amount * b.commissionRate) | currencyEgp:2 }}</span>
+                  </div>
                   @if (b.paymentId) {
                     <div class="flex justify-between items-center pt-4 border-t border-gray-50">
                       <span class="text-[11px] font-black text-gray-400 uppercase tracking-widest">{{ 'BOOKINGS.DETAIL.PAYMENT_ID' | translate }}</span>
@@ -304,7 +313,7 @@ import { ProfileService } from '../../profile/services/profile.service';
                   <div class="absolute inset-0 opacity-[0.03]" style="background-image: radial-gradient(circle at 1px 1px, white 1px, transparent 0); background-size: 16px 16px;"></div>
                   <div class="relative z-10">
                   <p class="text-[10px] font-black uppercase tracking-[0.4em] text-gray-500 mb-4">{{ (b.status === 'Paid' || b.status === 'Confirmed' ? 'BOOKINGS.DETAIL.TOTAL_PAID' : 'BOOKINGS.DETAIL.TOTAL_VALUE') | translate }}</p>
-                  <p class="text-5xl font-black text-[#0a8f96] tracking-tighter">{{ (b.amount) | currencyEgp }}</p>
+                  <p class="text-5xl font-black text-[#0a8f96] tracking-tighter">{{ (b.amount + (b.amount * b.commissionRate)) | currencyEgp:2 }}</p>
                   <p class="text-[10px] font-black text-white/40 mt-4 uppercase tracking-widest">{{ 'BOOKINGS.DETAIL.TAX_INCLUDED' | translate }}</p>
                   </div>
                 </div>
@@ -418,6 +427,20 @@ export class BookingDetailComponent implements OnInit {
       this.toast.error(this.translate.instant('BOOKINGS.DETAIL.MESSAGES.NOT_FOUND'));
     } finally {
       this.loading.set(false);
+    }
+  }
+
+  onAvatarError(event: Event) {
+    const img = event.target as HTMLImageElement;
+    img.style.display = 'none';
+    const parent = img.parentElement;
+    if (parent) {
+      img.remove();
+      parent.innerHTML = `
+        <svg class="w-8 h-8 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" />
+        </svg>
+      `;
     }
   }
 

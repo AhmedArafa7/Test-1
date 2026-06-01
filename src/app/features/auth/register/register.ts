@@ -1,5 +1,5 @@
-import { Component, signal } from '@angular/core';
-import { TranslateModule } from '@ngx-translate/core';
+import { Component, signal, inject } from '@angular/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../core/auth/auth.service';
@@ -154,7 +154,7 @@ import { ToastService } from '../../../core/services/toast.service';
                 <div class="mt-3 space-y-3 animate-fade-in bg-slate-50/60 border border-slate-100 rounded-2xl p-4">
                   <!-- Bar and label -->
                   <div class="flex items-center justify-between text-[11px] font-bold">
-                    <span class="text-slate-400">قوة كلمة المرور:</span>
+                    <span class="text-slate-400">{{ 'AUTH.REGISTER.PASSWORD_STRENGTH' | translate }}</span>
                     <span [class]="passwordStrengthColor() === 'bg-rose-500' ? 'text-rose-500' : passwordStrengthColor() === 'bg-amber-500' ? 'text-amber-500' : 'text-emerald-500'">
                       {{ passwordStrengthLabel() }}
                     </span>
@@ -172,28 +172,28 @@ import { ToastService } from '../../../core/services/toast.service';
                       <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/>
                       </svg>
-                      <span>8 رموز على الأقل</span>
+                      <span>{{ 'AUTH.REGISTER.RULE_MIN_LENGTH' | translate }}</span>
                     </div>
                     <!-- Rule 2: Upper Case -->
                     <div class="flex items-center gap-1.5 transition-colors" [class.text-emerald-500]="hasUppercase()" [class.text-slate-400]="!hasUppercase()">
                       <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/>
                       </svg>
-                      <span>حرف كبير (A-Z)</span>
+                      <span>{{ 'AUTH.REGISTER.RULE_UPPERCASE' | translate }}</span>
                     </div>
                     <!-- Rule 3: Number -->
                     <div class="flex items-center gap-1.5 transition-colors" [class.text-emerald-500]="hasNumber()" [class.text-slate-400]="!hasNumber()">
                       <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/>
                       </svg>
-                      <span>رقم واحد (0-9)</span>
+                      <span>{{ 'AUTH.REGISTER.RULE_NUMBER' | translate }}</span>
                     </div>
                     <!-- Rule 4: Special Char -->
                     <div class="flex items-center gap-1.5 transition-colors" [class.text-emerald-500]="hasSpecialChar()" [class.text-slate-400]="!hasSpecialChar()">
                       <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/>
                       </svg>
-                      <span>رمز خاص (!@#$)</span>
+                      <span>{{ 'AUTH.REGISTER.RULE_SPECIAL' | translate }}</span>
                     </div>
                   </div>
                 </div>
@@ -220,6 +220,7 @@ import { ToastService } from '../../../core/services/toast.service';
   `,
 })
 export class RegisterComponent {
+  private translate = inject(TranslateService);
   firstName = '';
   lastName = '';
   email = '';
@@ -270,13 +271,13 @@ export class RegisterComponent {
     this.passwordStrengthPercentage.set(score * 25);
 
     if (score <= 1) {
-      this.passwordStrengthLabel.set('ضعيف');
+      this.passwordStrengthLabel.set(this.translate.instant('AUTH.REGISTER.STRENGTH_WEAK'));
       this.passwordStrengthColor.set('bg-rose-500');
     } else if (score <= 3) {
-      this.passwordStrengthLabel.set('متوسط');
+      this.passwordStrengthLabel.set(this.translate.instant('AUTH.REGISTER.STRENGTH_MEDIUM'));
       this.passwordStrengthColor.set('bg-amber-500');
     } else {
-      this.passwordStrengthLabel.set('قوي جداً');
+      this.passwordStrengthLabel.set(this.translate.instant('AUTH.REGISTER.STRENGTH_STRONG'));
       this.passwordStrengthColor.set('bg-emerald-500');
     }
   }

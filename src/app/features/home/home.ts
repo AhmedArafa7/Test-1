@@ -1,4 +1,4 @@
-import { Component, signal, OnInit, HostListener, OnDestroy } from '@angular/core';
+import { Component, signal, computed, OnInit, HostListener, OnDestroy } from '@angular/core';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { RouterLink } from '@angular/router';
 import { CurrencyPipe, DecimalPipe, SlicePipe } from '@angular/common';
@@ -10,6 +10,7 @@ import { AiService } from '../ai/services/ai.service';
 import { CurrencyEgpPipe } from '../../shared/pipes/currency-egp.pipe';
 import { LocalImageService } from '../../core/services/local-image.service';
 import { resolveBackendAssetUrl, getPropertyImageUrl, buildPropertyPlaceholder } from '../../core/utils/media';
+import { EGYPT_REGIONS, Governorate, City } from '../../core/constants/egypt-regions';
 
 @Component({
   selector: 'app-home',
@@ -59,29 +60,67 @@ import { resolveBackendAssetUrl, getPropertyImageUrl, buildPropertyPlaceholder }
               
               <!-- City Search -->
               <div class="flex-1 w-full relative z-52" (click)="$event.stopPropagation()">
-                <div class="flex items-center px-8 py-4 gap-4 border-b md:border-b-0 md:border-l border-white/10 cursor-text" (click)="showCityDropdown.set(!showCityDropdown())">
+                <div class="flex items-center px-8 py-4 gap-4 border-b md:border-b-0 md:border-l border-white/10 cursor-text" (click)="cityInput.focus()">
                   <svg class="w-6 h-6 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                  <input type="text" [value]="(searchCity ? ('CITIES.' + searchCity | translate) : '')" readonly (click)="showCityDropdown.set(true)"
+                  <input #cityInput type="text"
+                         [ngModel]="citySearchQuery()"
+                         (ngModelChange)="onCityQueryChange($event)"
+                         (focus)="showCityDropdown.set(true)"
                          [placeholder]="'HOME.SEARCH_CITY' | translate" 
-                         class="w-full bg-transparent text-white placeholder:text-white/40 text-lg outline-none font-medium text-inherit cursor-pointer">
+                         class="w-full bg-transparent text-white placeholder:text-white/40 text-lg outline-none font-medium text-inherit cursor-text">
                 </div>
                 
                 @if (showCityDropdown()) {
-                  <div class="absolute top-full left-0 right-0 mt-4 bg-white/95 backdrop-blur-2xl rounded-[32px] shadow-2xl border border-white/20 overflow-hidden z-50 py-4 animate-slide-up">
-                    <div class="px-6 py-2 mb-2 text-[10px] font-black text-gray-400 uppercase tracking-widest">{{ 'PROPERTY_LIST.CITY' | translate }}</div>
-                    <div class="max-h-64 overflow-y-auto custom-scrollbar">
-                      @for (city of cities; track city) {
-                        <button (click)="selectCity(city)" 
-                                class="w-full flex items-center justify-between px-8 py-3.5 hover:bg-[#0a8f96]/5 text-gray-900 font-bold transition-all group ltr:text-left rtl:text-right">
-                          <div class="flex items-center gap-3">
-                            <div class="w-8 h-8 rounded-xl bg-gray-100 flex items-center justify-center text-gray-400 group-hover:bg-[#0a8f96]/10 group-hover:text-[#0a8f96] transition-all">
-                              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/></svg>
-                            </div>
-                            {{ 'CITIES.' + city | translate }}
+                  <div class="absolute top-full left-0 right-0 mt-4 bg-white/95 backdrop-blur-2xl rounded-[32px] shadow-2xl border border-white/20 overflow-hidden z-50 animate-slide-up md:w-[600px] md:mx-auto">
+                    <div class="flex h-[320px] divide-x divide-slate-100/50 rtl:divide-x-reverse text-gray-900 font-bold">
+                      
+                      <!-- Column 1: Governorates -->
+                      <div class="w-1/2 overflow-y-auto custom-scrollbar py-4">
+                        <div class="px-6 py-2 mb-2 text-[10px] font-black text-gray-400 uppercase tracking-widest">{{ 'PROPERTY_LIST.GOVERNORATE' | translate }}</div>
+                        @for (gov of filteredGovernorates(); track gov.id) {
+                          <button type="button" 
+                                  (click)="selectGovernorate(gov)"
+                                  (mouseenter)="hoverGovernorate(gov)"
+                                  [class.bg-[#0a8f96]/5]="activeGov()?.id === gov.id"
+                                  [class.text-[#0a8f96]]="activeGov()?.id === gov.id"
+                                  class="w-full flex items-center justify-between px-6 py-3.5 hover:bg-slate-50 transition-all group ltr:text-left rtl:text-right">
+                            <span>{{ translate.currentLang === 'ar' ? gov.nameAr : gov.nameEn }}</span>
+                            <svg class="w-3.5 h-3.5 text-gray-300 group-hover:text-[#0a8f96] transition-all rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                          </button>
+                        }
+                        @if (filteredGovernorates().length === 0) {
+                          <div class="px-6 py-8 text-center text-xs text-gray-400 font-bold">
+                            {{ 'COMMON.NO_RESULTS' | translate }}
                           </div>
-                          <svg class="w-4 h-4 text-gray-300 opacity-0 group-hover:opacity-100 transition-all rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
-                        </button>
-                      }
+                        }
+                      </div>
+
+                      <!-- Column 2: Cities of Selected Governorate -->
+                      <div class="w-1/2 overflow-y-auto custom-scrollbar py-4 bg-slate-50/50">
+                        <div class="px-6 py-2 mb-2 text-[10px] font-black text-gray-400 uppercase tracking-widest">{{ 'PROPERTY_LIST.CITY' | translate }}</div>
+                        @if (activeGov(); as gov) {
+                          <!-- All Cities option -->
+                          <button type="button" 
+                                  (click)="selectCityOfGov({ id: '', nameAr: 'كل المدن', nameEn: 'All Cities' })"
+                                  class="w-full flex items-center px-6 py-3.5 hover:bg-[#0a8f96]/5 text-[#0a8f96] transition-all ltr:text-left rtl:text-right">
+                            <div class="w-1.5 h-1.5 rounded-full bg-[#0a8f96] mr-2 rtl:ml-2 rtl:mr-0"></div>
+                            <span>{{ translate.currentLang === 'ar' ? 'كل المدن' : 'All Cities' }}</span>
+                          </button>
+                          
+                          @for (city of gov.cities; track city.id) {
+                            <button type="button" 
+                                    (click)="selectCityOfGov(city)"
+                                    class="w-full flex items-center px-6 py-3.5 hover:bg-[#0a8f96]/5 transition-all text-gray-700 ltr:text-left rtl:text-right">
+                              <span>{{ translate.currentLang === 'ar' ? city.nameAr : city.nameEn }}</span>
+                            </button>
+                          }
+                        } @else {
+                          <div class="h-full flex items-center justify-center text-xs text-gray-400 font-bold px-6 py-8">
+                            {{ translate.currentLang === 'ar' ? 'اختر محافظة أولاً' : 'Select a governorate first' }}
+                          </div>
+                        }
+                      </div>
+
                     </div>
                   </div>
                 }
@@ -326,9 +365,25 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   // Search State
   searchCity = '';
+  citySearchQuery = signal('');
   selectedType = signal('');
   showCityDropdown = signal(false);
   showTypeDropdown = signal(false);
+
+  egyptRegions = EGYPT_REGIONS;
+  activeGov = signal<Governorate | null>(EGYPT_REGIONS[0]);
+
+  filteredGovernorates = computed(() => {
+    const query = this.citySearchQuery().toLowerCase().trim();
+    if (!query) return this.egyptRegions;
+    return this.egyptRegions.filter(gov => {
+      const matchGov = gov.nameAr.toLowerCase().includes(query) || gov.nameEn.toLowerCase().includes(query);
+      const matchCities = gov.cities.some(city => 
+        city.nameAr.toLowerCase().includes(query) || city.nameEn.toLowerCase().includes(query)
+      );
+      return matchGov || matchCities;
+    });
+  });
 
   // Localization Mappings
   private cityMap: Record<string, string> = {
@@ -359,6 +414,19 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   public getCityKeyFromValue(value: string | undefined): string {
     if (!value) return '';
+    const normalized = value.toLowerCase().trim();
+    for (const gov of this.egyptRegions) {
+      if (gov.nameAr.toLowerCase() === normalized || gov.nameEn.toLowerCase() === normalized || gov.id.toLowerCase() === normalized) {
+        return gov.id;
+      }
+      const city = gov.cities.find(c => 
+        c.nameAr.toLowerCase() === normalized || c.nameEn.toLowerCase() === normalized || c.id.toLowerCase() === normalized
+      );
+      if (city) {
+        return city.id;
+      }
+    }
+
     const key = Object.keys(this.cityMap).find(k => this.cityMap[k] === value);
     if (key) return key;
     const citiesDict = this.translate.instant('CITIES');
@@ -382,6 +450,16 @@ export class HomeComponent implements OnInit, OnDestroy {
   public getCityLabel(value: string | undefined): string {
     if (!value) return '';
     const key = this.getCityKeyFromValue(value);
+    const isAr = this.translate.currentLang === 'ar';
+    for (const gov of this.egyptRegions) {
+      if (gov.id === key) {
+        return isAr ? gov.nameAr : gov.nameEn;
+      }
+      const city = gov.cities.find(c => c.id === key);
+      if (city) {
+        return isAr ? city.nameAr : city.nameEn;
+      }
+    }
     const translationKey = 'CITIES.' + key;
     const translated = this.translate.instant(translationKey);
     return translated !== translationKey ? translated : value;
@@ -395,10 +473,15 @@ export class HomeComponent implements OnInit, OnDestroy {
     return translated !== translationKey ? translated : value;
   }
 
-  cities = [
-    'Cairo', 'Alexandria', 'Giza', 'Mansoura', 'Tanta', 'Mahalla', 
-    'PortSaid', 'Suez', 'Ismailia', 'Hurghada', 'SharmElSheikh', 'October', 'Zayed'
-  ];
+  get cities(): string[] {
+    const ids: string[] = [];
+    this.egyptRegions.forEach(gov => {
+      gov.cities.forEach(city => {
+        if (city.id) ids.push(city.id);
+      });
+    });
+    return ids;
+  }
 
   propertyTypes = [
     { id: 'Apartment', icon: '🏢' },
@@ -412,18 +495,121 @@ export class HomeComponent implements OnInit, OnDestroy {
     public auth: AuthService, 
     private aiService: AiService,
     private localImageService: LocalImageService,
-    private translate: TranslateService
+    public translate: TranslateService
   ) {}
 
   @HostListener('document:click')
   closeDropdowns() {
     this.showCityDropdown.set(false);
     this.showTypeDropdown.set(false);
+
+    const query = this.citySearchQuery().trim();
+    if (!query) {
+      this.searchCity = '';
+      this.citySearchQuery.set('');
+    } else {
+      const isAr = this.translate.currentLang === 'ar';
+      const gov = this.activeGov();
+      if (gov) {
+        const govName = isAr ? gov.nameAr : gov.nameEn;
+        const allCitiesLabel = `${govName} - ${isAr ? 'كل المدن' : 'All Cities'}`;
+        if (query === allCitiesLabel) {
+          this.searchCity = '';
+          this.citySearchQuery.set(allCitiesLabel);
+          return;
+        }
+      }
+
+      let matchedCity: any = null;
+      for (const g of this.egyptRegions) {
+        const city = g.cities.find(c => {
+          const expected = isAr ? c.nameAr : c.nameEn;
+          return query.toLowerCase() === expected.toLowerCase() || query.toLowerCase() === c.id.toLowerCase();
+        });
+        if (city) {
+          matchedCity = city;
+          break;
+        }
+      }
+
+      if (matchedCity) {
+        this.searchCity = matchedCity.id;
+        this.citySearchQuery.set(isAr ? matchedCity.nameAr : matchedCity.nameEn);
+      } else {
+        this.searchCity = query;
+        this.citySearchQuery.set(query);
+      }
+    }
   }
 
-  selectCity(cityId: string) {
-    this.searchCity = cityId;
+  hoverGovernorate(gov: Governorate) {
+    this.activeGov.set(gov);
+  }
+
+  selectGovernorate(gov: Governorate) {
+    this.activeGov.set(gov);
+  }
+
+  selectCityOfGov(city: { id: string, nameAr: string, nameEn: string }) {
+    const isAr = this.translate.currentLang === 'ar';
+    const gov = this.activeGov();
+    
+    if (!city.id) {
+      this.searchCity = '';
+      const govName = gov ? (isAr ? gov.nameAr : gov.nameEn) : '';
+      this.citySearchQuery.set(govName ? `${govName} - ${isAr ? 'كل المدن' : 'All Cities'}` : '');
+    } else {
+      this.searchCity = city.id;
+      this.citySearchQuery.set(isAr ? city.nameAr : city.nameEn);
+    }
+    
     this.showCityDropdown.set(false);
+  }
+
+  onCityQueryChange(query: string) {
+    this.citySearchQuery.set(query);
+    this.showCityDropdown.set(true);
+
+    const trimmedQuery = query.trim();
+    if (!trimmedQuery) {
+      this.searchCity = '';
+      return;
+    }
+
+    const normalizedQuery = trimmedQuery.toLowerCase();
+    
+    let matchedCity: any = null;
+    let matchedGov: any = null;
+    
+    for (const gov of this.egyptRegions) {
+      const city = gov.cities.find(c => 
+        c.nameAr.toLowerCase() === normalizedQuery || 
+        c.nameEn.toLowerCase() === normalizedQuery ||
+        c.id.toLowerCase() === normalizedQuery
+      );
+      if (city) {
+        matchedCity = city;
+        matchedGov = gov;
+        break;
+      }
+    }
+    
+    if (matchedCity) {
+      this.searchCity = matchedCity.id;
+      this.activeGov.set(matchedGov);
+    } else {
+      const gov = this.egyptRegions.find(g => 
+        g.nameAr.toLowerCase() === normalizedQuery || 
+        g.nameEn.toLowerCase() === normalizedQuery ||
+        g.id.toLowerCase() === normalizedQuery
+      );
+      if (gov) {
+        this.searchCity = '';
+        this.activeGov.set(gov);
+      } else {
+        this.searchCity = trimmedQuery;
+      }
+    }
   }
 
   selectType(typeId: string) {

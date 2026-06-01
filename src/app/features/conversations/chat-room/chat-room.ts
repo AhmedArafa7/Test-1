@@ -244,9 +244,18 @@ export class ChatRoomComponent implements OnInit, OnDestroy {
   imageFile: File | undefined = undefined;
   croppedImageTemp: string = '';
   localImagesMap = signal<Map<string, string>>(new Map());
+
+  canvasRef = viewChild<ElementRef<HTMLCanvasElement>>('drawingCanvas');
+  activeEditorMode = signal<'crop' | 'draw'>('crop');
+  drawingColor = '#ff4d4d';
+  drawingLineWidth = 5;
+  canvasElement: HTMLCanvasElement | null = null;
+  ctx: CanvasRenderingContext2D | null = null;
+  isDrawingState = false;
+  originalImageFile: File | null = null;
   showSoundSettings = signal(false);
   soundEnabled = signal(true);
-  soundType = signal<'premium' | 'pop' | 'classic'>('premium');
+  soundType = signal<'premium' | 'pop' | 'classic' | 'custom' | 'none'>('premium');
   
   fileInput = viewChild<ElementRef>('fileInput');
 
@@ -293,8 +302,7 @@ export class ChatRoomComponent implements OnInit, OnDestroy {
 
   unreadMessagesCount = computed(() => {
     const list = this.conversations();
-    const count = list.filter(c => (c.unreadCount ?? 0) > 0).length;
-    return count || 1;
+    return list.filter(c => (c.unreadCount ?? 0) > 0).length;
   });
 
   getOtherName(c: Conversation): string {
@@ -322,6 +330,13 @@ export class ChatRoomComponent implements OnInit, OnDestroy {
   scrollContainer = viewChild<ElementRef>('scrollContainer');
 
   constructor() {
+    effect(() => {
+      const ref = this.canvasRef();
+      if (ref) {
+        this.initCanvas(ref.nativeElement);
+      }
+    });
+
     effect(() => {
       const msg = this.chatSignalR.incomingMessage();
       if (msg) {
@@ -461,6 +476,23 @@ export class ChatRoomComponent implements OnInit, OnDestroy {
 
     let changed = false;
 
+    // Clean up stale unread counts for conversations that no longer exist
+    const activeIds = new Set(list.map(c => c.id));
+    for (const key of Object.keys(unreadCounts)) {
+      if (!activeIds.has(key)) {
+        delete unreadCounts[key];
+        changed = true;
+      }
+    }
+    
+    // Also clean up stale lastViewed entries
+    for (const key of Object.keys(lastViewed)) {
+      if (!activeIds.has(key)) {
+        delete lastViewed[key];
+        changed = true;
+      }
+    }
+
     const mapped = list.map(c => {
       let count = unreadCounts[c.id] || 0;
 
@@ -496,6 +528,7 @@ export class ChatRoomComponent implements OnInit, OnDestroy {
 
     if (changed) {
       localStorage.setItem('baytology_unread_counts', JSON.stringify(unreadCounts));
+      localStorage.setItem('baytology_last_viewed', JSON.stringify(lastViewed));
     }
 
     return mapped;
@@ -608,7 +641,9 @@ export class ChatRoomComponent implements OnInit, OnDestroy {
 
     // Check if it's an image to show the cropper
     if (file.type.startsWith('image/')) {
+      this.originalImageFile = file;
       this.imageFile = file;
+      this.activeEditorMode.set('crop');
       this.showCropperModal.set(true);
       return;
     }
@@ -622,13 +657,26 @@ export class ChatRoomComponent implements OnInit, OnDestroy {
     reader.readAsDataURL(file);
   }
 
-
   imageCropped(event: ImageCroppedEvent) {
     this.croppedFile = event.blob || event.base64 || null;
     this.croppedImageTemp = event.objectUrl || event.base64 || '';
   }
 
   async confirmCrop() {
+    if (this.activeEditorMode() === 'draw' && this.canvasElement) {
+      const base64 = this.canvasElement.toDataURL('image/jpeg', 0.9);
+      this.croppedImageTemp = base64;
+      
+      const byteString = atob(base64.split(',')[1]);
+      const mimeString = base64.split(',')[0].split(':')[1].split(';')[0];
+      const ab = new ArrayBuffer(byteString.length);
+      const ia = new Uint8Array(ab);
+      for (let i = 0; i < byteString.length; i++) {
+        ia[i] = byteString.charCodeAt(i);
+      }
+      this.croppedFile = new Blob([ab], { type: mimeString });
+    }
+
     if (!this.croppedImageTemp) return;
     
     try {
@@ -668,11 +716,124 @@ export class ChatRoomComponent implements OnInit, OnDestroy {
     this.imageFile = undefined;
     this.croppedImageTemp = '';
     this.clearFileInput();
+    this.clearImage();
+  }
+
+  clearImage() {
+    this.selectedFileUrl = '';
+    this.originalImageFile = null;
+    this.clearFileInput();
   }
 
   private clearFileInput() {
     if (this.fileInput()?.nativeElement) {
       this.fileInput()!.nativeElement.value = '';
+    }
+  }
+
+  initCanvas(canvas: HTMLCanvasElement) {
+    this.canvasElement = canvas;
+    this.ctx = canvas.getContext('2d');
+    
+    const img = new Image();
+    img.src = this.croppedImageTemp || this.selectedFileUrl;
+    img.onload = () => {
+      const containerWidth = Math.min(window.innerWidth - 64, 600);
+      const containerHeight = 350;
+      
+      let width = img.width;
+      let height = img.height;
+      
+      const ratio = Math.min(containerWidth / width, containerHeight / height);
+      width = width * ratio;
+      height = height * ratio;
+      
+      canvas.width = width;
+      canvas.height = height;
+      
+      if (this.ctx) {
+        this.ctx.drawImage(img, 0, 0, width, height);
+      }
+    };
+  }
+
+  startDrawing(event: MouseEvent) {
+    this.isDrawingState = true;
+    if (!this.ctx || !this.canvasElement) return;
+    const rect = this.canvasElement.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+    
+    this.ctx.beginPath();
+    this.ctx.moveTo(x, y);
+    this.ctx.strokeStyle = this.drawingColor;
+    this.ctx.lineWidth = this.drawingLineWidth;
+    this.ctx.lineCap = 'round';
+    this.ctx.lineJoin = 'round';
+  }
+
+  draw(event: MouseEvent) {
+    if (!this.isDrawingState || !this.ctx || !this.canvasElement) return;
+    const rect = this.canvasElement.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+    
+    this.ctx.lineTo(x, y);
+    this.ctx.stroke();
+  }
+
+  stopDrawing() {
+    this.isDrawingState = false;
+  }
+
+  startDrawingTouch(event: TouchEvent) {
+    event.preventDefault();
+    this.isDrawingState = true;
+    if (!this.ctx || !this.canvasElement || event.touches.length === 0) return;
+    const rect = this.canvasElement.getBoundingClientRect();
+    const x = event.touches[0].clientX - rect.left;
+    const y = event.touches[0].clientY - rect.top;
+    
+    this.ctx.beginPath();
+    this.ctx.moveTo(x, y);
+    this.ctx.strokeStyle = this.drawingColor;
+    this.ctx.lineWidth = this.drawingLineWidth;
+    this.ctx.lineCap = 'round';
+    this.ctx.lineJoin = 'round';
+  }
+
+  drawTouch(event: TouchEvent) {
+    event.preventDefault();
+    if (!this.isDrawingState || !this.ctx || !this.canvasElement || event.touches.length === 0) return;
+    const rect = this.canvasElement.getBoundingClientRect();
+    const x = event.touches[0].clientX - rect.left;
+    const y = event.touches[0].clientY - rect.top;
+    
+    this.ctx.lineTo(x, y);
+    this.ctx.stroke();
+  }
+
+  changeColor(color: string) {
+    this.drawingColor = color;
+  }
+
+  changeWidth(width: number) {
+    this.drawingLineWidth = width;
+  }
+
+  resetToOriginal() {
+    if (this.originalImageFile) {
+      this.imageFile = this.originalImageFile;
+      this.croppedImageTemp = '';
+      this.activeEditorMode.set('crop');
+    }
+  }
+
+  reopenEditor() {
+    if (this.originalImageFile) {
+      this.imageFile = this.originalImageFile;
+      this.showCropperModal.set(true);
+      this.activeEditorMode.set('crop');
     }
   }
 
@@ -1024,10 +1185,16 @@ export class ChatRoomComponent implements OnInit, OnDestroy {
     }
   }
 
-  changeSoundType(type: 'premium' | 'pop' | 'classic') {
+  changeSoundType(type: 'premium' | 'pop' | 'classic' | 'custom' | 'none') {
+    if (type === 'custom' && !localStorage.getItem('baytology_custom_sound_data')) {
+      this.toast.error('لم تقم برفع أي نغمة مخصصة بعد. يرجى الذهاب إلى الإعدادات لرفع نغمة أولاً.');
+      return;
+    }
     this.soundType.set(type);
     localStorage.setItem('baytology_sound_type', type);
-    this.playNotificationSound();
+    if (type !== 'none') {
+      this.playNotificationSound();
+    }
   }
 
   playNotificationSound() {
@@ -1035,8 +1202,28 @@ export class ChatRoomComponent implements OnInit, OnDestroy {
     if (!isSoundEnabled) return;
 
     const soundType = localStorage.getItem('baytology_sound_type') || 'premium';
+    if (soundType === 'none') return;
 
     try {
+      if (soundType === 'custom') {
+        const customData = localStorage.getItem('baytology_custom_sound_data');
+        if (customData) {
+          const audio = new Audio(customData);
+          audio.volume = 0.5;
+          audio.play().catch(e => console.warn('Custom audio playback failed:', e));
+          return;
+        } else {
+          this.soundType.set('premium');
+          localStorage.removeItem('baytology_custom_sound_name');
+          localStorage.setItem('baytology_sound_type', 'premium');
+          
+          this.toast.error('تعذر العثور على ملف النغمة المخصصة (ربما تم مسح بيانات المتصفح). تم الانتقال تلقائياً إلى النغمة الافتراضية "بلوري".');
+          
+          setTimeout(() => this.playNotificationSound(), 100);
+          return;
+        }
+      }
+
       const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
       if (!AudioContextClass) return;
       const ctx = new AudioContextClass();
@@ -1092,6 +1279,15 @@ export class ChatRoomComponent implements OnInit, OnDestroy {
     } catch (err) {
       console.warn('Web Audio API chime failed:', err);
     }
+  }
+
+  startNewConversation() {
+    if (this.auth.isAgent()) {
+      this.toast.info('وكلاء العقارات لا يمكنهم بدء محادثات جديدة.');
+      return;
+    }
+    this.toast.info('الرجاء تصفح العقارات والضغط على "تواصل مع الوكيل" لبدء محادثة جديدة معه.');
+    this.router.navigate(['/properties']);
   }
 
   ngOnDestroy() {

@@ -2,7 +2,7 @@ import { Pipe, PipeTransform } from '@angular/core';
 
 @Pipe({ name: 'currencyEgp', standalone: true })
 export class CurrencyEgpPipe implements PipeTransform {
-  transform(value: any): string {
+  transform(value: any, maxDigits: number = 0): string {
     if (value == null || value === '' || value === 'NaN') return '—';
     
     // Parse numeric characters from string if necessary
@@ -17,8 +17,8 @@ export class CurrencyEgpPipe implements PipeTransform {
     return new Intl.NumberFormat('en-EG', { 
       style: 'currency', 
       currency: 'EGP', 
-      minimumFractionDigits: 0, 
-      maximumFractionDigits: 0 
+      minimumFractionDigits: maxDigits, 
+      maximumFractionDigits: maxDigits 
     }).format(num);
   }
 }

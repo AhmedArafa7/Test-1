@@ -145,28 +145,28 @@ import { compressImage } from '../../../core/utils/media';
                 <div>
                   <label class="block text-[10px] font-bold text-gray-400 uppercase mb-3">{{ 'PROPERTY_FORM.LOCATION' | translate }}</label>
                   <div class="grid grid-cols-1 gap-3">
-                    <div class="relative" (click)="$event.stopPropagation()">
+                    <div style="position: relative;" (click)="$event.stopPropagation()">
                       <div (click)="showCityDropdown.set(!showCityDropdown())" 
                            class="bg-gray-50 rounded-xl text-xs font-bold p-4 flex items-center justify-between cursor-pointer hover:bg-gray-100 transition-all">
                         <span [class.text-gray-400]="!filters.city">{{ filters.city || ('PROPERTY_FORM.CITY' | translate) }}</span>
                         <svg class="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                       </div>
                       @if (showCityDropdown()) {
-                        <div class="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-gray-100 z-50 py-2 max-h-48 overflow-y-auto custom-scrollbar animate-slide-up">
+                        <div style="position: absolute; top: 100%; left: 0; right: 0; z-index: 9999; margin-top: 8px;" class="bg-white rounded-2xl shadow-2xl border border-gray-100 py-2 max-h-48 overflow-y-auto custom-scrollbar animate-slide-up">
                           @for (city of cities; track city) {
                             <button (click)="selectCity(city)" class="w-full px-6 py-2 text-right hover:bg-gray-50 text-xs font-bold transition-all cursor-pointer">{{ city }}</button>
                           }
                         </div>
                       }
                     </div>
-                    <div class="relative" (click)="$event.stopPropagation()">
+                    <div style="position: relative;" (click)="$event.stopPropagation()">
                       <div (click)="showDistrictDropdown.set(!showDistrictDropdown())" 
                            class="bg-gray-50 rounded-xl text-xs font-bold p-4 flex items-center justify-between cursor-pointer hover:bg-gray-100 transition-all">
                         <span [class.text-gray-400]="!filters.district">{{ filters.district || ('PROPERTY_FORM.DISTRICT' | translate) }}</span>
                         <svg class="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                       </div>
                       @if (showDistrictDropdown()) {
-                        <div class="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-gray-100 z-50 py-2 max-h-48 overflow-y-auto custom-scrollbar animate-slide-up">
+                        <div style="position: absolute; top: 100%; left: 0; right: 0; z-index: 9999; margin-top: 8px;" class="bg-white rounded-2xl shadow-2xl border border-gray-100 py-2 max-h-48 overflow-y-auto custom-scrollbar animate-slide-up">
                           @for (district of getDistricts(); track district) {
                             <button (click)="selectDistrict(district)" class="w-full px-6 py-2 text-right hover:bg-gray-50 text-xs font-bold transition-all cursor-pointer">{{ district }}</button>
                           }
@@ -178,14 +178,14 @@ import { compressImage } from '../../../core/utils/media';
                 <!-- Property Type Filter -->
                 <div>
                   <label class="block text-[10px] font-bold text-gray-400 uppercase mb-3">{{ 'PROPERTY_FORM.TYPE' | translate }}</label>
-                  <div class="relative" (click)="$event.stopPropagation()">
+                  <div style="position: relative;" (click)="$event.stopPropagation()">
                     <div (click)="showTypeDropdown.set(!showTypeDropdown())" 
                          class="bg-gray-50 rounded-xl text-xs font-bold p-4 flex items-center justify-between cursor-pointer hover:bg-gray-100 transition-all">
                       <span [class.text-gray-400]="!filters.propertyType">{{ getSelectedTypeLabel() }}</span>
                       <svg class="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                     </div>
                     @if (showTypeDropdown()) {
-                      <div class="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-gray-100 z-50 py-2 max-h-48 overflow-y-auto custom-scrollbar animate-slide-up">
+                      <div style="position: absolute; top: 100%; left: 0; right: 0; z-index: 9999; margin-top: 8px;" class="bg-white rounded-2xl shadow-2xl border border-gray-100 py-2 max-h-48 overflow-y-auto custom-scrollbar animate-slide-up">
                         <button (click)="selectType('')" class="w-full px-6 py-2 text-right hover:bg-gray-50 text-xs font-bold transition-all cursor-pointer">{{ 'COMMON.ALL' | translate }}</button>
                         @for (type of propertyTypes; track type.id) {
                           <button (click)="selectType(type.id)" class="w-full px-6 py-2 text-right hover:bg-gray-50 text-xs font-bold transition-all flex items-center justify-between cursor-pointer">

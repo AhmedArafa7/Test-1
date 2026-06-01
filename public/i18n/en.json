@@ -322,7 +322,15 @@
       "CREATE_BTN": "Create Account",
       "ALREADY_HAVE": "Already have an account?",
       "SIGN_IN_LINK": "Sign in",
-      "ERROR_FAILED": "Registration failed. Please check your details."
+      "ERROR_FAILED": "Registration failed. Please check your details.",
+      "PASSWORD_STRENGTH": "Password Strength:",
+      "STRENGTH_WEAK": "Weak",
+      "STRENGTH_MEDIUM": "Medium",
+      "STRENGTH_STRONG": "Very Strong",
+      "RULE_MIN_LENGTH": "At least 8 characters",
+      "RULE_UPPERCASE": "One uppercase letter (A-Z)",
+      "RULE_NUMBER": "One number (0-9)",
+      "RULE_SPECIAL": "One special character (!@#$)"
     },
     "FORGOT_PW": "Forgot Password",
     "RESET_PW": "Reset Password",
@@ -440,7 +448,8 @@
     "STATUSES": {
       "Available": "Available",
       "Pending": "Pending",
-      "Sold": "Sold"
+      "Sold": "Sold",
+      "Active": "Active"
     },
     "TYPES": {
       "Apartment": "Apartment",
@@ -490,7 +499,8 @@
     "Completed": "Completed",
     "Paid": "Paid",
     "Upcoming": "Upcoming",
-    "Previous": "Previous"
+    "Previous": "Previous",
+    "Active": "Active"
   },
   "TYPES": {
     "Apartment": "Apartment",
@@ -710,7 +720,8 @@
     "RATE_AGENT": "Rate your experience with the agent",
     "REVIEW_PLACEHOLDER": "Write your review here...",
     "SUBMITTING": "Submitting...",
-    "SUBMIT_REVIEW": "Submit Review"
+    "SUBMIT_REVIEW": "Submit Review",
+    "INDEPENDENT_AGENT": "Independent Agent"
   },
   "PROPERTY_FORM": {
     "CREATE_TITLE": "Create Property",
@@ -818,6 +829,20 @@
     "BTN_SUBMIT_CREATE": "List Property Now",
     "BTN_SUBMIT_EDIT": "Update Details",
     "BTN_CANCEL": "Cancel and Return",
+    "BTN_PREV": "Previous",
+    "BTN_NEXT": "Next",
+    "STEPS": {
+      "DETAILS": "Details",
+      "IMAGES": "Images",
+      "AMENITIES": "Amenities",
+      "LOCATION": "Location"
+    },
+    "DRAFT": {
+      "TITLE": "Autosaved Draft Available",
+      "DESC": "Unsaved edits from a previous session were found.",
+      "RESTORE": "Restore",
+      "DISCARD": "Discard"
+    },
     "MESSAGES": {
       "LOAD_FAILED": "Failed to load property data",
       "COMPRESSING": "Processing and compressing images...",
@@ -833,7 +858,10 @@
       "GEO_DENIED": "Geolocation access must be allowed to determine property location. Please enable location permission in browser settings and try again.",
       "GEO_UNAVAILABLE": "Could not determine current location. Make sure GPS is enabled on your device.",
       "GEO_TIMEOUT": "Location determination timed out. Please try again.",
-      "GEO_ERROR": "An unexpected error occurred during location determination."
+      "GEO_ERROR": "An unexpected error occurred during location determination.",
+      "DRAFT_RESTORED": "Autosaved draft successfully restored!",
+      "DRAFT_RESTORE_FAILED": "Failed to restore draft.",
+      "DRAFT_DISCARDED": "Saved draft has been discarded."
     }
   },
   "VALIDATION": {
@@ -994,6 +1022,9 @@
       "TAX_INCLUDED": "Tax Included",
       "REQUEST_DATE": "Request Created Date",
       "FINANCIAL_NOTE": "The booking fee is held as a security deposit and is handled according to the approved cancellation policy.",
+      "BOOKED_TOUR": "Scheduled Viewing Tour",
+      "DAY": "Day",
+      "TOUR_DATE": "Viewing Date",
       "MESSAGES": {
         "LOADING": "Loading details...",
         "NOT_FOUND": "Booking not found",
@@ -2666,5 +2697,47 @@
     "PROTECTION_TEXT": "We use advanced encryption protocols (SSL) to protect data transmission and store images and profiles via trusted global cloud services to ensure the highest security levels.",
     "QUESTIONS": "Have questions about your privacy?",
     "CONTACT_BTN": "Contact Privacy Team"
+  },
+  "COMPARE": {
+    "TRAY_TITLE": "⚖️ Compare Properties",
+    "TRAY_HELP": "You can select up to 3 properties to compare",
+    "CLEAR": "Clear",
+    "BTN_COMPARE": "Compare Now",
+    "MATRIX_TITLE": "Property Comparison Matrix",
+    "MATRIX_SUBTITLE": "Detailed side-by-side comparison of selected properties",
+    "REMOVE": "Remove from comparison",
+    "PROPERTY": "Property",
+    "PRICE": "Exclusive Price",
+    "LOCATION": "Location & District",
+    "AREA": "Total Area",
+    "ROOMS_BATHS": "Rooms & Bathrooms",
+    "ROOMS": "rooms",
+    "BATHS": "bathrooms",
+    "TYPE_STATUS": "Transaction Type & Status",
+    "FURNISHING_VIEW": "Furnishing & View",
+    "PARKING": "Parking",
+    "POOL": "Swimming Pool",
+    "GYM": "Gym",
+    "ELEVATOR": "Elevator",
+    "BALCONY": "Balcony / Terrace",
+    "GARDEN": "Private Garden",
+    "AC": "Central AC",
+    "AVAILABLE": "Available",
+    "UNAVAILABLE": "Unavailable",
+    "CLOSE": "Close",
+    "TOAST_MAX": "You can select a maximum of 3 properties to compare",
+    "TOAST_MIN": "Please select at least 2 properties to start comparison",
+    "TOAST_ERROR": "An error occurred while loading comparison details",
+    "FURNISHING_FULLY": "Fully Furnished",
+    "FURNISHING_SEMI": "Semi Furnished",
+    "FURNISHING_UN": "Unfurnished",
+    "VIEW_STREET": "Main Street",
+    "VIEW_GARDEN": "Garden",
+    "VIEW_POOL": "Pool",
+    "VIEW_SEA": "Sea / Water",
+    "VIEW_NILE": "Nile",
+    "VIEW_BACK": "Back",
+    "VIEW_ROAD": "Main Road",
+    "NOT_SPECIFIED": "Not Specified"
   }
 }

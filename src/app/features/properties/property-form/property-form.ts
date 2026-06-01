@@ -1,11 +1,11 @@
-import { Component, OnInit, signal, inject } from '@angular/core';
+import { Component, OnInit, signal, inject, ChangeDetectorRef } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { PropertyService } from '../services/property.service';
-import { CreatePropertyRequest, FurnishingStatus, ListingType, PropertyType, ViewType } from '../../../core/models';
+import { CreatePropertyRequest, FurnishingStatus, ListingType, PropertyType, ViewType, PropertyImage } from '../../../core/models';
 import { ToastService } from '../../../core/services/toast.service';
 import { LocalImageService } from '../../../core/services/local-image.service';
 import { UploadManagerService } from '../../../core/services/upload-manager.service';
@@ -38,7 +38,7 @@ import { firstValueFrom } from 'rxjs';
                     <div class="w-12 h-12 rounded-full flex items-center justify-center font-black text-lg mb-2 transition-colors"
                          [class]="currentStep() >= step ? 'bg-[#0a8f96] text-white' : 'bg-gray-200 text-gray-500'">{{step}}</div>
                     <span class="text-xs font-bold" [class]="currentStep() >= step ? 'text-gray-900' : 'text-gray-400'">
-                        {{ step === 1 ? 'التفاصيل' : step === 2 ? 'الصور' : step === 3 ? 'المرافق' : 'الموقع' }}
+                        {{ step === 1 ? ('PROPERTY_FORM.STEPS.DETAILS' | translate) : step === 2 ? ('PROPERTY_FORM.STEPS.IMAGES' | translate) : step === 3 ? ('PROPERTY_FORM.STEPS.AMENITIES' | translate) : ('PROPERTY_FORM.STEPS.LOCATION' | translate) }}
                     </span>
                 </div>
                 @if (step < 4) {
@@ -50,7 +50,7 @@ import { firstValueFrom } from 'rxjs';
         <form (ngSubmit)="submit()" class="grid grid-cols-1 lg:grid-cols-12 gap-10">
           
           <!-- Main Content (Right) -->
-          <div class=" space-y-8 ">
+          <div class="lg:col-span-8 space-y-8" [class.lg:col-start-3]="currentStep() !== 4">
             
             <!-- Basic Details -->
             <div [class.hidden]="currentStep() !== 1" class="bg-white rounded-[32px] p-10 shadow-sm border border-gray-100 relative mx-auto">
@@ -61,13 +61,13 @@ import { firstValueFrom } from 'rxjs';
                     <div class="flex items-center gap-3">
                       <span class="text-xl">💾</span>
                       <div class="text-right">
-                        <h4 class="text-xs font-black text-slate-800 leading-none mb-1">مسودة محفوظة تلقائياً</h4>
-                        <p class="text-[9px] text-slate-400 font-bold">تم العثور على تعديلات غير محفوظة من جلسة سابقة.</p>
+                        <h4 class="text-xs font-black text-slate-800 leading-none mb-1">{{ 'PROPERTY_FORM.DRAFT.TITLE' | translate }}</h4>
+                        <p class="text-[9px] text-slate-400 font-bold">{{ 'PROPERTY_FORM.DRAFT.DESC' | translate }}</p>
                       </div>
                     </div>
                     <div class="flex gap-2">
-                      <button type="button" (click)="restoreDraft()" class="bg-[#0a8f96] hover:bg-[#076b70] text-white px-3 py-1.5 rounded-lg text-[10px] font-black transition-all active:scale-95">استعادة</button>
-                      <button type="button" (click)="discardDraft()" class="text-slate-400 hover:text-red-500 px-2 py-1.5 text-[10px] font-bold transition-all">تجاهل</button>
+                      <button type="button" (click)="restoreDraft()" class="bg-[#0a8f96] hover:bg-[#076b70] text-white px-3 py-1.5 rounded-lg text-[10px] font-black transition-all active:scale-95">{{ 'PROPERTY_FORM.DRAFT.RESTORE' | translate }}</button>
+                      <button type="button" (click)="discardDraft()" class="text-slate-400 hover:text-red-500 px-2 py-1.5 text-[10px] font-bold transition-all">{{ 'PROPERTY_FORM.DRAFT.DISCARD' | translate }}</button>
                     </div>
                   </div>
                 }
@@ -239,6 +239,28 @@ import { firstValueFrom } from 'rxjs';
                               </div>
                               <span class="text-[10px] font-black text-slate-600 w-8 text-left">{{ img.progress }}%</span>
                             </div>
+                          </div>
+                        }
+                      </div>
+                    </div>
+                  }
+
+                  <!-- Existing Images Grid (Edit Mode) -->
+                  @if (isEdit() && existingImages().length > 0) {
+                    <div class="space-y-4 mb-8">
+                      <h4 class="text-xs font-black text-slate-800 flex items-center gap-2">
+                        <span>🖼️ الصور الحالية المرفوعة للعقار (اضغط على 🗑️ لحذف أي صورة)</span>
+                      </h4>
+                      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        @for (img of existingImages(); track img.id) {
+                          <div class="relative group aspect-square rounded-2xl overflow-hidden shadow-sm border border-slate-100 bg-slate-50">
+                            <img [src]="img.url" class="w-full h-full object-cover">
+                            <button type="button" (click)="removeExistingImage(img)" 
+                                    class="absolute top-2 ltr:right-2 rtl:left-2 w-8 h-8 bg-red-500/90 hover:bg-red-600 text-white rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-md cursor-pointer">
+                              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                              </svg>
+                            </button>
                           </div>
                         }
                       </div>
@@ -457,34 +479,34 @@ import { firstValueFrom } from 'rxjs';
 
             <!-- Navigation Buttons -->
             <div class="flex justify-between mt-8">
-              <button type="button" (click)="currentStep.set(currentStep() - 1)" [disabled]="currentStep() === 1" class="px-8 py-4 rounded-2xl bg-white border border-gray-200 text-gray-600 font-bold disabled:opacity-50">السابق</button>
+              <button type="button" (click)="currentStep.set(currentStep() - 1)" [disabled]="currentStep() === 1" class="px-8 py-4 rounded-2xl bg-white border border-gray-200 text-gray-600 font-bold disabled:opacity-50">{{ 'PROPERTY_FORM.BTN_PREV' | translate }}</button>
               @if (currentStep() < 4) {
-                <button type="button" (click)="currentStep.set(currentStep() + 1)" class="px-8 py-4 rounded-2xl bg-[#0a8f96] text-white font-bold">التالي</button>
+                <button type="button" (click)="currentStep.set(currentStep() + 1)" class="px-8 py-4 rounded-2xl bg-[#0a8f96] text-white font-bold">{{ 'PROPERTY_FORM.BTN_NEXT' | translate }}</button>
               } @else {
-                <button type="submit" [disabled]="loading" class="px-8 py-4 rounded-2xl bg-[#0a8f96] text-white font-bold">إدراج العقار</button>
+                <button type="submit" [disabled]="loading" class="px-8 py-4 rounded-2xl bg-[#0a8f96] text-white font-bold">{{ (isEdit() ? 'PROPERTY_FORM.BTN_SUBMIT_EDIT' : 'PROPERTY_FORM.BTN_SUBMIT_CREATE') | translate }}</button>
               }
             </div>
           </div>
 
           <!-- Sidebar (Left) -->
-          <div class="lg:col-span-4 space-y-8">
-            <!-- Submit Action (Visible only in last step) -->
-            @if (currentStep() === 4) {
-                <div class="bg-gray-900 rounded-[32px] p-8 text-white shadow-2xl shadow-gray-900/20 ltr:text-left rtl:text-right">
-                    <h4 class="text-xl font-black mb-6 tracking-tight">{{ 'PROPERTY_FORM.SIDEBAR_TITLE' | translate }}</h4>
-                    <p class="text-sm text-gray-400 mb-8 leading-relaxed font-medium">{{ 'PROPERTY_FORM.SIDEBAR_DESC' | translate }}</p>
-                    
-                    <button type="submit" [disabled]="loading" class="w-full bg-[#0a8f96] hover:bg-[#076b70] disabled:opacity-50 text-white font-black py-4.5 rounded-[22px] transition-all flex items-center justify-center gap-3 active:scale-95 shadow-xl shadow-[#0a8f96]/20 mb-4 ltr:flex-row rtl:flex-row-reverse">
-                        @if (loading) { <div class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> }
-                        {{ (isEdit() ? 'PROPERTY_FORM.BTN_SUBMIT_EDIT' : 'PROPERTY_FORM.BTN_SUBMIT_CREATE') | translate }}
-                    </button>
-                    
-                    <a routerLink="/properties" class="block w-full text-center text-xs font-black text-gray-500 hover:text-white transition-all uppercase tracking-widest py-2">
-                        {{ 'PROPERTY_FORM.BTN_CANCEL' | translate }}
-                    </a>
-                </div>
-            }
-          </div>
+          @if (currentStep() === 4) {
+            <div class="lg:col-span-4 space-y-8">
+              <!-- Submit Action (Visible only in last step) -->
+              <div class="bg-gray-900 rounded-[32px] p-8 text-white shadow-2xl shadow-gray-900/20 ltr:text-left rtl:text-right">
+                  <h4 class="text-xl font-black mb-6 tracking-tight">{{ 'PROPERTY_FORM.SIDEBAR_TITLE' | translate }}</h4>
+                  <p class="text-sm text-gray-400 mb-8 leading-relaxed font-medium">{{ 'PROPERTY_FORM.SIDEBAR_DESC' | translate }}</p>
+                  
+                  <button type="submit" [disabled]="loading" class="w-full bg-[#0a8f96] hover:bg-[#076b70] disabled:opacity-50 text-white font-black py-4.5 rounded-[22px] transition-all flex items-center justify-center gap-3 active:scale-95 shadow-xl shadow-[#0a8f96]/20 mb-4 ltr:flex-row rtl:flex-row-reverse">
+                      @if (loading) { <div class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> }
+                      {{ (isEdit() ? 'PROPERTY_FORM.BTN_SUBMIT_EDIT' : 'PROPERTY_FORM.BTN_SUBMIT_CREATE') | translate }}
+                  </button>
+                  
+                  <a routerLink="/properties" class="block w-full text-center text-xs font-black text-gray-500 hover:text-white transition-all uppercase tracking-widest py-2">
+                      {{ 'PROPERTY_FORM.BTN_CANCEL' | translate }}
+                  </a>
+              </div>
+            </div>
+          }
         </form>
       </div>
     </div>
@@ -572,9 +594,11 @@ export class PropertyFormComponent implements OnInit {
   locating = false;
   validationErrors: { [key: string]: boolean } = {};
   existingImageUrls = signal<string[]>([]);
+  existingImages = signal<PropertyImage[]>([]);
   propertyId = '';
   imageUrlsText = '';
   private translate = inject(TranslateService);
+  private cdr = inject(ChangeDetectorRef);
 
   hasDraftAvailable = signal(false);
   initialDescriptionHtml = '';
@@ -636,6 +660,8 @@ export class PropertyFormComponent implements OnInit {
         district: this.getDistrictKeyFromValue(property.district || ''),
         zipCode: property.zipCode || '',
         addressLine: property.addressLine || '',
+        latitude: property.latitude,
+        longitude: property.longitude,
         hasParking: property.amenity?.hasParking || false,
         hasPool: property.amenity?.hasPool || false,
         hasGym: property.amenity?.hasGym || false,
@@ -650,6 +676,7 @@ export class PropertyFormComponent implements OnInit {
 
       this.initialDescriptionHtml = this.form.description || '';
 
+      this.existingImages.set(property.images ?? []);
       this.existingImageUrls.set(
         (property.images ?? [])
           .map(image => image.url.trim())
@@ -736,61 +763,85 @@ export class PropertyFormComponent implements OnInit {
     this.triggerDraftSave();
   }
 
+  removeExistingImage(image: PropertyImage) {
+    if (!confirm('هل أنت متأكد من إزالة هذه الصورة من العقار؟')) return;
+    this.existingImages.update(imgs => imgs.filter(x => x.id !== image.id));
+    this.existingImageUrls.update(urls => urls.filter(u => u !== image.url));
+    this.toast.success('تم إزالة الصورة محلياً بنجاح. سيتم تطبيق التغييرات على قاعدة البيانات عند الضغط على تحديث البيانات.');
+  }
+
   async submit() {
     this.validationErrors = {};
     
-    const scrollToError = (id: string) => {
+    const scrollToError = (id: string, step: number) => {
       this.validationErrors[id] = true;
+      this.currentStep.set(step);
       setTimeout(() => {
         const el = document.getElementById(id);
         if (el) {
           el.scrollIntoView({ behavior: 'smooth', block: 'center' });
           el.focus();
         }
-      }, 100);
+      }, 150);
     };
 
     if (!this.form.title || this.form.title.length < 3) {
       this.toast.error(this.translate.instant('PROPERTY_FORM.VALIDATION.TITLE_REQUIRED'));
-      scrollToError('title');
-      return;
-    }
-    if (!this.form.city || this.form.city.length < 2) {
-      this.toast.error(this.translate.instant('PROPERTY_FORM.VALIDATION.CITY_REQUIRED'));
-      scrollToError('city');
-      return;
-    }
-    if (!this.form.district || this.form.district.length < 2) {
-      this.toast.error(this.translate.instant('PROPERTY_FORM.VALIDATION.DISTRICT_REQUIRED'));
-      scrollToError('district');
-      return;
-    }
-    if (!this.form.addressLine || this.form.addressLine.length < 5) {
-      this.toast.error(this.translate.instant('PROPERTY_FORM.VALIDATION.ADDRESS_REQUIRED'));
-      scrollToError('addressLine');
+      scrollToError('title', 1);
       return;
     }
     if (this.form.price <= 0) {
       this.toast.error(this.translate.instant('PROPERTY_FORM.VALIDATION.PRICE_POSITIVE'));
-      scrollToError('price');
+      scrollToError('price', 1);
       return;
     }
     if (this.form.area <= 0) {
       this.toast.error(this.translate.instant('PROPERTY_FORM.VALIDATION.AREA_POSITIVE'));
-      scrollToError('area');
+      scrollToError('area', 1);
       return;
     }
-    if (this.form.bedrooms < 0 || this.form.bathrooms < 0) {
+    if (this.form.bedrooms < 0) {
       this.toast.error(this.translate.instant('PROPERTY_FORM.VALIDATION.BEDROOMS_POSITIVE'));
+      scrollToError('bedrooms', 1);
       return;
     }
-
-    this.loading = true;
+    if (this.form.bathrooms < 0) {
+      this.toast.error(this.translate.instant('PROPERTY_FORM.VALIDATION.BEDROOMS_POSITIVE'));
+      scrollToError('bathrooms', 1);
+      return;
+    }
+    if (!this.form.city || this.form.city.length < 2) {
+      this.toast.error(this.translate.instant('PROPERTY_FORM.VALIDATION.CITY_REQUIRED'));
+      scrollToError('city', 4);
+      return;
+    }
+    if (!this.form.district || this.form.district.length < 2) {
+      this.toast.error(this.translate.instant('PROPERTY_FORM.VALIDATION.DISTRICT_REQUIRED'));
+      scrollToError('district', 4);
+      return;
+    }
+    if (!this.form.addressLine || this.form.addressLine.length < 5) {
+      this.toast.error(this.translate.instant('PROPERTY_FORM.VALIDATION.ADDRESS_REQUIRED'));
+      scrollToError('addressLine', 4);
+      return;
+    }
 
     const manualImageUrls = Array.from(new Set(this.imageUrlsText
       .split('\n')
       .map(url => url.trim())
       .filter(url => url.length > 0)));
+
+    const totalImages = (this.isEdit() ? this.existingImageUrls().length : 0) + 
+                        this.localImages().length + 
+                        manualImageUrls.length;
+
+    if (totalImages === 0) {
+      this.toast.error('يجب إضافة صورة واحدة على الأقل للعقار (إما بتحميل صور أو إضافة روابط).');
+      this.currentStep.set(2);
+      return;
+    }
+
+    this.loading = true;
 
     try {
       let resultId = this.propertyId;
@@ -860,7 +911,11 @@ export class PropertyFormComponent implements OnInit {
         this.toast.success(this.translate.instant('PROPERTY_FORM.MESSAGES.UPLOAD_SUCCESS', { count: cloudinaryUrls.length }));
       }
 
-      const allImageUrls = [...cloudinaryUrls, ...manualImageUrls];
+      const allImageUrls = [
+        ...(this.isEdit() ? this.existingImageUrls() : []),
+        ...cloudinaryUrls,
+        ...manualImageUrls
+      ];
 
       const basePayload = {
         title: this.form.title,
@@ -892,13 +947,8 @@ export class PropertyFormComponent implements OnInit {
       };
 
       if (this.isEdit()) {
-        const payload = { ...basePayload, isFeatured: false };
+        const payload = { ...basePayload, imageUrls: allImageUrls, isFeatured: false };
         await this.propertyService.update(this.propertyId, payload as any);
-
-        const newUrls = allImageUrls.filter(url => !this.existingImageUrls().includes(url));
-        if (newUrls.length > 0) {
-          await this.propertyService.addImages(this.propertyId, newUrls);
-        }
         this.toast.success(this.translate.instant('PROPERTY_FORM.MESSAGES.UPDATE_SUCCESS'));
       } else {
         const payload = { ...basePayload, imageUrls: allImageUrls };
@@ -964,9 +1014,11 @@ export class PropertyFormComponent implements OnInit {
         this.locating = false;
         this.triggerDraftSave();
         this.toast.success(this.translate.instant('PROPERTY_FORM.MESSAGES.GEO_SUCCESS'));
+        this.cdr.detectChanges();
       },
       (error) => {
         this.locating = false;
+        this.cdr.detectChanges();
         switch (error.code) {
           case error.PERMISSION_DENIED:
             this.toast.error(this.translate.instant('PROPERTY_FORM.MESSAGES.GEO_DENIED'));
@@ -1161,10 +1213,10 @@ export class PropertyFormComponent implements OnInit {
         if (parsed.imageUrlsText) this.imageUrlsText = parsed.imageUrlsText;
         
         this.initialDescriptionHtml = this.form.description || '';
-        this.toast.success('تمت استعادة المسودة التلقائية بنجاح!');
+        this.toast.success(this.translate.instant('PROPERTY_FORM.MESSAGES.DRAFT_RESTORED'));
       }
     } catch (e) {
-      this.toast.error('فشل في استعادة المسودة.');
+      this.toast.error(this.translate.instant('PROPERTY_FORM.MESSAGES.DRAFT_RESTORE_FAILED'));
       console.error(e);
     } finally {
       this.hasDraftAvailable.set(false);
@@ -1174,7 +1226,7 @@ export class PropertyFormComponent implements OnInit {
   discardDraft() {
     this.clearDraft();
     this.hasDraftAvailable.set(false);
-    this.toast.info('تم تجاهل وحذف المسودة المحفوظة.');
+    this.toast.info(this.translate.instant('PROPERTY_FORM.MESSAGES.DRAFT_DISCARDED'));
   }
 
   clearDraft() {

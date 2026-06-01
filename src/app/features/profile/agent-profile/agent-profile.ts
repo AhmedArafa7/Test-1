@@ -6,9 +6,10 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ProfileService } from '../services/profile.service';
 import { PropertyService } from '../../properties/services/property.service';
 import { ConversationService } from '../../conversations/services/conversation.service';
+import { BookingService } from '../../bookings/services/booking.service';
 import { AuthService } from '../../../core/auth/auth.service';
 import { ToastService } from '../../../core/services/toast.service';
-import { AgentDetail, PropertyListItem } from '../../../core/models';
+import { AgentDetail, PropertyListItem, BookingListItem } from '../../../core/models';
 import { PropertyCardComponent } from '../../../shared/components/property-card/property-card';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner';
 
@@ -26,6 +27,7 @@ export interface CalendarSlot {
   dateStr: string;
   timeStr: string;
   available: boolean;
+  date?: Date;
 }
 
 @Component({
@@ -229,6 +231,8 @@ export interface CalendarSlot {
                 <option value="5">5 نجوم</option>
                 <option value="4">4 نجوم</option>
                 <option value="3">3 نجوم</option>
+                <option value="2">2 نجوم</option>
+                <option value="1">1 نجوم</option>
               </select>
 
               <!-- Sort by -->
@@ -313,31 +317,102 @@ export class AgentProfileComponent implements OnInit {
   private profileService = inject(ProfileService);
   private propertyService = inject(PropertyService);
   private conversationService = inject(ConversationService);
+  private bookingService = inject(BookingService);
   public auth = inject(AuthService);
   private toast = inject(ToastService);
   private translate = inject(TranslateService);
   public store = inject(AppStateStore);
 
+  generateDynamicSlots(realBookings: BookingListItem[]): CalendarSlot[] {
+    const slots: CalendarSlot[] = [];
+    const daysArabic = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+    const monthsArabic = [
+      'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
+      'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'
+    ];
+
+    const today = new Date();
+    const listings = this.listings();
+
+    for (let i = 0; i < 4; i++) {
+      const targetDate = new Date();
+      targetDate.setDate(today.getDate() + i);
+
+      const dayIndex = targetDate.getDay();
+      const dayNum = targetDate.getDate();
+      const monthIndex = targetDate.getMonth();
+
+      let dayName = daysArabic[dayIndex];
+      if (i === 0) dayName = 'اليوم';
+      else if (i === 1) dayName = 'غداً';
+
+      const dateStr = `${daysArabic[dayIndex]} ${dayNum} ${monthsArabic[monthIndex]}`;
+
+      // Morning slot
+      const morningDate = new Date(targetDate);
+      morningDate.setHours(10, 0, 0, 0);
+
+      const morningStart = morningDate.getTime();
+      const morningEnd = morningStart + 90 * 60 * 1000;
+      const isMorningBooked = realBookings.some(b => {
+        const isAgentProperty = listings.some(p => p.id === b.propertyId);
+        if (!isAgentProperty) return false;
+        if (b.status === 'Cancelled') return false;
+        const bStart = new Date(b.startDate).getTime();
+        const bEnd = new Date(b.endDate).getTime();
+        return morningStart < bEnd && bStart < morningEnd;
+      });
+
+      slots.push({
+        id: `slot_${i}_am`,
+        dayName,
+        dateStr,
+        timeStr: '10:00 ص - 11:30 ص',
+        available: !isMorningBooked,
+        date: morningDate
+      });
+
+      // Afternoon slot
+      const afternoonDate = new Date(targetDate);
+      afternoonDate.setHours(16, 30, 0, 0);
+
+      const afternoonStart = afternoonDate.getTime();
+      const afternoonEnd = afternoonStart + 90 * 60 * 1000;
+      const isAfternoonBooked = realBookings.some(b => {
+        const isAgentProperty = listings.some(p => p.id === b.propertyId);
+        if (!isAgentProperty) return false;
+        if (b.status === 'Cancelled') return false;
+        const bStart = new Date(b.startDate).getTime();
+        const bEnd = new Date(b.endDate).getTime();
+        return afternoonStart < bEnd && bStart < afternoonEnd;
+      });
+
+      slots.push({
+        id: `slot_${i}_pm`,
+        dayName,
+        dateStr,
+        timeStr: '04:30 م - 06:00 م',
+        available: !isAfternoonBooked,
+        date: afternoonDate
+      });
+    }
+
+    return slots;
+  }
+
   async ngOnInit() {
     const id = this.route.snapshot.params['id'];
-
-    // Initialize central calendar slots for this agent if not already done
-    if (!this.store.calendarSlots()[id]) {
-      this.store.initializeCalendarSlots(id, [
-        { id: 'slot_1', dayName: 'اليوم', dateStr: 'الخميس 28 مايو', timeStr: '10:00 ص - 11:30 ص', available: true },
-        { id: 'slot_2', dayName: 'اليوم', dateStr: 'الخميس 28 مايو', timeStr: '04:30 م - 06:00 م', available: false },
-        { id: 'slot_3', dayName: 'غداً', dateStr: 'الجمعة 29 مايو', timeStr: '02:00 م - 03:30 م', available: true },
-        { id: 'slot_4', dayName: 'غداً', dateStr: 'الجمعة 29 مايو', timeStr: '07:00 م - 08:30 م', available: true },
-        { id: 'slot_5', dayName: 'السبت', dateStr: 'السبت 30 مايو', timeStr: '11:00 ص - 12:30 م', available: true },
-        { id: 'slot_6', dayName: 'السبت', dateStr: 'السبت 30 مايو', timeStr: '05:00 م - 06:30 م', available: false },
-        { id: 'slot_7', dayName: 'الأحد', dateStr: 'الأحد 31 مايو', timeStr: '01:00 م - 02:30 م', available: true },
-        { id: 'slot_8', dayName: 'الأحد', dateStr: 'الأحد 31 مايو', timeStr: '06:00 م - 07:30 م', available: true },
-      ]);
-    }
 
     try {
       this.agent.set(await this.profileService.getAgentDetail(id));
       await this.loadAgentListings(id);
+
+      // Load actual bookings to compute accurate calendar slot availability!
+      const bookingsResponse = await this.bookingService.getMyBookings(1, 100).catch(() => null);
+      const realBookings = bookingsResponse ? bookingsResponse.items : [];
+
+      // Always re-initialize calendar slots for agent with actual bookings to ensure zero fake data
+      this.store.initializeCalendarSlots(id, this.generateDynamicSlots(realBookings));
     } catch {
     } finally {
       this.loading.set(false);
@@ -412,14 +487,44 @@ export class AgentProfileComponent implements OnInit {
     this.selectedSlot.set(slot);
   }
 
-  confirmBooking() {
+  async confirmBooking() {
     const slot = this.selectedSlot();
     if (!slot) return;
 
     const agentId = this.agent()?.userId || this.route.snapshot.params['id'];
-    this.store.bookCalendarSlot(agentId, slot.id);
+    
+    // Find the first property of this agent to create a booking for it
+    const property = this.listings()[0];
+    if (property) {
+      try {
+        const bookingDate = slot.date || new Date();
+        const endDate = new Date(bookingDate.getTime() + 90 * 60 * 1000); // + 1.5 hours
+        
+        await this.bookingService.create({
+          propertyId: property.id,
+          startDate: bookingDate.toISOString(),
+          endDate: endDate.toISOString(),
+          amount: property.price * 0.01, // Mock viewing cost or 1%
+          commissionRate: this.agent()?.commissionRate || 0.025,
+          currency: 'EGP',
+          notes: `حجز معاينة تفاعلية من خلال تقويم الوكيل: يوم ${slot.dateStr} في ${slot.timeStr}`
+        });
 
-    this.toast.success(`تم تأكيد حجز موعد المعاينة بنجاح يوم ${slot.dateStr} الساعة ${slot.timeStr}!`);
+        // Mark it as booked in the local state store
+        this.store.bookCalendarSlot(agentId, slot.id);
+        
+        this.toast.success(`تم تأكيد حجز موعد المعاينة بنجاح وإضافته لقائمة حجوزاتك!`);
+      } catch (error: any) {
+        this.toast.error('حدث خطأ أثناء حجز المعاينة بالخادم، تم تأكيد الحجز محلياً.');
+        // Fallback to local booking if backend fails (e.g. database constraint or auth)
+        this.store.bookCalendarSlot(agentId, slot.id);
+      }
+    } else {
+      // Local state fallback if agent has no listings
+      this.store.bookCalendarSlot(agentId, slot.id);
+      this.toast.success(`تم تأكيد حجز موعد المعاينة بنجاح يوم ${slot.dateStr} الساعة ${slot.timeStr}!`);
+    }
+
     this.selectedSlot.set(null);
   }
 

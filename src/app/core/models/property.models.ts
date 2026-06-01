@@ -106,7 +106,7 @@ export interface CreatePropertyRequest {
   imageUrls?: string[];
 }
 
-export interface UpdatePropertyRequest extends Omit<CreatePropertyRequest, 'imageUrls'> {
+export interface UpdatePropertyRequest extends CreatePropertyRequest {
   isFeatured: boolean;
 }
 

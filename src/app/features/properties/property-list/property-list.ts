@@ -15,6 +15,7 @@ import { CurrencyEgpPipe } from '../../../shared/pipes/currency-egp.pipe';
 import { resolveBackendAssetUrl } from '../../../core/utils/media';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import * as L from 'leaflet';
+import { EGYPT_REGIONS, Governorate, City } from '../../../core/constants/egypt-regions';
 
 @Component({
   selector: 'app-property-list',
@@ -58,39 +59,59 @@ import * as L from 'leaflet';
 
               <!-- Location -->
               <div class="grid grid-cols-1 gap-6">
-                <div class="relative" (click)="$event.stopPropagation()">
+                <div style="position: relative;" (click)="$event.stopPropagation()">
                   <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">{{ 'PROPERTY_LIST.LABEL_CITY' | translate }}</label>
                   <div (click)="showCityDropdown.set(!showCityDropdown())" 
                        class="w-full bg-gray-50 border-gray-100 rounded-xl text-sm font-bold p-4 flex items-center justify-between cursor-pointer hover:bg-gray-100 transition-all">
-                     <span [class.text-gray-400]="!filters.city">{{ filters.city ? ('CITIES.' + filters.city | translate) : ('PROPERTY_LIST.PLACEHOLDER_CITY' | translate) }}</span>
-                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                     <span [class.text-gray-400]="!filters.city">{{ filters.city ? getCityLabel(filters.city) : ('PROPERTY_LIST.PLACEHOLDER_CITY' | translate) }}</span>
+                    <svg [class.rotate-180]="showCityDropdown()" class="w-4 h-4 text-gray-400 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                   </div>
                   
                   @if (showCityDropdown()) {
-                    <div class="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-xl border border-gray-100 z-50 py-2 max-h-60 overflow-y-auto custom-scrollbar animate-slide-up">
-                      @for (city of cities; track city) {
-                        <button (click)="selectCity(city)" 
-                                class="w-full px-6 py-2.5 text-start hover:bg-gray-50 text-sm font-bold transition-all">
-                          {{ 'CITIES.' + city | translate }}
+                    <div style="position:absolute; top:100%; left:0; right:0; margin-top:4px; z-index:9999; max-height:240px; overflow-y:auto; background:white; border-radius:16px; box-shadow:0 10px 40px rgba(0,0,0,0.12); border:1px solid #f1f5f9;" class="custom-scrollbar animate-slide-up py-2">
+                      <!-- All Cities option -->
+                      <button type="button" (click)="selectCity('')" 
+                              class="w-full px-6 py-2.5 text-start hover:bg-slate-50 text-xs font-black text-[#0a8f96] transition-all">
+                        {{ translate.currentLang === 'ar' ? 'كل المحافظات والمدن (الكل)' : 'All Governorates & Cities' }}
+                      </button>
+                      <div class="w-full border-t border-slate-100 my-1"></div>
+                      
+                      @for (gov of egyptRegions; track gov.id) {
+                        <div class="px-6 py-2 text-[9px] font-black text-slate-400 uppercase tracking-widest bg-slate-50/50">
+                          {{ translate.currentLang === 'ar' ? gov.nameAr : gov.nameEn }}
+                        </div>
+                        <!-- Option for All Cities in this Governorate -->
+                        <button type="button" (click)="selectCity(gov.id)" 
+                                class="w-full px-8 py-2 text-start hover:bg-[#0a8f96]/5 text-xs font-black text-[#0a8f96] transition-all">
+                          {{ translate.currentLang === 'ar' ? 'كل مدن ' + gov.nameAr : 'All ' + gov.nameEn }}
                         </button>
+                        
+                        @for (city of gov.cities; track city.id) {
+                          @if (city.id !== gov.id) {
+                            <button type="button" (click)="selectCity(city.id)" 
+                                    class="w-full px-10 py-2 text-start hover:bg-slate-50 text-xs font-bold text-gray-700 transition-all">
+                              {{ translate.currentLang === 'ar' ? city.nameAr : city.nameEn }}
+                            </button>
+                          }
+                        }
                       }
                     </div>
                   }
                 </div>
 
-                <div class="relative" (click)="$event.stopPropagation()">
+                <div style="position: relative;" (click)="$event.stopPropagation()">
                   <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">{{ 'PROPERTY_LIST.LABEL_DISTRICT' | translate }}</label>
                   <div (click)="showDistrictDropdown.set(!showDistrictDropdown())" 
                        class="w-full bg-gray-50 border-gray-100 rounded-xl text-sm font-bold p-4 flex items-center justify-between cursor-pointer hover:bg-gray-100 transition-all">
                      <span [class.text-gray-400]="!filters.district">{{ filters.district ? ('DISTRICTS.' + filters.district | translate) : ('PROPERTY_LIST.PLACEHOLDER_DISTRICT' | translate) }}</span>
-                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    <svg [class.rotate-180]="showDistrictDropdown()" class="w-4 h-4 text-gray-400 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                   </div>
 
                   @if (showDistrictDropdown()) {
-                    <div class="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-xl border border-gray-100 z-50 py-2 max-h-60 overflow-y-auto custom-scrollbar animate-slide-up">
+                    <div style="position:absolute; top:100%; left:0; right:0; margin-top:4px; z-index:9999; max-height:240px; overflow-y:auto; background:white; border-radius:16px; box-shadow:0 10px 40px rgba(0,0,0,0.12); border:1px solid #f1f5f9;" class="custom-scrollbar animate-slide-up py-2">
                       @for (district of getDistricts(); track district) {
-                        <button (click)="selectDistrict(district)" 
-                                class="w-full px-6 py-2.5 text-start hover:bg-gray-50 text-sm font-bold transition-all">
+                        <button type="button" (click)="selectDistrict(district)" 
+                                class="w-full px-6 py-2.5 text-start hover:bg-gray-50 text-sm font-bold transition-all text-gray-700">
                           {{ 'DISTRICTS.' + district | translate }}
                         </button>
                       }
@@ -100,20 +121,20 @@ import * as L from 'leaflet';
               </div>
 
               <!-- Property Type -->
-              <div class="relative" (click)="$event.stopPropagation()">
+              <div style="position: relative;" (click)="$event.stopPropagation()">
                 <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">{{ 'PROPERTY_LIST.LABEL_TYPE' | translate }}</label>
                 <div (click)="showTypeDropdown.set(!showTypeDropdown())" 
                      class="w-full bg-gray-50 border-gray-100 rounded-xl text-sm font-bold p-4 flex items-center justify-between cursor-pointer hover:bg-gray-100 transition-all">
                    <span [class.text-gray-400]="!filters.propertyType">{{ getSelectedTypeLabel() | translate }}</span>
-                  <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                  <svg [class.rotate-180]="showTypeDropdown()" class="w-4 h-4 text-gray-400 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                 </div>
 
                 @if (showTypeDropdown()) {
-                  <div class="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-xl border border-gray-100 z-50 py-2 max-h-60 overflow-y-auto custom-scrollbar animate-slide-up">
-                    <button (click)="selectType('')" class="w-full px-6 py-2.5 text-start hover:bg-gray-50 text-sm font-bold transition-all">{{ 'PROPERTY_LIST.QUICK_ALL' | translate }}</button>
+                  <div style="position:absolute; top:100%; left:0; right:0; margin-top:4px; z-index:9999; max-height:240px; overflow-y:auto; background:white; border-radius:16px; box-shadow:0 10px 40px rgba(0,0,0,0.12); border:1px solid #f1f5f9;" class="custom-scrollbar animate-slide-up py-2">
+                    <button type="button" (click)="selectType('')" class="w-full px-6 py-2.5 text-start hover:bg-gray-50 text-sm font-bold transition-all text-gray-700">{{ 'PROPERTY_LIST.QUICK_ALL' | translate }}</button>
                     @for (type of propertyTypes; track type.id) {
-                      <button (click)="selectType(type.id)" 
-                              class="w-full px-6 py-2.5 text-start hover:bg-gray-50 text-sm font-bold transition-all flex items-center gap-3">
+                      <button type="button" (click)="selectType(type.id)" 
+                              class="w-full px-6 py-2.5 text-start hover:bg-gray-50 text-sm font-bold transition-all flex items-center gap-3 text-gray-700">
                         <span class="text-xs opacity-50">{{ type.icon }}</span>
                         <span>{{ type.label | translate }}</span>
                       </button>
@@ -395,8 +416,8 @@ import * as L from 'leaflet';
               {{ selectedPropertiesForCompare().length }}
             </span>
             <div class="text-right">
-              <h3 class="text-xs font-black text-slate-800 leading-none mb-1">⚖️ مقارنة العقارات</h3>
-              <p class="text-[9px] text-slate-400 font-bold">يمكنك تحديد حتى 3 عقارات للمقارنة</p>
+              <h3 class="text-xs font-black text-slate-800 leading-none mb-1">{{ 'COMPARE.TRAY_TITLE' | translate }}</h3>
+              <p class="text-[9px] text-slate-400 font-bold">{{ 'COMPARE.TRAY_HELP' | translate }}</p>
             </div>
           </div>
           
@@ -414,13 +435,13 @@ import * as L from 'leaflet';
 
           <div class="flex items-center gap-2">
             <button (click)="clearAllCompare()" class="px-3 py-2 text-xs font-bold text-slate-400 hover:text-red-500 transition-colors cursor-pointer">
-              مسح
+              {{ 'COMPARE.CLEAR' | translate }}
             </button>
             <button (click)="openCompareModal()" 
                     [disabled]="selectedPropertiesForCompare().length < 2"
                     [class.opacity-50]="selectedPropertiesForCompare().length < 2"
                     class="bg-[#0a8f96] hover:bg-[#076b70] text-white px-5 py-2.5 rounded-xl text-xs font-black shadow-lg shadow-[#0a8f96]/20 transition-all hover:scale-[1.02] active:scale-95 cursor-pointer disabled:cursor-not-allowed">
-              قارن الآن
+              {{ 'COMPARE.BTN_COMPARE' | translate }}
             </button>
           </div>
         </div>
@@ -440,8 +461,8 @@ import * as L from 'leaflet';
               <div class="flex items-center gap-3">
                 <div class="w-8 h-8 rounded-xl bg-[#0a8f96]/10 flex items-center justify-center text-lg">⚖️</div>
                 <div>
-                  <h2 class="text-lg font-black text-slate-900 leading-none mb-1">مصفوفة مقارنة العقارات</h2>
-                  <p class="text-[10px] text-slate-400 font-bold">مقارنة تفصيلية جنبًا إلى جنب للعقارات المختارة</p>
+                  <h2 class="text-lg font-black text-slate-900 leading-none mb-1">{{ 'COMPARE.MATRIX_TITLE' | translate }}</h2>
+                  <p class="text-[10px] text-slate-400 font-bold">{{ 'COMPARE.MATRIX_SUBTITLE' | translate }}</p>
                 </div>
               </div>
               <button (click)="showCompareModal.set(false)" class="p-2 hover:bg-slate-50 rounded-xl text-slate-400 hover:text-slate-600 transition-colors cursor-pointer">
@@ -477,11 +498,11 @@ import * as L from 'leaflet';
                     
                     <!-- Row 1: Property Images & Titles -->
                     <div class="contents">
-                      <div class="py-4 text-xs font-black text-slate-400 flex items-center">العقار</div>
+                      <div class="py-4 text-xs font-black text-slate-400 flex items-center">{{ 'COMPARE.PROPERTY' | translate }}</div>
                       @for (p of comparedPropertiesDetails(); track p.id) {
                         <div class="py-4 relative flex flex-col group/col">
                           <!-- Delete Column button -->
-                          <button (click)="removeComparedProperty(p.id)" class="absolute top-2 left-2 z-10 w-7 h-7 bg-white/95 rounded-full border border-slate-100 shadow-sm flex items-center justify-center text-slate-400 hover:text-red-500 hover:scale-110 active:scale-95 transition-all cursor-pointer" title="إزالة من المقارنة">
+                          <button (click)="removeComparedProperty(p.id)" class="absolute top-2 left-2 z-10 w-7 h-7 bg-white/95 rounded-full border border-slate-100 shadow-sm flex items-center justify-center text-slate-400 hover:text-red-500 hover:scale-110 active:scale-95 transition-all cursor-pointer" [title]="'COMPARE.REMOVE' | translate">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
                           </button>
                           
@@ -500,7 +521,7 @@ import * as L from 'leaflet';
 
                     <!-- Row 2: Price -->
                     <div class="contents">
-                      <div class="py-4 text-xs font-black text-slate-400 flex items-center">السعر الحصري</div>
+                      <div class="py-4 text-xs font-black text-slate-400 flex items-center">{{ 'COMPARE.PRICE' | translate }}</div>
                       @for (p of comparedPropertiesDetails(); track p.id) {
                         <div class="py-4 text-lg font-black text-[#0a8f96] tracking-tight flex items-center">
                           {{ p.price | currencyEgp }}
@@ -510,7 +531,7 @@ import * as L from 'leaflet';
 
                     <!-- Row 3: City & District -->
                     <div class="contents">
-                      <div class="py-4 text-xs font-black text-slate-400 flex items-center">الموقع والحي</div>
+                      <div class="py-4 text-xs font-black text-slate-400 flex items-center">{{ 'COMPARE.LOCATION' | translate }}</div>
                       @for (p of comparedPropertiesDetails(); track p.id) {
                         <div class="py-4 text-xs font-bold text-slate-600 flex items-center gap-1.5">
                           <svg class="w-3.5 h-3.5 text-slate-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
@@ -521,26 +542,26 @@ import * as L from 'leaflet';
 
                     <!-- Row 4: Area -->
                     <div class="contents">
-                      <div class="py-4 text-xs font-black text-slate-400 flex items-center">المساحة الإجمالية</div>
+                      <div class="py-4 text-xs font-black text-slate-400 flex items-center">{{ 'COMPARE.AREA' | translate }}</div>
                       @for (p of comparedPropertiesDetails(); track p.id) {
                         <div class="py-4 text-sm font-black text-slate-900 flex items-center">
-                          {{ p.area | number }} <span class="text-[10px] font-normal text-slate-400 mr-1">متر مربع (م²)</span>
+                          {{ p.area | number }} <span class="text-[10px] font-normal text-slate-400 mr-1">{{ 'PROPERTY.AREA_UNIT' | translate }}</span>
                         </div>
                       }
                     </div>
 
                     <!-- Row 5: Bedrooms & Bathrooms -->
                     <div class="contents">
-                      <div class="py-4 text-xs font-black text-slate-400 flex items-center">الغرف والحمامات</div>
+                      <div class="py-4 text-xs font-black text-slate-400 flex items-center">{{ 'COMPARE.ROOMS_BATHS' | translate }}</div>
                       @for (p of comparedPropertiesDetails(); track p.id) {
                         <div class="py-4 text-xs font-bold text-slate-700 flex items-center gap-4">
                           <div class="flex items-center gap-1">
                             <span class="text-slate-400">🛏️</span>
-                            <span>{{ p.bedrooms }} غرف</span>
+                            <span>{{ p.bedrooms }} {{ 'COMPARE.ROOMS' | translate }}</span>
                           </div>
                           <div class="flex items-center gap-1">
                             <span class="text-slate-400">🛁</span>
-                            <span>{{ p.bathrooms }} حمامات</span>
+                            <span>{{ p.bathrooms }} {{ 'COMPARE.BATHS' | translate }}</span>
                           </div>
                         </div>
                       }
@@ -548,7 +569,7 @@ import * as L from 'leaflet';
 
                     <!-- Row 6: Listing Type & Status -->
                     <div class="contents">
-                      <div class="py-4 text-xs font-black text-slate-400 flex items-center">نوع المعاملة والحالة</div>
+                      <div class="py-4 text-xs font-black text-slate-400 flex items-center">{{ 'COMPARE.TYPE_STATUS' | translate }}</div>
                       @for (p of comparedPropertiesDetails(); track p.id) {
                         <div class="py-4 flex items-center gap-2">
                           <span class="bg-[#0a8f96]/5 text-[#0a8f96] text-[10px] font-black tracking-wider px-2.5 py-1 rounded-md border border-[#0a8f96]/10">
@@ -563,7 +584,7 @@ import * as L from 'leaflet';
 
                     <!-- Row 7: Furnishing & View -->
                     <div class="contents">
-                      <div class="py-4 text-xs font-black text-slate-400 flex items-center">حالة الفرش والإطلالة</div>
+                      <div class="py-4 text-xs font-black text-slate-400 flex items-center">{{ 'COMPARE.FURNISHING_VIEW' | translate }}</div>
                       @for (p of comparedPropertiesDetails(); track p.id) {
                         <div class="py-4 text-xs font-bold text-slate-700 flex items-center gap-3">
                           <span class="bg-amber-500/5 text-amber-600 text-[10px] font-black px-2.5 py-1 rounded-md border border-amber-500/10">
@@ -578,13 +599,13 @@ import * as L from 'leaflet';
 
                     <!-- Row 8: Parking -->
                     <div class="contents">
-                      <div class="py-4 text-xs font-black text-slate-400 flex items-center">مواقف السيارات</div>
+                      <div class="py-4 text-xs font-black text-slate-400 flex items-center">{{ 'COMPARE.PARKING' | translate }}</div>
                       @for (p of comparedPropertiesDetails(); track p.id) {
                         <div class="py-4 flex items-center">
                           @if (p.amenity?.hasParking) {
-                            <span class="text-emerald-500 font-bold flex items-center gap-1.5 text-xs"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> متاح</span>
+                            <span class="text-emerald-500 font-bold flex items-center gap-1.5 text-xs"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> {{ 'COMPARE.AVAILABLE' | translate }}</span>
                           } @else {
-                            <span class="text-slate-300 font-bold flex items-center gap-1.5 text-xs"><span class="w-2 h-2 rounded-full bg-slate-300"></span> غير متاح</span>
+                            <span class="text-slate-300 font-bold flex items-center gap-1.5 text-xs"><span class="w-2 h-2 rounded-full bg-slate-300"></span> {{ 'COMPARE.UNAVAILABLE' | translate }}</span>
                           }
                         </div>
                       }
@@ -592,13 +613,13 @@ import * as L from 'leaflet';
 
                     <!-- Row 9: Swimming Pool -->
                     <div class="contents">
-                      <div class="py-4 text-xs font-black text-slate-400 flex items-center">حمام سباحة</div>
+                      <div class="py-4 text-xs font-black text-slate-400 flex items-center">{{ 'COMPARE.POOL' | translate }}</div>
                       @for (p of comparedPropertiesDetails(); track p.id) {
                         <div class="py-4 flex items-center">
                           @if (p.amenity?.hasPool) {
-                            <span class="text-emerald-500 font-bold flex items-center gap-1.5 text-xs"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> متاح</span>
+                            <span class="text-emerald-500 font-bold flex items-center gap-1.5 text-xs"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> {{ 'COMPARE.AVAILABLE' | translate }}</span>
                           } @else {
-                            <span class="text-slate-300 font-bold flex items-center gap-1.5 text-xs"><span class="w-2 h-2 rounded-full bg-slate-300"></span> غير متاح</span>
+                            <span class="text-slate-300 font-bold flex items-center gap-1.5 text-xs"><span class="w-2 h-2 rounded-full bg-slate-300"></span> {{ 'COMPARE.UNAVAILABLE' | translate }}</span>
                           }
                         </div>
                       }
@@ -606,13 +627,13 @@ import * as L from 'leaflet';
 
                     <!-- Row 10: Gym -->
                     <div class="contents">
-                      <div class="py-4 text-xs font-black text-slate-400 flex items-center">صالة رياضية (جيم)</div>
+                      <div class="py-4 text-xs font-black text-slate-400 flex items-center">{{ 'COMPARE.GYM' | translate }}</div>
                       @for (p of comparedPropertiesDetails(); track p.id) {
                         <div class="py-4 flex items-center">
                           @if (p.amenity?.hasGym) {
-                            <span class="text-emerald-500 font-bold flex items-center gap-1.5 text-xs"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> متاح</span>
+                            <span class="text-emerald-500 font-bold flex items-center gap-1.5 text-xs"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> {{ 'COMPARE.AVAILABLE' | translate }}</span>
                           } @else {
-                            <span class="text-slate-300 font-bold flex items-center gap-1.5 text-xs"><span class="w-2 h-2 rounded-full bg-slate-300"></span> غير متاح</span>
+                            <span class="text-slate-300 font-bold flex items-center gap-1.5 text-xs"><span class="w-2 h-2 rounded-full bg-slate-300"></span> {{ 'COMPARE.UNAVAILABLE' | translate }}</span>
                           }
                         </div>
                       }
@@ -620,13 +641,13 @@ import * as L from 'leaflet';
 
                     <!-- Row 11: Elevator -->
                     <div class="contents">
-                      <div class="py-4 text-xs font-black text-slate-400 flex items-center">مصعد كهربائي</div>
+                      <div class="py-4 text-xs font-black text-slate-400 flex items-center">{{ 'COMPARE.ELEVATOR' | translate }}</div>
                       @for (p of comparedPropertiesDetails(); track p.id) {
                         <div class="py-4 flex items-center">
                           @if (p.amenity?.hasElevator) {
-                            <span class="text-emerald-500 font-bold flex items-center gap-1.5 text-xs"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> متاح</span>
+                            <span class="text-emerald-500 font-bold flex items-center gap-1.5 text-xs"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> {{ 'COMPARE.AVAILABLE' | translate }}</span>
                           } @else {
-                            <span class="text-slate-300 font-bold flex items-center gap-1.5 text-xs"><span class="w-2 h-2 rounded-full bg-slate-300"></span> غير متاح</span>
+                            <span class="text-slate-300 font-bold flex items-center gap-1.5 text-xs"><span class="w-2 h-2 rounded-full bg-slate-300"></span> {{ 'COMPARE.UNAVAILABLE' | translate }}</span>
                           }
                         </div>
                       }
@@ -634,13 +655,13 @@ import * as L from 'leaflet';
 
                     <!-- Row 12: Balcony -->
                     <div class="contents">
-                      <div class="py-4 text-xs font-black text-slate-400 flex items-center">شرفة / بلكونة</div>
+                      <div class="py-4 text-xs font-black text-slate-400 flex items-center">{{ 'COMPARE.BALCONY' | translate }}</div>
                       @for (p of comparedPropertiesDetails(); track p.id) {
                         <div class="py-4 flex items-center">
                           @if (p.amenity?.hasBalcony) {
-                            <span class="text-emerald-500 font-bold flex items-center gap-1.5 text-xs"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> متاح</span>
+                            <span class="text-emerald-500 font-bold flex items-center gap-1.5 text-xs"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> {{ 'COMPARE.AVAILABLE' | translate }}</span>
                           } @else {
-                            <span class="text-slate-300 font-bold flex items-center gap-1.5 text-xs"><span class="w-2 h-2 rounded-full bg-slate-300"></span> غير متاح</span>
+                            <span class="text-slate-300 font-bold flex items-center gap-1.5 text-xs"><span class="w-2 h-2 rounded-full bg-slate-300"></span> {{ 'COMPARE.UNAVAILABLE' | translate }}</span>
                           }
                         </div>
                       }
@@ -648,13 +669,13 @@ import * as L from 'leaflet';
 
                     <!-- Row 13: Garden -->
                     <div class="contents">
-                      <div class="py-4 text-xs font-black text-slate-400 flex items-center">حديقة خاصة</div>
+                      <div class="py-4 text-xs font-black text-slate-400 flex items-center">{{ 'COMPARE.GARDEN' | translate }}</div>
                       @for (p of comparedPropertiesDetails(); track p.id) {
                         <div class="py-4 flex items-center">
                           @if (p.amenity?.hasGarden) {
-                            <span class="text-emerald-500 font-bold flex items-center gap-1.5 text-xs"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> متاح</span>
+                            <span class="text-emerald-500 font-bold flex items-center gap-1.5 text-xs"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> {{ 'COMPARE.AVAILABLE' | translate }}</span>
                           } @else {
-                            <span class="text-slate-300 font-bold flex items-center gap-1.5 text-xs"><span class="w-2 h-2 rounded-full bg-slate-300"></span> غير متاح</span>
+                            <span class="text-slate-300 font-bold flex items-center gap-1.5 text-xs"><span class="w-2 h-2 rounded-full bg-slate-300"></span> {{ 'COMPARE.UNAVAILABLE' | translate }}</span>
                           }
                         </div>
                       }
@@ -662,13 +683,13 @@ import * as L from 'leaflet';
 
                     <!-- Row 14: Central AC -->
                     <div class="contents">
-                      <div class="py-4 text-xs font-black text-slate-400 flex items-center">تكييف مركزي</div>
+                      <div class="py-4 text-xs font-black text-slate-400 flex items-center">{{ 'COMPARE.AC' | translate }}</div>
                       @for (p of comparedPropertiesDetails(); track p.id) {
                         <div class="py-4 flex items-center">
                           @if (p.amenity?.hasCentralAC) {
-                            <span class="text-emerald-500 font-bold flex items-center gap-1.5 text-xs"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> متاح</span>
+                            <span class="text-emerald-500 font-bold flex items-center gap-1.5 text-xs"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> {{ 'COMPARE.AVAILABLE' | translate }}</span>
                           } @else {
-                            <span class="text-slate-300 font-bold flex items-center gap-1.5 text-xs"><span class="w-2 h-2 rounded-full bg-slate-300"></span> غير متاح</span>
+                            <span class="text-slate-300 font-bold flex items-center gap-1.5 text-xs"><span class="w-2 h-2 rounded-full bg-slate-300"></span> {{ 'COMPARE.UNAVAILABLE' | translate }}</span>
                           }
                         </div>
                       }
@@ -682,7 +703,7 @@ import * as L from 'leaflet';
             <!-- Modal Footer -->
             <div class="px-8 py-5 border-t border-slate-100 flex justify-end gap-3 select-none bg-slate-50/50">
               <button (click)="showCompareModal.set(false)" class="px-6 py-3 rounded-2xl text-xs font-black text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition-all cursor-pointer">
-                إغلاق
+                {{ 'COMPARE.CLOSE' | translate }}
               </button>
             </div>
 
@@ -694,7 +715,7 @@ import * as L from 'leaflet';
   `,
 })
 export class PropertyListComponent implements OnInit, AfterViewInit {
-  private translate = inject(TranslateService);
+  public translate = inject(TranslateService);
   private map?: L.Map;
   private markersLayer = L.layerGroup();
   properties = signal<PropertyListItem[]>([]);
@@ -744,7 +765,17 @@ export class PropertyListComponent implements OnInit, AfterViewInit {
     'Stanley': 'ستانلي', 'SidiGaber': 'سيدى جابر'
   };
 
-  cities = Object.keys(this.cityMap);
+  egyptRegions = EGYPT_REGIONS;
+
+  get cities(): string[] {
+    const ids: string[] = [];
+    this.egyptRegions.forEach(gov => {
+      gov.cities.forEach(city => {
+        if (city.id) ids.push(city.id);
+      });
+    });
+    return ids;
+  }
 
   districtsCairo = [
     'Zamalek', 'Maadi', 'NewCairo', 'FifthSettlement', 'FirstSettlement',
@@ -799,11 +830,10 @@ export class PropertyListComponent implements OnInit, AfterViewInit {
       zoomControl: false
     });
 
-    // CartoDB Voyager: premium clean modern tiles (no API key required)
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
-      subdomains: 'abcd',
-      maxZoom: 20
+    // standard OpenStreetMap tiles to display local Arabic names for Egyptian users
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      maxZoom: 19
     }).addTo(this.map);
 
     L.control.zoom({ position: 'topright' }).addTo(this.map);
@@ -829,11 +859,23 @@ export class PropertyListComponent implements OnInit, AfterViewInit {
         lng = p.longitude;
       } else {
         // Fallback: city center + jitter
-        const cityKey = this.getCityKeyFromValue(p.city || 'Cairo');
-        const baseCoords = this.cityCoords[cityKey] || [30.0444, 31.2357];
+        let cityKey = this.getCityKeyFromValue(p.city || 'Cairo');
+        let baseCoords = this.cityCoords[cityKey];
+        
+        // Smart fallback: check if district matches a known city/district coords
+        if (!baseCoords && p.district) {
+          const districtKey = this.getDistrictKeyFromValue(p.district);
+          const cityKeyFromDistrict = this.getCityKeyFromValue(p.district);
+          baseCoords = this.cityCoords[districtKey] || this.cityCoords[cityKeyFromDistrict];
+        }
+
+        if (!baseCoords) {
+          baseCoords = [30.0444, 31.2357];
+        }
+
         const hash = p.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-        lat = baseCoords[0] + (hash % 10 - 5) / 500;
-        lng = baseCoords[1] + ((hash >> 3) % 10 - 5) / 500;
+        lat = baseCoords[0] + (hash % 10 - 5) / 2000;
+        lng = baseCoords[1] + ((hash >> 3) % 10 - 5) / 2000;
       }
 
       bounds.push([lat, lng]);
@@ -886,6 +928,19 @@ export class PropertyListComponent implements OnInit, AfterViewInit {
 
   public getCityKeyFromValue(value: string | undefined): string {
     if (!value) return '';
+    const normalized = value.toLowerCase().trim();
+    for (const gov of this.egyptRegions) {
+      if (gov.nameAr.toLowerCase() === normalized || gov.nameEn.toLowerCase() === normalized || gov.id.toLowerCase() === normalized) {
+        return gov.id;
+      }
+      const city = gov.cities.find(c => 
+        c.nameAr.toLowerCase() === normalized || c.nameEn.toLowerCase() === normalized || c.id.toLowerCase() === normalized
+      );
+      if (city) {
+        return city.id;
+      }
+    }
+
     const key = Object.keys(this.cityMap).find(k => this.cityMap[k] === value);
     if (key) return key;
     const citiesDict = this.translate.instant('CITIES');
@@ -906,12 +961,21 @@ export class PropertyListComponent implements OnInit, AfterViewInit {
     return value;
   }
 
-  public getCityLabel(value: string | undefined): string {
-    if (!value) return '';
-    const key = this.getCityKeyFromValue(value);
-    const translationKey = 'CITIES.' + key;
-    const translated = this.translate.instant(translationKey);
-    return translated !== translationKey ? translated : value;
+  public getCityLabel(cityId: string | undefined): string {
+    if (!cityId) return '';
+    const isAr = this.translate.currentLang === 'ar';
+    for (const gov of this.egyptRegions) {
+      if (gov.id === cityId) {
+        return isAr ? gov.nameAr : gov.nameEn;
+      }
+      const city = gov.cities.find(c => c.id === cityId);
+      if (city) {
+        return isAr ? city.nameAr : city.nameEn;
+      }
+    }
+    const key = 'CITIES.' + cityId;
+    const translated = this.translate.instant(key);
+    return translated !== key ? translated : cityId;
   }
 
   public getDistrictLabel(value: string | undefined): string {
@@ -943,6 +1007,8 @@ export class PropertyListComponent implements OnInit, AfterViewInit {
     this.showDistrictDropdown.set(false);
     this.showTypeDropdown.set(false);
   }
+
+
 
   selectCity(city: string) {
     this.filters.city = city;
@@ -1134,7 +1200,7 @@ export class PropertyListComponent implements OnInit, AfterViewInit {
         return current.filter(i => i.id !== item.id);
       }
       if (current.length >= 3) {
-        this.toast.info('يمكنك تحديد 3 عقارات كحد أقصى للمقارنة');
+        this.toast.info(this.translate.instant('COMPARE.TOAST_MAX'));
         return current;
       }
       return [...current, item];
@@ -1147,7 +1213,7 @@ export class PropertyListComponent implements OnInit, AfterViewInit {
 
   async openCompareModal() {
     if (this.selectedPropertiesForCompare().length < 2) {
-      this.toast.info('يرجى تحديد عقارين على الأقل لبدء المقارنة');
+      this.toast.info(this.translate.instant('COMPARE.TOAST_MIN'));
       return;
     }
     this.showCompareModal.set(true);
@@ -1158,7 +1224,7 @@ export class PropertyListComponent implements OnInit, AfterViewInit {
       const details = await Promise.all(fetchPromises);
       this.comparedPropertiesDetails.set(details);
     } catch (err) {
-      this.toast.error('حدث خطأ أثناء تحميل تفاصيل المقارنة');
+      this.toast.error(this.translate.instant('COMPARE.TOAST_ERROR'));
       this.showCompareModal.set(false);
     } finally {
       this.loadingCompareDetails.set(false);
@@ -1174,29 +1240,31 @@ export class PropertyListComponent implements OnInit, AfterViewInit {
   }
 
   getFurnishingLabel(status?: string): string {
-    if (!status) return 'غير محدد';
+    if (!status) return this.translate.instant('COMPARE.NOT_SPECIFIED');
     const dict: Record<string, string> = {
-      'Furnished': 'مفروش بالكامل',
-      'SemiFurnished': 'نصف مفروش',
-      'Unfurnished': 'غير مفروش',
-      'FullyFurnished': 'مفروش بالكامل',
-      'UnfurnishedMuted': 'غير مفروش'
+      'Furnished': 'COMPARE.FURNISHING_FULLY',
+      'SemiFurnished': 'COMPARE.FURNISHING_SEMI',
+      'Unfurnished': 'COMPARE.FURNISHING_UN',
+      'FullyFurnished': 'COMPARE.FURNISHING_FULLY',
+      'UnfurnishedMuted': 'COMPARE.FURNISHING_UN'
     };
-    return dict[status] || status;
+    const key = dict[status];
+    return key ? this.translate.instant(key) : status;
   }
 
   getViewTypeLabel(view?: string): string {
-    if (!view) return 'غير محدد';
+    if (!view) return this.translate.instant('COMPARE.NOT_SPECIFIED');
     const dict: Record<string, string> = {
-      'Street': 'شارع رئيسي',
-      'Garden': 'حديقة',
-      'Pool': 'مسبح',
-      'Sea': 'بحر / مياه',
-      'Nile': 'نيل',
-      'Back': 'خلفي',
-      'MainRoad': 'طريق رئيسي'
+      'Street': 'COMPARE.VIEW_STREET',
+      'Garden': 'COMPARE.VIEW_GARDEN',
+      'Pool': 'COMPARE.VIEW_POOL',
+      'Sea': 'COMPARE.VIEW_SEA',
+      'Nile': 'COMPARE.VIEW_NILE',
+      'Back': 'COMPARE.VIEW_BACK',
+      'MainRoad': 'COMPARE.VIEW_ROAD'
     };
-    return dict[view] || view;
+    const key = dict[view];
+    return key ? this.translate.instant(key) : view;
   }
 
   getCompareImage(p: Property): string {

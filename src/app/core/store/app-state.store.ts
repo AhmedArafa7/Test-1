@@ -16,6 +16,7 @@ export interface CalendarSlot {
   dateStr: string;
   timeStr: string;
   available: boolean;
+  date?: Date;
 }
 
 export interface AppConversation {

@@ -1,5 +1,6 @@
 import { Component, input, output, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { TranslateModule } from '@ngx-translate/core';
 import { PropertyListItem } from '../../../core/models';
 import { CurrencyEgpPipe } from '../../pipes/currency-egp.pipe';
 import { buildPropertyPlaceholder, getPropertyImageUrl } from '../../../core/utils/media';
@@ -8,7 +9,7 @@ import { LocalImageService } from '../../../core/services/local-image.service';
 @Component({
   selector: 'app-property-card',
   standalone: true,
-  imports: [RouterLink, CurrencyEgpPipe],
+  imports: [RouterLink, CurrencyEgpPipe, TranslateModule],
   template: `
     <a [routerLink]="['/properties', property().id]" class="block overflow-hidden group bg-white rounded-[24px] border border-slate-100 shadow-[0_2px_16px_rgba(0,0,0,0.02)] hover:shadow-[0_20px_40px_rgba(10,143,150,0.08)] hover:border-[#0a8f96]/20 transition-all duration-500 hover:-translate-y-2 relative">
       <!-- Image Section -->
@@ -22,9 +23,9 @@ import { LocalImageService } from '../../../core/services/local-image.service';
         <!-- Badges & Action Buttons -->
         <!-- Listing Type Badge ("SALE") on the Right (RTL) / Left (LTR) -->
         <div class="absolute top-4.5 ltr:left-4.5 rtl:right-4.5 flex gap-2">
-          <span class="px-3.5 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider bg-[#0a8f96] text-white shadow-md shadow-[#0a8f96]/20">{{ property().listingType }}</span>
+          <span class="px-3.5 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider bg-[#0a8f96] text-white shadow-md shadow-[#0a8f96]/20">{{ 'PROPERTY.LISTING_TYPES.' + property().listingType | translate }}</span>
           @if (property().isFeatured) {
-            <span class="px-3.5 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider bg-amber-400 text-amber-950 shadow-md shadow-amber-400/20">⭐ المميز</span>
+            <span class="px-3.5 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider bg-amber-400 text-amber-950 shadow-md shadow-amber-400/20">⭐ {{ 'PROPERTY.FEATURED' | translate }}</span>
           }
         </div>
         
@@ -45,7 +46,7 @@ import { LocalImageService } from '../../../core/services/local-image.service';
         <!-- Status Badge ("Available") on the bottom-left always -->
         <div class="absolute bottom-4.5 left-4.5">
           <span class="px-3 py-1.5 bg-white/90 backdrop-blur-md border border-slate-200/10 text-slate-700 text-[10px] font-extrabold uppercase tracking-wider rounded-lg shadow-sm">
-            {{ property().status }}
+            {{ 'PROPERTY.STATUSES.' + property().status | translate }}
           </span>
         </div>
       </div>
@@ -75,7 +76,7 @@ import { LocalImageService } from '../../../core/services/local-image.service';
               <span class="text-base">🚿</span>
             </span>
             <span class="flex items-center gap-1.5">
-              <span>{{ property().area }} m²</span>
+              <span>{{ property().area }} {{ 'PROPERTY.AREA_UNIT' | translate }}</span>
               <span class="text-base">📐</span>
             </span>
           </div>
@@ -87,7 +88,7 @@ import { LocalImageService } from '../../../core/services/local-image.service';
                 <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
               </svg>
-              {{ property().district ? property().district + '، ' : '' }}{{ property().city }}
+              {{ property().district ? ('DISTRICTS.' + property().district | translate) + '، ' : '' }}{{ 'CITIES.' + property().city | translate }}
             </span>
           }
         </div>

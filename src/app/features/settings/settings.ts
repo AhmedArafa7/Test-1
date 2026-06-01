@@ -3,6 +3,8 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
+import { LanguageService } from '../../core/services/language.service';
+import { ToastService } from '../../core/services/toast.service';
 
 export interface NotificationPreferences {
   enabled: boolean;
@@ -206,10 +208,94 @@ const PREFS_KEY = 'baytology_notification_prefs';
                         <p class="text-xs text-slate-400 mt-0.5">{{ 'SETTINGS.SOUND_DESC' | translate }}</p>
                       </div>
                       <label class="relative inline-flex items-center cursor-pointer">
-                        <input type="checkbox" [(ngModel)]="prefs.sound" (ngModelChange)="savePrefs()" class="sr-only peer">
+                        <input type="checkbox" [(ngModel)]="prefs.sound" (ngModelChange)="saveSoundPreference($event)" class="sr-only peer">
                         <div class="w-11 h-6 bg-slate-200 rounded-full peer peer-checked:bg-[#0a8f96] after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full"></div>
                       </label>
                     </div>
+
+                    <!-- Sound Selection Subpanel -->
+                    @if (prefs.sound) {
+                      <div class="py-4 px-5 bg-slate-50 border border-slate-100 rounded-2xl space-y-4 mb-4 ltr:text-left rtl:text-right">
+                        <label class="block text-xs font-bold text-slate-700 mb-1">اختر نغمة الإشعارات المفضلة</label>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                          <button type="button"
+                                  (click)="changeSoundType('premium')"
+                                  [class.bg-[#0a8f96]]="soundType() === 'premium'"
+                                  [class.text-white]="soundType() === 'premium'"
+                                  [class.bg-white]="soundType() !== 'premium'"
+                                  [class.text-gray-700]="soundType() !== 'premium'"
+                                  [class.border-gray-200]="soundType() !== 'premium'"
+                                  class="px-3 py-2.5 rounded-xl text-xs font-bold border transition-all cursor-pointer flex items-center justify-between shadow-sm active:scale-95">
+                            <span>✨ بلوري</span>
+                          </button>
+
+                          <button type="button"
+                                  (click)="changeSoundType('pop')"
+                                  [class.bg-[#0a8f96]]="soundType() === 'pop'"
+                                  [class.text-white]="soundType() === 'pop'"
+                                  [class.bg-white]="soundType() !== 'pop'"
+                                  [class.text-gray-700]="soundType() !== 'pop'"
+                                  [class.border-gray-200]="soundType() !== 'pop'"
+                                  class="px-3 py-2.5 rounded-xl text-xs font-bold border transition-all cursor-pointer flex items-center justify-between shadow-sm active:scale-95">
+                            <span>🎈 فقاعة</span>
+                          </button>
+
+                          <button type="button"
+                                  (click)="changeSoundType('classic')"
+                                  [class.bg-[#0a8f96]]="soundType() === 'classic'"
+                                  [class.text-white]="soundType() === 'classic'"
+                                  [class.bg-white]="soundType() !== 'classic'"
+                                  [class.text-gray-700]="soundType() !== 'classic'"
+                                  [class.border-gray-200]="soundType() !== 'classic'"
+                                  class="px-3 py-2.5 rounded-xl text-xs font-bold border transition-all cursor-pointer flex items-center justify-between shadow-sm active:scale-95">
+                            <span>🤖 كلاسيكي</span>
+                          </button>
+
+                          <button type="button"
+                                  (click)="changeSoundType('custom')"
+
+                                  [class.bg-[#0a8f96]]="soundType() === 'custom'"
+                                  [class.text-white]="soundType() === 'custom'"
+                                  [class.bg-white]="soundType() !== 'custom'"
+                                  [class.text-gray-700]="soundType() !== 'custom'"
+                                  [class.border-gray-200]="soundType() !== 'custom'"
+
+                                  class="px-3 py-2.5 rounded-xl text-xs font-bold border transition-all cursor-pointer flex items-center justify-between shadow-sm active:scale-95">
+                            <span class="truncate">🎵 &#1605;&#1582;&#1589;&#1589;&#1577;</span>
+                          </button>
+
+
+
+
+
+
+
+
+
+
+
+                        </div>
+
+                        <!-- Upload custom file input -->
+                        <div class="flex flex-col sm:flex-row items-center gap-3 pt-2">
+                          <input type="file" #soundUploadInput (change)="onCustomSoundUploaded($event)" class="hidden" accept="audio/*">
+                          <button type="button" (click)="soundUploadInput.click()" 
+                                  class="w-full sm:w-auto px-4 py-2 bg-white hover:bg-slate-100 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 transition-all flex items-center justify-center gap-2 active:scale-95 cursor-pointer">
+                            📁 رفع نغمة من جهازك
+                          </button>
+                          @if (hasCustomSound()) {
+                            <span class="text-[10px] text-slate-400 font-bold max-w-[200px] truncate">
+                              الملف المرفوع: {{ customSoundName() }}
+                            </span>
+                          }
+                          <div class="flex-1"></div>
+                          <button type="button" (click)="playNotificationSound()"
+                                  class="w-full sm:w-auto px-4 py-2 bg-[#0a8f96]/10 hover:bg-[#0a8f96]/20 text-[#0a8f96] rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1.5 active:scale-95 cursor-pointer">
+                            🔊 تجربة الصوت
+                          </button>
+                        </div>
+                      </div>
+                    }
                     <div class="flex items-center justify-between py-4">
                       <div>
                         <p class="font-bold text-slate-900 text-sm">{{ 'SETTINGS.SHOW_PREVIEW' | translate }}</p>
@@ -271,33 +357,34 @@ const PREFS_KEY = 'baytology_notification_prefs';
   `,
 })
 export class SettingsComponent implements OnInit {
-  lang = signal('ar');
+  private languageService = inject(LanguageService);
+  private toast = inject(ToastService);
+  private translate = inject(TranslateService);
+
+  lang = this.languageService.currentLang;
   saved = signal(false);
   prefs: NotificationPreferences = { ...DEFAULT_PREFS };
 
-  private translate = inject(TranslateService);
+  soundType = signal<'premium' | 'pop' | 'classic' | 'custom' | 'none'>('premium');
+  customSoundName = signal<string>('');
+  hasCustomSound = signal<boolean>(false);
 
   ngOnInit() {
-    const savedLang = localStorage.getItem('app_lang');
-    if (savedLang) {
-      this.lang.set(savedLang);
-      this.applyLang(savedLang);
-    }
     this.loadPrefs();
+
+    const savedType = localStorage.getItem('baytology_sound_type') as any;
+    if (savedType) {
+      this.soundType.set(savedType);
+    }
+    const savedName = localStorage.getItem('baytology_custom_sound_name');
+    if (savedName) {
+      this.customSoundName.set(savedName);
+    }
+    this.hasCustomSound.set(!!localStorage.getItem('baytology_custom_sound_data'));
   }
 
   changeLang(newLang: string) {
-    this.lang.set(newLang);
-    localStorage.setItem('app_lang', newLang);
-    this.applyLang(newLang);
-    window.location.reload();
-  }
-
-  private applyLang(lang: string) {
-    // Note: Direction is now handled globally by LanguageService/AppComponent based on html lang attribute
-    // But we still set it here just in case or for immediate feedback if reload is delayed
-    document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
-    document.documentElement.lang = lang;
+    this.languageService.setLanguage(newLang as any);
   }
 
   loadPrefs() {
@@ -309,6 +396,11 @@ export class SettingsComponent implements OnInit {
     } catch {
       this.prefs = { ...DEFAULT_PREFS };
     }
+
+    const soundEnabled = localStorage.getItem('baytology_sound_enabled');
+    if (soundEnabled != null) {
+      this.prefs.sound = soundEnabled === 'true';
+    }
   }
 
   savePrefs() {
@@ -317,7 +409,144 @@ export class SettingsComponent implements OnInit {
     setTimeout(() => this.saved.set(false), 2000);
   }
 
-  /** Static helper to read prefs anywhere without instantiating the component */
+  saveSoundPreference(enabled: boolean) {
+    this.prefs.sound = enabled;
+    localStorage.setItem('baytology_sound_enabled', enabled ? 'true' : 'false');
+    this.savePrefs();
+    if (enabled) {
+      this.playNotificationSound();
+    }
+  }
+
+  changeSoundType(type: 'premium' | 'pop' | 'classic' | 'custom' | 'none') {
+    if (type === 'custom' && !this.hasCustomSound()) {
+      this.toast.error('لم تقم برفع أي نغمة مخصصة بعد. يرجى الضغط على زر "رفع نغمة من جهازك" أولاً.');
+      return;
+    }
+    this.soundType.set(type);
+    localStorage.setItem('baytology_sound_type', type);
+    if (type !== 'none') {
+      this.playNotificationSound();
+    }
+  }
+
+  onCustomSoundUploaded(event: any) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('audio/')) {
+      this.toast.error('الرجاء اختيار ملف صوتي صالح.');
+      return;
+    }
+
+    if (file.size > 2 * 1024 * 1024) {
+      this.toast.error('حجم ملف الصوت كبير جداً، يرجى اختيار ملف أقل من 2 ميجابايت.');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e: any) => {
+      const base64Data = e.target.result;
+      try {
+        localStorage.setItem('baytology_custom_sound_data', base64Data);
+        localStorage.setItem('baytology_custom_sound_name', file.name);
+        this.customSoundName.set(file.name);
+        this.hasCustomSound.set(true);
+        
+        this.changeSoundType('custom');
+        this.toast.success('تم رفع نغمة الصوت المخصصة بنجاح!');
+      } catch (err) {
+        this.toast.error('حدث خطأ أثناء حفظ نغمة الصوت.');
+      }
+    };
+    reader.readAsDataURL(file);
+  }
+
+  playNotificationSound() {
+    try {
+      const soundType = this.soundType();
+
+      if (soundType === 'none') {
+        return;
+      }
+
+      if (soundType === 'custom') {
+        const customData = localStorage.getItem('baytology_custom_sound_data');
+        if (customData) {
+          const audio = new Audio(customData);
+          audio.volume = 0.5;
+          audio.play().catch(e => console.warn('Custom audio playback failed:', e));
+          return;
+        } else {
+          this.soundType.set('premium');
+          this.hasCustomSound.set(false);
+          this.customSoundName.set('');
+          localStorage.removeItem('baytology_custom_sound_name');
+          localStorage.setItem('baytology_sound_type', 'premium');
+          
+          this.toast.error('تعذر العثور على ملف النغمة المخصصة (ربما تم مسح بيانات المتصفح). تم الانتقال تلقائياً إلى النغمة الافتراضية "بلوري".');
+          
+          setTimeout(() => this.playNotificationSound(), 100);
+          return;
+        }
+      }
+
+      const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+      if (!AudioContextClass) return;
+      const ctx = new AudioContextClass();
+
+      if (soundType === 'premium') {
+        const playTone = (freq: number, start: number, duration: number) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, start);
+
+          gain.gain.setValueAtTime(0.12, start);
+          gain.gain.exponentialRampToValueAtTime(0.001, start + duration);
+
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+
+          osc.start(start);
+          osc.stop(start + duration);
+        };
+        playTone(880, ctx.currentTime, 0.4);
+        playTone(1320, ctx.currentTime + 0.08, 0.5);
+      } else if (soundType === 'pop') {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(400, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(1200, ctx.currentTime + 0.15);
+
+        gain.gain.setValueAtTime(0.18, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.15);
+      } else if (soundType === 'classic') {
+        const playBeep = (start: number) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'square';
+          osc.frequency.setValueAtTime(2000, start);
+          gain.gain.setValueAtTime(0.04, start);
+          gain.gain.exponentialRampToValueAtTime(0.001, start + 0.1);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(start);
+          osc.stop(start + 0.1);
+        };
+        playBeep(ctx.currentTime);
+        playBeep(ctx.currentTime + 0.12);
+      }
+    } catch (err) {
+      console.warn('Audio playback failed:', err);
+    }
+  }
   static getPrefs(): NotificationPreferences {
     try {
       const raw = localStorage.getItem(PREFS_KEY);

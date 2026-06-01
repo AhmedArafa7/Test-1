@@ -1,7 +1,8 @@
-import { Component, ElementRef, inject, signal, viewChild } from '@angular/core';
+import { Component, ElementRef, effect, inject, signal, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { ImageCropperComponent, ImageCroppedEvent } from 'ngx-image-cropper';
 
 import { getPropertyImageUrl } from '../../../core/utils/media';
 import { AuthService } from '../../../core/auth/auth.service';
@@ -16,12 +17,14 @@ interface ChatMessage {
   content: string;
   properties?: AiProperty[];
   propertyCount?: number;
+  imageSrc?: string;
+  voiceUrl?: string;
 }
 
 @Component({
   selector: 'app-chatbot',
   standalone: true,
-  imports: [FormsModule, RouterLink, TranslateModule],
+  imports: [FormsModule, RouterLink, TranslateModule, ImageCropperComponent],
   template: `
     <div class="bg-white font-sans flex justify-center">
       <div class="w-full max-w-6xl flex flex-col h-[calc(100vh-72px)] border-x border-gray-100 shadow-sm">
@@ -72,7 +75,19 @@ interface ChatMessage {
           @for (msg of messages(); track $index) {
             <div [class]="msg.role === 'user' ? 'flex ltr:justify-start rtl:justify-end mb-6' : 'flex ltr:justify-end rtl:justify-start mb-6'">
               <div [class]="msg.role === 'user' ? 'bg-gradient-to-br from-gray-900 to-gray-800 text-white rounded-[26px] ltr:rounded-bl-md rtl:rounded-br-md max-w-[85%]' : 'bg-white text-gray-900 rounded-[26px] ltr:rounded-br-md rtl:rounded-bl-md max-w-[95%] border border-gray-100/80'" class="px-5 md:px-7 py-5 shadow-sm">
-                <p class="text-sm font-bold whitespace-pre-wrap leading-loose ltr:text-left rtl:text-right">{{ msg.content }}</p>
+                @if (msg.imageSrc) {
+                  <div [class.mb-3]="msg.content" class="max-w-xs rounded-2xl overflow-hidden border border-white/10 shadow-md bg-white">
+                    <img [src]="msg.imageSrc" class="w-full h-auto object-cover max-h-60" alt="صورة البحث">
+                  </div>
+                }
+                @if (msg.voiceUrl) {
+                  <div [class.mb-2]="msg.content" class="min-w-[240px] py-1 flex items-center justify-center">
+                    <audio [src]="msg.voiceUrl" controls class="w-full max-w-[260px] h-9 rounded-full"></audio>
+                  </div>
+                }
+                @if (msg.content) {
+                  <p class="text-sm font-bold whitespace-pre-wrap leading-loose ltr:text-left rtl:text-right">{{ msg.content }}</p>
+                }
 
                 @if (msg.role === 'assistant' && (msg.properties?.length || 0) > 0) {
                   <div class="mt-5 pt-5 border-t border-gray-100">
@@ -132,10 +147,19 @@ interface ChatMessage {
         </div>
 
         <div class="px-4 md:px-8 py-5 bg-white/80 backdrop-blur-lg border-t border-gray-100">
-          @if (selectedImageName()) {
-            <div class="max-w-4xl mx-auto mb-3 flex items-center justify-between bg-[#0a8f96]/5 border border-[#0a8f96]/15 rounded-xl px-4 py-2">
-              <span class="text-xs font-bold text-[#0a8f96]">{{ 'AI.CHATBOT.IMAGE_READY' | translate:{ name: selectedImageName() } }}</span>
-              <button (click)="clearImage()" class="text-xs font-black text-red-500 hover:underline">{{ 'AI.CHATBOT.REMOVE_IMAGE' | translate }}</button>
+          @if (selectedFileUrl) {
+            <div class="max-w-4xl mx-auto mb-3 px-4 py-2 bg-[#0a8f96]/5 rounded-2xl border border-[#0a8f96]/20 flex items-center justify-between animate-in slide-in-from-bottom-1 overflow-hidden shrink-0">
+              <div class="flex items-center gap-3">
+                <div (click)="reopenEditor()" class="w-10 h-10 rounded-xl overflow-hidden border border-[#0a8f96]/20 shrink-0 shadow-sm bg-white cursor-pointer hover:opacity-80 active:scale-95 transition-all" title="اضغط للتعديل أو الرسم">
+                  <img [src]="selectedFileUrl" class="w-full h-full object-cover">
+                </div>
+                <span class="text-[11px] font-black text-[#0a8f96]">{{ 'MESSAGES.FILE_ATTACHED' | translate }}</span>
+              </div>
+              <button (click)="clearImage()" class="text-slate-400 hover:text-red-500 bg-white border border-slate-100 rounded-full w-6 h-6 flex items-center justify-center shadow-sm cursor-pointer transition-colors">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+              </button>
             </div>
           }
 
@@ -150,7 +174,7 @@ interface ChatMessage {
 
             <input [(ngModel)]="input" (keydown.enter)="send()" class="flex-1 bg-gray-50/80 border border-gray-200/60 rounded-[22px] px-5 md:px-7 py-4 ltr:pe-14 rtl:ps-14 text-sm font-bold focus:bg-white focus:border-[#0a8f96]/30 focus:ring-4 focus:ring-[#0a8f96]/5 transition-all outline-none ltr:text-left rtl:text-right" [placeholder]="'AI.CHATBOT.INPUT_PLACEHOLDER' | translate" autofocus>
 
-            <button (click)="send()" [disabled]="!input.trim() || thinking()" class="w-13 h-13 min-w-13 min-h-13 ltr:rotate-0 rtl:rotate-180 bg-[#0a8f96] hover:bg-[#076b70] disabled:opacity-40 text-white rounded-[20px] flex items-center justify-center transition-all active:scale-90 shadow-lg shadow-[#0a8f96]/20">
+            <button (click)="send()" [disabled]="(!input.trim() && !selectedFileUrl) || thinking()" class="w-13 h-13 min-w-13 min-h-13 ltr:rotate-0 rtl:rotate-180 bg-[#0a8f96] hover:bg-[#076b70] disabled:opacity-40 text-white rounded-[20px] flex items-center justify-center transition-all active:scale-90 shadow-lg shadow-[#0a8f96]/20">
               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 12h14M12 5l7 7-7 7"/></svg>
             </button>
           </div>
@@ -158,6 +182,118 @@ interface ChatMessage {
         </div>
       </div>
     </div>
+
+    <!-- Cropper & Draw Editor Modal -->
+    @if (showCropperModal()) {
+      <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 md:p-10 animate-in fade-in duration-200">
+        <div class="bg-white rounded-3xl w-full max-w-3xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+          <!-- Header -->
+          <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50/50 ltr:flex-row rtl:flex-row-reverse">
+            <h3 class="font-extrabold text-slate-900 text-lg ltr:text-left rtl:text-right">تعديل وتحرير الصورة</h3>
+            <button (click)="cancelCrop()" class="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-500 hover:text-red-500 hover:bg-red-50 transition-colors shadow-sm cursor-pointer">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+            </button>
+          </div>
+          
+          <!-- Mode Tabs -->
+          <div class="bg-slate-50/80 px-6 py-3 border-b border-slate-100 flex justify-center">
+            <div class="flex gap-2 p-1 bg-slate-100 rounded-2xl w-fit border border-slate-200/50">
+              <button (click)="activeEditorMode.set('crop')" 
+                      [class.bg-white]="activeEditorMode() === 'crop'" 
+                      [class.shadow-sm]="activeEditorMode() === 'crop'" 
+                      [class.text-[#0a8f96]]="activeEditorMode() === 'crop'"
+                      [class.text-slate-500]="activeEditorMode() !== 'crop'"
+                      class="px-6 py-2.5 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 border-none">
+                📐 قص وأبعاد
+              </button>
+              <button (click)="activeEditorMode.set('draw')" 
+                      [class.bg-white]="activeEditorMode() === 'draw'" 
+                      [class.shadow-sm]="activeEditorMode() === 'draw'" 
+                      [class.text-[#0a8f96]]="activeEditorMode() === 'draw'"
+                      [class.text-slate-500]="activeEditorMode() !== 'draw'"
+                      class="px-6 py-2.5 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 border-none">
+                🎨 رسم وقلم
+              </button>
+            </div>
+          </div>
+
+          <!-- Editor Area -->
+          <div class="flex-1 bg-slate-100 overflow-hidden relative flex flex-col items-center justify-center min-h-[350px] p-6">
+            @if (activeEditorMode() === 'crop') {
+              <image-cropper
+                [imageFile]="imageFile"
+                [maintainAspectRatio]="false"
+                [imageQuality]="90"
+                format="jpeg"
+                (imageCropped)="imageCropped($event)"
+                class="max-h-[50vh] w-full rounded-2xl overflow-hidden shadow-sm">
+              </image-cropper>
+            } @else {
+              <!-- Draw Mode Controls & Canvas -->
+              <div class="flex flex-col items-center gap-4 w-full">
+                <!-- Color & Size Toolbar -->
+                <div class="flex flex-wrap items-center justify-center gap-4 bg-white border border-slate-200/60 px-5 py-2.5 rounded-2xl shadow-sm">
+                  <!-- Colors -->
+                  <div class="flex items-center gap-2">
+                    @for (color of ['#ff4d4d', '#2ecc71', '#3498db', '#f1c40f', '#2c3e50']; track color) {
+                      <button (click)="changeColor(color)" 
+                              [style.background]="color" 
+                              [class.ring-4]="drawingColor === color"
+                              [class.ring-[#0a8f96]/30]="drawingColor === color"
+                              class="w-6 h-6 rounded-full cursor-pointer hover:scale-110 transition-transform border border-white shadow-sm"></button>
+                    }
+                  </div>
+                  
+                  <div class="h-6 w-px bg-slate-200"></div>
+                  
+                  <!-- Brush sizes -->
+                  <div class="flex items-center gap-3">
+                    <button (click)="changeWidth(2)" [class.bg-slate-200]="drawingLineWidth === 2" class="px-3 py-1 text-[10px] font-black rounded-lg border border-slate-100 cursor-pointer transition-colors">رفيع</button>
+                    <button (click)="changeWidth(5)" [class.bg-slate-200]="drawingLineWidth === 5" class="px-3 py-1 text-[10px] font-black rounded-lg border border-slate-100 cursor-pointer transition-colors">متوسط</button>
+                    <button (click)="changeWidth(10)" [class.bg-slate-200]="drawingLineWidth === 10" class="px-3 py-1 text-[10px] font-black rounded-lg border border-slate-100 cursor-pointer transition-colors">سميك</button>
+                  </div>
+                </div>
+
+                <!-- Canvas Drawing Box -->
+                <div class="bg-white border border-slate-200/60 rounded-3xl p-3 shadow-inner flex items-center justify-center w-full max-w-[620px] overflow-auto">
+                  <canvas #drawingCanvas 
+                          (mousedown)="startDrawing($event)" 
+                          (mousemove)="draw($event)" 
+                          (mouseup)="stopDrawing()" 
+                          (mouseleave)="stopDrawing()" 
+                          (touchstart)="startDrawingTouch($event)" 
+                          (touchmove)="drawTouch($event)" 
+                          (touchend)="stopDrawing()"
+                          class="bg-slate-50 cursor-crosshair rounded-2xl shadow-sm border border-slate-100"></canvas>
+                </div>
+              </div>
+            }
+          </div>
+
+          <!-- Footer / Actions -->
+          <div class="p-6 bg-white border-t border-slate-100 flex items-center justify-between gap-3 ltr:flex-row rtl:flex-row-reverse">
+            <!-- Reset Button on Left -->
+            <button (click)="resetToOriginal()" class="px-5 py-2.5 rounded-xl font-bold text-rose-600 bg-rose-50 hover:bg-rose-100 border border-rose-100 transition-colors cursor-pointer flex items-center gap-1.5">
+              <span>↩️</span>
+              <span>إعادة للأصل</span>
+            </button>
+
+            <!-- Action buttons on Right -->
+            <div class="flex items-center gap-3">
+              <button (click)="cancelCrop()" class="px-6 py-2.5 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors cursor-pointer">إلغاء</button>
+              <button (click)="confirmCrop()" class="px-8 py-2.5 rounded-xl font-bold text-white bg-[#0a8f96] hover:bg-[#076b70] transition-colors shadow-lg shadow-[#0a8f96]/20 flex items-center gap-2 cursor-pointer">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                </svg>
+                <span>اعتماد التعديل</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
   `,
 })
 export class ChatbotComponent {
@@ -167,6 +303,22 @@ export class ChatbotComponent {
   isRecording = signal(false);
   selectedImageName = signal('');
   chatContainer = viewChild<ElementRef>('chatContainer');
+  imageInput = viewChild<ElementRef>('imageInput');
+
+  showCropperModal = signal(false);
+  imageFile: File | undefined = undefined;
+  croppedImageTemp: string = '';
+  croppedFile: File | Blob | string | null = null;
+  selectedFileUrl = '';
+
+  canvasRef = viewChild<ElementRef<HTMLCanvasElement>>('drawingCanvas');
+  activeEditorMode = signal<'crop' | 'draw'>('crop');
+  drawingColor = '#ff4d4d';
+  drawingLineWidth = 5;
+  canvasElement: HTMLCanvasElement | null = null;
+  ctx: CanvasRenderingContext2D | null = null;
+  isDrawingState = false;
+  originalImageFile: File | null = null;
 
   private translate = inject(TranslateService);
   private mediaRecorder: MediaRecorder | null = null;
@@ -179,7 +331,14 @@ export class ChatbotComponent {
     private conversationService: ConversationService,
     private router: Router,
     private toast: ToastService,
-  ) {}
+  ) {
+    effect(() => {
+      const ref = this.canvasRef();
+      if (ref) {
+        this.initCanvas(ref.nativeElement);
+      }
+    });
+  }
 
   goBack() { history.back(); }
 
@@ -197,6 +356,32 @@ export class ChatbotComponent {
   }
 
   async send() {
+    if (this.selectedImageFile) {
+      const file = this.selectedImageFile;
+      const imageUrl = this.selectedFileUrl;
+      this.clearImage();
+      
+      this.thinking.set(true);
+      this.addMessage({ 
+        role: 'user', 
+        content: '',
+        imageSrc: imageUrl
+      });
+      this.scroll();
+
+      try {
+        const res = await this.aiService.imageSearch(file, 10);
+        this.addMessage(this.buildImageMessage(res));
+      } catch (error: any) {
+        const details = error?.error?.detail || error?.error?.title || this.translate.instant('AI.CHATBOT.IMAGE_ERROR');
+        this.addMessage({ role: 'assistant', content: details });
+      } finally {
+        this.thinking.set(false);
+        this.scroll();
+      }
+      return;
+    }
+
     const q = this.input.trim();
     if (!q) return;
 
@@ -216,20 +401,185 @@ export class ChatbotComponent {
     }
   }
 
-  onImageSelected(event: Event) {
-    const input = event.target as HTMLInputElement;
-    const file = input.files?.[0];
+  onImageSelected(event: any) {
+    const file = event.target.files?.[0];
     if (!file) return;
 
-    this.selectedImageFile = file;
-    this.selectedImageName.set(file.name);
-    this.sendImageSearch(file);
-    input.value = '';
+    if (file.type.startsWith('image/')) {
+      this.originalImageFile = file;
+      this.imageFile = file;
+      this.selectedImageName.set(file.name);
+      this.activeEditorMode.set('crop');
+      this.showCropperModal.set(true);
+    }
+  }
+
+  imageCropped(event: ImageCroppedEvent) {
+    this.croppedFile = event.blob || event.base64 || null;
+    this.croppedImageTemp = event.objectUrl || event.base64 || '';
+  }
+
+  confirmCrop() {
+    if (this.activeEditorMode() === 'draw' && this.canvasElement) {
+      const base64 = this.canvasElement.toDataURL('image/jpeg', 0.9);
+      this.croppedImageTemp = base64;
+    }
+
+    if (!this.croppedImageTemp) return;
+    
+    const fileToUpload = (this.croppedFile || this.croppedImageTemp) as any;
+    if (!fileToUpload) {
+      this.toast.error(this.translate.instant('MESSAGES.IMAGE_PROCESS_ERROR') || 'حدث خطأ أثناء معالجة الصورة');
+      return;
+    }
+
+    this.selectedFileUrl = this.croppedImageTemp;
+    
+    if (fileToUpload instanceof Blob) {
+      this.selectedImageFile = new File([fileToUpload], this.selectedImageName() || 'image.jpg', { type: fileToUpload.type || 'image/jpeg' });
+    } else if (typeof fileToUpload === 'string' && fileToUpload.startsWith('data:image')) {
+      const byteString = atob(fileToUpload.split(',')[1]);
+      const mimeString = fileToUpload.split(',')[0].split(':')[1].split(';')[0];
+      const ab = new ArrayBuffer(byteString.length);
+      const ia = new Uint8Array(ab);
+      for (let i = 0; i < byteString.length; i++) {
+        ia[i] = byteString.charCodeAt(i);
+      }
+      const blob = new Blob([ab], { type: mimeString });
+      this.selectedImageFile = new File([blob], this.selectedImageName() || 'image.jpg', { type: mimeString });
+    } else if (fileToUpload instanceof File) {
+      this.selectedImageFile = fileToUpload;
+    } else {
+      this.selectedImageFile = this.imageFile || null;
+    }
+
+    this.showCropperModal.set(false);
+    this.imageFile = undefined;
+    this.croppedFile = null;
+    this.croppedImageTemp = '';
+  }
+
+  cancelCrop() {
+    this.showCropperModal.set(false);
+    this.imageFile = undefined;
+    this.croppedImageTemp = '';
+    this.clearImage();
   }
 
   clearImage() {
     this.selectedImageFile = null;
+    this.originalImageFile = null;
     this.selectedImageName.set('');
+    this.selectedFileUrl = '';
+    if (this.imageInput()?.nativeElement) {
+      this.imageInput()!.nativeElement.value = '';
+    }
+  }
+
+  initCanvas(canvas: HTMLCanvasElement) {
+    this.canvasElement = canvas;
+    this.ctx = canvas.getContext('2d');
+    
+    const img = new Image();
+    img.src = this.croppedImageTemp || this.selectedFileUrl;
+    img.onload = () => {
+      const containerWidth = Math.min(window.innerWidth - 64, 600);
+      const containerHeight = 350;
+      
+      let width = img.width;
+      let height = img.height;
+      
+      const ratio = Math.min(containerWidth / width, containerHeight / height);
+      width = width * ratio;
+      height = height * ratio;
+      
+      canvas.width = width;
+      canvas.height = height;
+      
+      if (this.ctx) {
+        this.ctx.drawImage(img, 0, 0, width, height);
+      }
+    };
+  }
+
+  startDrawing(event: MouseEvent) {
+    this.isDrawingState = true;
+    if (!this.ctx || !this.canvasElement) return;
+    const rect = this.canvasElement.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+    
+    this.ctx.beginPath();
+    this.ctx.moveTo(x, y);
+    this.ctx.strokeStyle = this.drawingColor;
+    this.ctx.lineWidth = this.drawingLineWidth;
+    this.ctx.lineCap = 'round';
+    this.ctx.lineJoin = 'round';
+  }
+
+  draw(event: MouseEvent) {
+    if (!this.isDrawingState || !this.ctx || !this.canvasElement) return;
+    const rect = this.canvasElement.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+    
+    this.ctx.lineTo(x, y);
+    this.ctx.stroke();
+  }
+
+  stopDrawing() {
+    this.isDrawingState = false;
+  }
+
+  startDrawingTouch(event: TouchEvent) {
+    event.preventDefault();
+    this.isDrawingState = true;
+    if (!this.ctx || !this.canvasElement || event.touches.length === 0) return;
+    const rect = this.canvasElement.getBoundingClientRect();
+    const x = event.touches[0].clientX - rect.left;
+    const y = event.touches[0].clientY - rect.top;
+    
+    this.ctx.beginPath();
+    this.ctx.moveTo(x, y);
+    this.ctx.strokeStyle = this.drawingColor;
+    this.ctx.lineWidth = this.drawingLineWidth;
+    this.ctx.lineCap = 'round';
+    this.ctx.lineJoin = 'round';
+  }
+
+  drawTouch(event: TouchEvent) {
+    event.preventDefault();
+    if (!this.isDrawingState || !this.ctx || !this.canvasElement || event.touches.length === 0) return;
+    const rect = this.canvasElement.getBoundingClientRect();
+    const x = event.touches[0].clientX - rect.left;
+    const y = event.touches[0].clientY - rect.top;
+    
+    this.ctx.lineTo(x, y);
+    this.ctx.stroke();
+  }
+
+  changeColor(color: string) {
+    this.drawingColor = color;
+  }
+
+  changeWidth(width: number) {
+    this.drawingLineWidth = width;
+  }
+
+  resetToOriginal() {
+    if (this.originalImageFile) {
+      this.imageFile = this.originalImageFile;
+      this.croppedImageTemp = '';
+      this.activeEditorMode.set('crop');
+    }
+  }
+
+  reopenEditor() {
+    if (this.originalImageFile) {
+      this.imageFile = this.originalImageFile;
+      this.showCropperModal.set(true);
+      this.activeEditorMode.set('crop');
+    }
   }
 
   async toggleRecording() {
@@ -343,20 +693,31 @@ export class ChatbotComponent {
 
   private async sendVoice(audioFile: File) {
     this.thinking.set(true);
-    this.addMessage({ role: 'user', content: this.translate.instant('AI.CHATBOT.VOICE_MESSAGE') });
-    this.scroll();
-
-    try {
-      const res = await this.aiService.voiceChat(this.aiService.getSessionId(), audioFile);
-      const transcript = res.transcription ? this.translate.instant('AI.CHATBOT.VOICE_TRANSCRIPT', { text: res.transcription }) : undefined;
-      this.addMessage(this.buildAssistantMessage(res, transcript));
-    } catch (error: any) {
-      const details = this.formatVoiceError(error);
-      this.addMessage({ role: 'assistant', content: details });
-    } finally {
-      this.thinking.set(false);
+    
+    const reader = new FileReader();
+    reader.onload = async (e: any) => {
+      const base64Audio = e.target.result;
+      
+      this.addMessage({ 
+        role: 'user', 
+        content: '', 
+        voiceUrl: base64Audio
+      });
       this.scroll();
-    }
+
+      try {
+        const res = await this.aiService.voiceChat(this.aiService.getSessionId(), audioFile);
+        const transcript = res.transcription ? this.translate.instant('AI.CHATBOT.VOICE_TRANSCRIPT', { text: res.transcription }) : undefined;
+        this.addMessage(this.buildAssistantMessage(res, transcript));
+      } catch (error: any) {
+        const details = this.formatVoiceError(error);
+        this.addMessage({ role: 'assistant', content: details });
+      } finally {
+        this.thinking.set(false);
+        this.scroll();
+      }
+    };
+    reader.readAsDataURL(audioFile);
   }
 
   private async sendImageSearch(imageFile: File) {

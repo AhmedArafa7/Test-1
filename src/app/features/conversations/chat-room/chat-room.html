@@ -334,13 +334,13 @@
             <div class="px-4 py-2 bg-[#0a8f96]/5 rounded-2xl border border-[#0a8f96]/20 flex items-center justify-between animate-in slide-in-from-bottom-1 overflow-hidden shrink-0">
               <div class="flex items-center gap-3">
                 @if (selectedFileUrl.startsWith('data:image') || selectedFileUrl.startsWith('https://res.cloudinary.com')) {
-                  <div class="w-10 h-10 rounded-xl overflow-hidden border border-[#0a8f96]/20 shrink-0 shadow-sm">
+                  <div (click)="reopenEditor()" class="w-10 h-10 rounded-xl overflow-hidden border border-[#0a8f96]/20 shrink-0 shadow-sm cursor-pointer hover:opacity-80 active:scale-95 transition-all" title="اضغط للتعديل أو الرسم">
                     <img [src]="selectedFileUrl" class="w-full h-full object-cover">
                   </div>
                 }
                 <span class="text-[11px] font-black text-[#0a8f96]">{{ 'MESSAGES.FILE_ATTACHED' | translate }}</span>
               </div>
-              <button (click)="selectedFileUrl = ''" class="text-slate-400 hover:text-red-500 bg-white border border-slate-100 rounded-full w-6 h-6 flex items-center justify-center shadow-sm cursor-pointer">
+              <button (click)="clearImage()" class="text-slate-400 hover:text-red-500 bg-white border border-slate-100 rounded-full w-6 h-6 flex items-center justify-center shadow-sm cursor-pointer transition-colors">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                 </svg>
@@ -437,13 +437,13 @@
         </button>
       </footer>
 
-      <!-- Cropper Modal -->
+      <!-- Cropper & Draw Editor Modal -->
       @if (showCropperModal()) {
         <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 md:p-10 animate-in fade-in duration-200">
           <div class="bg-white rounded-3xl w-full max-w-3xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
             <!-- Header -->
             <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50/50">
-              <h3 class="font-extrabold text-slate-900 text-lg ltr:text-left rtl:text-right">{{ 'MESSAGES.CROP_TITLE' | translate }}</h3>
+              <h3 class="font-extrabold text-slate-900 text-lg ltr:text-left rtl:text-right">تعديل وتحرير الصورة</h3>
               <button (click)="cancelCrop()" class="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-500 hover:text-red-500 hover:bg-red-50 transition-colors shadow-sm cursor-pointer">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -451,27 +451,99 @@
               </button>
             </div>
             
-            <!-- Cropper Area -->
-            <div class="flex-1 bg-slate-100 overflow-hidden relative flex items-center justify-center min-h-[300px]">
-              <image-cropper
-                [imageFile]="imageFile"
-                [maintainAspectRatio]="false"
-                [imageQuality]="90"
-                format="jpeg"
-                (imageCropped)="imageCropped($event)"
-                class="max-h-[60vh]">
-              </image-cropper>
+            <!-- Mode Tabs -->
+            <div class="bg-slate-50/80 px-6 py-3 border-b border-slate-100 flex justify-center">
+              <div class="flex gap-2 p-1 bg-slate-100 rounded-2xl w-fit border border-slate-200/50">
+                <button (click)="activeEditorMode.set('crop')" 
+                        [class.bg-white]="activeEditorMode() === 'crop'" 
+                        [class.shadow-sm]="activeEditorMode() === 'crop'" 
+                        [class.text-[#0a8f96]]="activeEditorMode() === 'crop'"
+                        [class.text-slate-500]="activeEditorMode() !== 'crop'"
+                        class="px-6 py-2.5 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 border-none">
+                  📐 قص وأبعاد
+                </button>
+                <button (click)="activeEditorMode.set('draw')" 
+                        [class.bg-white]="activeEditorMode() === 'draw'" 
+                        [class.shadow-sm]="activeEditorMode() === 'draw'" 
+                        [class.text-[#0a8f96]]="activeEditorMode() === 'draw'"
+                        [class.text-slate-500]="activeEditorMode() !== 'draw'"
+                        class="px-6 py-2.5 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 border-none">
+                  🎨 رسم وقلم
+                </button>
+              </div>
+            </div>
+
+            <!-- Editor Area -->
+            <div class="flex-1 bg-slate-100 overflow-hidden relative flex flex-col items-center justify-center min-h-[350px] p-6">
+              @if (activeEditorMode() === 'crop') {
+                <image-cropper
+                  [imageFile]="imageFile"
+                  [maintainAspectRatio]="false"
+                  [imageQuality]="90"
+                  format="jpeg"
+                  (imageCropped)="imageCropped($event)"
+                  class="max-h-[50vh] w-full rounded-2xl overflow-hidden shadow-sm">
+                </image-cropper>
+              } @else {
+                <!-- Draw Mode Controls & Canvas -->
+                <div class="flex flex-col items-center gap-4 w-full">
+                  <!-- Color & Size Toolbar -->
+                  <div class="flex flex-wrap items-center justify-center gap-4 bg-white border border-slate-200/60 px-5 py-2.5 rounded-2xl shadow-sm">
+                    <!-- Colors -->
+                    <div class="flex items-center gap-2">
+                      @for (color of ['#ff4d4d', '#2ecc71', '#3498db', '#f1c40f', '#2c3e50']; track color) {
+                        <button (click)="changeColor(color)" 
+                                [style.background]="color" 
+                                [class.ring-4]="drawingColor === color"
+                                [class.ring-[#0a8f96]/30]="drawingColor === color"
+                                class="w-6 h-6 rounded-full cursor-pointer hover:scale-110 transition-transform border border-white shadow-sm"></button>
+                      }
+                    </div>
+                    
+                    <div class="h-6 w-px bg-slate-200"></div>
+                    
+                    <!-- Brush sizes -->
+                    <div class="flex items-center gap-3">
+                      <button (click)="changeWidth(2)" [class.bg-slate-200]="drawingLineWidth === 2" class="px-3 py-1 text-[10px] font-black rounded-lg border border-slate-100 cursor-pointer transition-colors">رفيع</button>
+                      <button (click)="changeWidth(5)" [class.bg-slate-200]="drawingLineWidth === 5" class="px-3 py-1 text-[10px] font-black rounded-lg border border-slate-100 cursor-pointer transition-colors">متوسط</button>
+                      <button (click)="changeWidth(10)" [class.bg-slate-200]="drawingLineWidth === 10" class="px-3 py-1 text-[10px] font-black rounded-lg border border-slate-100 cursor-pointer transition-colors">سميك</button>
+                    </div>
+                  </div>
+
+                  <!-- Canvas Drawing Box -->
+                  <div class="bg-white border border-slate-200/60 rounded-3xl p-3 shadow-inner flex items-center justify-center w-full max-w-[620px] overflow-auto">
+                    <canvas #drawingCanvas 
+                            (mousedown)="startDrawing($event)" 
+                            (mousemove)="draw($event)" 
+                            (mouseup)="stopDrawing()" 
+                            (mouseleave)="stopDrawing()" 
+                            (touchstart)="startDrawingTouch($event)" 
+                            (touchmove)="drawTouch($event)" 
+                            (touchend)="stopDrawing()"
+                            class="bg-slate-50 cursor-crosshair rounded-2xl shadow-sm border border-slate-100"></canvas>
+                  </div>
+                </div>
+              }
             </div>
 
             <!-- Footer / Actions -->
-            <div class="p-6 bg-white border-t border-slate-100 flex items-center justify-end gap-3">
-              <button (click)="cancelCrop()" class="px-6 py-2.5 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors cursor-pointer">{{ 'MESSAGES.CROP_CANCEL' | translate }}</button>
-              <button (click)="confirmCrop()" class="px-8 py-2.5 rounded-xl font-bold text-white bg-[#0a8f96] hover:bg-[#076b70] transition-colors shadow-lg shadow-[#0a8f96]/20 flex items-center gap-2 cursor-pointer">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                </svg>
-                <span>{{ 'MESSAGES.CROP_CONFIRM' | translate }}</span>
+            <div class="p-6 bg-white border-t border-slate-100 flex items-center justify-between gap-3 ltr:flex-row rtl:flex-row-reverse">
+              <!-- Reset Button on Left -->
+              <button (click)="resetToOriginal()" class="px-5 py-2.5 rounded-xl font-bold text-rose-600 bg-rose-50 hover:bg-rose-100 border border-rose-100 transition-colors cursor-pointer flex items-center gap-1.5">
+                <span>↩️</span>
+                <span>إعادة للأصل</span>
               </button>
+
+              <!-- Action buttons on Right -->
+              <div class="flex items-center gap-3">
+                <button (click)="cancelCrop()" class="px-6 py-2.5 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors cursor-pointer">إلغاء</button>
+                <button (click)="confirmCrop()" class="px-8 py-2.5 rounded-xl font-bold text-white bg-[#0a8f96] hover:bg-[#076b70] transition-colors shadow-lg shadow-[#0a8f96]/20 flex items-center gap-2 cursor-pointer">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                  </svg>
+                  <span>اعتماد التعديل</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -546,7 +618,7 @@
         @if (soundEnabled()) {
           <div class="space-y-2">
             <span class="text-[10px] font-black text-slate-400 block mb-1">اختر نغمة التنبيه</span>
-            <div class="grid grid-cols-3 gap-2">
+            <div class="grid grid-cols-4 gap-2">
               <button (click)="changeSoundType('premium')"
                       [class.bg-[#0a8f96]]="soundType() === 'premium'"
                       [class.text-white]="soundType() === 'premium'"
@@ -572,7 +644,16 @@
                       [class.text-slate-700]="soundType() !== 'classic'"
                       [class.border-slate-200]="soundType() !== 'classic'"
                       class="px-2 py-2 rounded-xl text-[11px] font-bold border transition-all cursor-pointer flex flex-col items-center gap-1">
-                <span>🤖 كلاسيكي</span>
+                <span>🤖 &#1603;&#1604;&#1575;&#1587;&#1610;&#1603;&#1610;</span>
+              </button>
+              <button (click)="changeSoundType('custom')"
+                      [class.bg-[#0a8f96]]="soundType() === 'custom'"
+                      [class.text-white]="soundType() === 'custom'"
+                      [class.bg-white]="soundType() !== 'custom'"
+                      [class.text-slate-700]="soundType() !== 'custom'"
+                      [class.border-slate-200]="soundType() !== 'custom'"
+                      class="px-2 py-2 rounded-xl text-[11px] font-bold border transition-all cursor-pointer flex flex-col items-center gap-1">
+                <span>🎵 &#1605;&#1582;&#1589;&#1589;&#1577;</span>
               </button>
             </div>
           </div>
@@ -663,14 +744,16 @@
     </div>
 
     <!-- Bottom sidebar button "+ محادثة جديدة" -->
-    <div class="p-4 border-t border-slate-100 bg-white shrink-0">
-      <button class="w-full py-3.5 bg-slate-100 hover:bg-slate-200/80 text-slate-800 text-xs font-black uppercase tracking-wider rounded-2xl transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer">
-        <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
-        </svg>
-        <span>محادثة جديدة</span>
-      </button>
-    </div>
+    @if (!auth.isAgent()) {
+      <div class="p-4 border-t border-slate-100 bg-white shrink-0">
+        <button (click)="startNewConversation()" class="w-full py-3.5 bg-slate-100 hover:bg-slate-200/80 text-slate-800 text-xs font-black uppercase tracking-wider rounded-2xl transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer">
+          <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+          </svg>
+          <span>محادثة جديدة</span>
+        </button>
+      </div>
+    }
   </aside>
 
   <!-- PREMIUM CONTACT INFO MODAL -->

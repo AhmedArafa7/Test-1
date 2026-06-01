@@ -36,7 +36,7 @@ export const routes: Routes = [
     children: [
       { path: 'profile', loadComponent: () => import('./features/profile/user-profile/user-profile').then(m => m.UserProfileComponent), data: { title: 'NAV.PROFILE' } },
       { path: 'profile/edit', loadComponent: () => import('./features/profile/edit-profile/edit-profile').then(m => m.EditProfileComponent), data: { title: 'NAV.EDIT_PROFILE' } },
-      { path: 'saved', loadComponent: () => import('./features/properties/saved-properties/saved-properties').then(m => m.SavedPropertiesComponent), data: { title: 'NAV.SAVED' } },
+      { path: 'saved', canActivate: [roleGuard('Buyer')], loadComponent: () => import('./features/properties/saved-properties/saved-properties').then(m => m.SavedPropertiesComponent), data: { title: 'NAV.SAVED' } },
       { path: 'bookings', canActivate: [roleGuard('Buyer', 'Agent')], loadComponent: () => import('./features/bookings/booking-list/booking-list').then(m => m.BookingListComponent), data: { title: 'NAV.BOOKINGS' } },
       { path: 'bookings/new', canActivate: [roleGuard('Buyer')], loadComponent: () => import('./features/bookings/create-booking/create-booking').then(m => m.CreateBookingComponent), data: { title: 'BOOKINGS.CREATE.TITLE' } },
       { path: 'bookings/:id', canActivate: [roleGuard('Buyer', 'Agent')], loadComponent: () => import('./features/bookings/booking-detail/booking-detail').then(m => m.BookingDetailComponent), data: { title: 'BOOKINGS.DETAIL.TITLE' } },

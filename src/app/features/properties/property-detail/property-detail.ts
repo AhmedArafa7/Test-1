@@ -51,7 +51,11 @@ import { buildPropertyPlaceholder, getPropertyImageUrl } from '../../../core/uti
           <div class="flex items-center gap-2 mb-6 text-xs font-bold text-slate-400">
             <a routerLink="/" class="hover:text-[#0a8f96] transition-colors">{{ 'COMMON.HOME' | translate }}</a>
             <svg class="w-3 h-3 rtl:rotate-180 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-            <a routerLink="/properties" class="hover:text-[#0a8f96] transition-colors">{{ 'NAV.BROWSE' | translate }}</a>
+            @if (isOwner()) {
+              <a [routerLink]="['/properties']" [queryParams]="{ agentUserId: auth.userId() }" class="hover:text-[#0a8f96] transition-colors">{{ 'PROPERTY_LIST.TITLE_MY' | translate }}</a>
+            } @else {
+              <a routerLink="/properties" class="hover:text-[#0a8f96] transition-colors">{{ 'NAV.BROWSE' | translate }}</a>
+            }
             <svg class="w-3 h-3 rtl:rotate-180 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
             <span class="text-slate-800 font-black">{{ p.title }}</span>
           </div>
@@ -70,7 +74,7 @@ import { buildPropertyPlaceholder, getPropertyImageUrl } from '../../../core/uti
               </div>
               <p class="text-sm md:text-base text-slate-500 flex items-center gap-1.5 font-medium">
                 <svg class="w-4.5 h-4.5 text-[#0a8f96]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                {{ p.addressLine }}{{ p.district ? ', ' + getDistrictLabel(p.district) : '' }}{{ p.city ? ', ' + getCityLabel(p.city) : '' }}
+                {{ getFormattedLocation(p.addressLine, p.district, p.city) }}
               </p>
             </div>
             
@@ -339,7 +343,7 @@ import { buildPropertyPlaceholder, getPropertyImageUrl } from '../../../core/uti
                   </div>
                   <h4 class="text-lg font-black text-slate-800 mb-1 group-hover:text-[#0a8f96] transition-colors">{{ p.agent?.displayName }}</h4>
                 </a>
-                <p class="text-xs font-bold text-[#0a8f96] uppercase tracking-widest mb-4">{{ p.agent?.agencyName || 'وكيل مستقل' }}</p>
+                <p class="text-xs font-bold text-[#0a8f96] uppercase tracking-widest mb-4">{{ p.agent?.agencyName || ('PROPERTY_DETAIL.INDEPENDENT_AGENT' | translate) }}</p>
                 
                 <div class="grid grid-cols-2 divide-x divide-slate-100 rtl:divide-x-reverse pt-4 border-t border-slate-100">
                   <div class="text-center">
@@ -515,6 +519,27 @@ export class PropertyDetailComponent implements OnInit {
     const translationKey = 'DISTRICTS.' + key;
     const translated = this.translate.instant(translationKey);
     return translated !== translationKey ? translated : value;
+  }
+
+  getFormattedLocation(address: string | undefined, district: string | undefined, city: string | undefined): string {
+    const cityLabel = this.getCityLabel(city).trim();
+    const districtLabel = this.getDistrictLabel(district).trim();
+    const addr = (address || '').trim();
+    
+    let parts: string[] = [];
+    if (addr) {
+      parts.push(addr);
+    }
+    
+    if (districtLabel && !addr.includes(districtLabel)) {
+      parts.push(districtLabel);
+    }
+    
+    if (cityLabel && !addr.includes(cityLabel)) {
+      parts.push(cityLabel);
+    }
+    
+    return parts.join(', ');
   }
 
   getAllImages(): string[] {
