@@ -1,4 +1,4 @@
-import { Component, signal, OnInit, inject } from '@angular/core';
+import { Component, signal, OnInit, inject, computed } from '@angular/core';
 import { DecimalPipe, CommonModule } from '@angular/common';
 import { LocalizedDatePipe } from '../../../shared/pipes/localized-date.pipe';
 import { AdminService } from '../services/admin.service';
@@ -96,7 +96,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
               </tr>
             </thead>
             <tbody>
-              @for (s of items(); track s.id) {
+              @for (s of filteredItems(); track s.id) {
                 <tr class="group">
                   <td class="ltr:text-left rtl:text-right">
                     <p class="text-gray-900 font-black text-xs truncate max-w-[120px]">{{ s.userId }}</p>
@@ -138,7 +138,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
           <!-- Pagination -->
           <div class="p-8 border-t border-gray-50 flex items-center justify-between bg-white">
             <p class="text-xs font-bold text-gray-400">
-              {{ 'ADMIN.AI_MONITORING.PAGINATION_SHOW' | translate:{count: items().length, total: totalCount()} }}
+              {{ 'ADMIN.AI_MONITORING.PAGINATION_SHOW' | translate:{count: filteredItems().length, total: totalCount()} }}
             </p>
             <div class="flex items-center gap-1">
               <button (click)="page() > 1 && loadPage(page() - 1)" [disabled]="page() === 1" class="pagination-modern-item ltr:rotate-180" [ngClass]="page() === 1 ? 'opacity-30 cursor-not-allowed' : 'pagination-modern-inactive hover:bg-gray-100'">
@@ -219,6 +219,16 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 })
 export class AiMonitoringComponent implements OnInit {
   items = signal<SearchRequestAdmin[]>([]);
+  filteredItems = computed(() => {
+    const term = this.adminService.globalSearchTerm()?.toLowerCase();
+    if (!term) return this.items();
+    return this.items().filter(s => 
+      (s.userId?.toLowerCase() || '').includes(term) || 
+      (s.inputType?.toLowerCase() || '').includes(term) ||
+      (s.status?.toLowerCase() || '').includes(term) ||
+      (s.searchEngine?.toLowerCase() || '').includes(term)
+    );
+  });
   loading = signal(true);
   page = signal(1);
   totalPages = signal(1);
@@ -226,10 +236,16 @@ export class AiMonitoringComponent implements OnInit {
   selectedRequest = signal<SearchRequestAdmin | null>(null);
 
   // Stats
-  totalQueries = signal(0);
-  successRate = signal(0);
-  avgResults = signal(0);
-  totalEvents = signal(0);
+  totalQueries = computed(() => this.filteredItems().length);
+  successRate = computed(() => {
+    const list = this.filteredItems();
+    return list.length > 0 ? (list.filter(i => i.status === 'Completed').length / list.length) * 100 : 0;
+  });
+  avgResults = computed(() => {
+    const list = this.filteredItems();
+    return list.length > 0 ? list.reduce((acc, curr) => acc + curr.resultCount, 0) / list.length : 0;
+  });
+  totalEvents = computed(() => this.filteredItems().reduce((acc, curr) => acc + curr.outboxEventCount, 0));
 
   private adminService = inject(AdminService);
   private translate = inject(TranslateService);
@@ -246,12 +262,6 @@ export class AiMonitoringComponent implements OnInit {
       this.items.set(r.items);
       this.totalPages.set(r.totalPages);
       this.totalCount.set(r.totalCount);
-      
-      this.totalQueries.set(r.totalCount);
-      this.successRate.set(r.items.length > 0 ? (r.items.filter(i => i.status === 'Completed').length / r.items.length) * 100 : 0);
-      const sumRes = r.items.reduce((acc, curr) => acc + curr.resultCount, 0);
-      this.avgResults.set(r.items.length > 0 ? sumRes / r.items.length : 0);
-      this.totalEvents.set(r.items.reduce((acc, curr) => acc + curr.outboxEventCount, 0));
     } catch {
       this.items.set([]);
     } finally {

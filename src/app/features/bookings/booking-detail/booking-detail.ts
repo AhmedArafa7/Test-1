@@ -168,9 +168,9 @@ import { ProfileService } from '../../profile/services/profile.service';
                     </div>
                   </div>
                   
-                  <div class="w-full sm:w-auto border-t sm:border-t-0 sm:border-r border-gray-100 pt-6 sm:pt-0 sm:pr-8 flex flex-col items-start sm:items-end">
+                  <div class="w-full sm:w-auto border-t sm:border-t-0 sm:border-r border-gray-100 pt-6 sm:pt-0 sm:pr-8 flex flex-col items-start">
                     <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">{{ 'BOOKINGS.DETAIL.TIME_LABEL' | translate }}</p>
-                    <p class="text-xl font-black text-gray-900 flex items-center gap-2">
+                    <p class="text-xl font-black text-gray-900 flex items-center gap-2" dir="ltr">
                       <span>{{ b.startDate | localizedDate:'hh:mm a' }}</span>
                       <span class="text-gray-300 text-sm font-medium">{{ 'BOOKINGS.DETAIL.TIME_TO_SEPARATOR' | translate }}</span>
                       <span>{{ b.endDate | localizedDate:'hh:mm a' }}</span>
@@ -299,7 +299,7 @@ import { ProfileService } from '../../profile/services/profile.service';
                   </div>
                   <div class="flex justify-between items-center">
                     <span class="text-[11px] font-black text-gray-400 uppercase tracking-widest">{{ 'BOOKINGS.DETAIL.COMMISSION' | translate:{ rate: (b.commissionRate * 100) | number:'1.0-2' } }}</span>
-                    <span class="text-lg font-black text-[#0a8f96]">+{{ (b.amount * b.commissionRate) | currencyEgp:2 }}</span>
+                    <span class="text-lg font-black text-[#0a8f96]" dir="ltr">+{{ (b.amount * b.commissionRate) | currencyEgp:2 }}</span>
                   </div>
                   @if (b.paymentId) {
                     <div class="flex justify-between items-center pt-4 border-t border-gray-50">
@@ -320,7 +320,7 @@ import { ProfileService } from '../../profile/services/profile.service';
 
                 <div class="flex justify-between items-center px-4">
                    <span class="text-[10px] font-black text-gray-300 uppercase">{{ 'BOOKINGS.DETAIL.REQUEST_DATE' | translate }}</span>
-                   <span class="text-[11px] font-bold text-gray-400">{{ b.createdOnUtc | localizedDate:'yyyy/MM/dd hh:mm a' }}</span>
+                   <span class="text-[11px] font-bold text-gray-400" dir="ltr">{{ b.createdOnUtc | localizedDate:'yyyy/MM/dd hh:mm a' }}</span>
                 </div>
 
                 <div class="mt-10 p-6 bg-gray-50 rounded-2xl border border-gray-100 flex items-start gap-4">

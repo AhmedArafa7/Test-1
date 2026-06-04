@@ -1,4 +1,4 @@
-import { Component, signal, OnInit, inject } from '@angular/core';
+import { Component, signal, OnInit, inject, computed } from '@angular/core';
 import { DecimalPipe, CommonModule } from '@angular/common';
 import { LocalizedDatePipe } from '../../../shared/pipes/localized-date.pipe';
 import { AdminService } from '../services/admin.service';
@@ -73,7 +73,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
             <span class="badge-trend badge-trend-up">{{ 'ADMIN.REFUNDS.STATS.TOTAL' | translate }}</span>
           </div>
           <p class="text-[11px] font-black text-gray-400 uppercase tracking-wider mb-1">{{ 'ADMIN.REFUNDS.STATS.TOTAL_REFUNDS' | translate }}</p>
-          <p class="text-3xl font-black text-gray-900 tabular-nums">{{ refunds().length }}</p>
+          <p class="text-3xl font-black text-gray-900 tabular-nums">{{ filteredRefunds().length }}</p>
         </div>
       </div>
 
@@ -96,7 +96,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
               </tr>
             </thead>
             <tbody>
-              @for (r of refunds(); track r.id) {
+              @for (r of filteredRefunds(); track r.id) {
                 <tr class="group">
                   <td class="ltr:text-left rtl:text-right">
                     <div class="flex items-center gap-3">
@@ -146,7 +146,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
           
           <!-- Pagination -->
           <div class="p-8 border-t border-gray-50 flex items-center justify-between bg-white">
-            <p class="text-xs font-bold text-gray-400">{{ 'ADMIN.REFUNDS.PAGINATION_SHOW' | translate:{count: refunds().length} }}</p>
+            <p class="text-xs font-bold text-gray-400">{{ 'ADMIN.REFUNDS.PAGINATION_SHOW' | translate:{count: filteredRefunds().length} }}</p>
             <div class="flex items-center gap-1">
               <button (click)="page() > 1 && loadPage(page() - 1)" [disabled]="page() === 1" class="pagination-modern-item ltr:rotate-180" [ngClass]="page() === 1 ? 'opacity-30 cursor-not-allowed' : 'pagination-modern-inactive hover:bg-gray-100'">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
@@ -232,15 +232,28 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 })
 export class RefundsComponent implements OnInit {
   refunds = signal<RefundRequestAdmin[]>([]);
+  filteredRefunds = computed(() => {
+    const term = this.adminService.globalSearchTerm()?.toLowerCase();
+    if (!term) return this.refunds();
+    return this.refunds().filter(r => 
+      (r.requestedBy?.toLowerCase() || '').includes(term) || 
+      (r.reason?.toLowerCase() || '').includes(term) ||
+      (r.status?.toLowerCase() || '').includes(term) ||
+      (r.amount.toString()).includes(term)
+    );
+  });
   loading = signal(true);
   page = signal(1);
   totalPages = signal(1);
   selectedRefund = signal<RefundRequestAdmin | null>(null);
 
   // Stats
-  pendingCount = signal(0);
-  totalRefunded = signal(0);
-  rejectionRate = signal(0);
+  pendingCount = computed(() => this.filteredRefunds().filter(i => i.status === 'Pending').length);
+  totalRefunded = computed(() => this.filteredRefunds().filter(i => i.status === 'Approved' || i.status === 'Processed').reduce((acc, curr) => acc + curr.amount, 0));
+  rejectionRate = computed(() => {
+    const list = this.filteredRefunds();
+    return list.length > 0 ? (list.filter(i => i.status === 'Rejected').length / list.length) * 100 : 0;
+  });
 
   private adminService = inject(AdminService);
   private toast = inject(ToastService);
@@ -257,10 +270,6 @@ export class RefundsComponent implements OnInit {
       const r = await this.adminService.getRefunds(p);
       this.refunds.set(r.items);
       this.totalPages.set(r.totalPages);
-      
-      this.pendingCount.set(r.items.filter(i => i.status === 'Pending').length);
-      this.totalRefunded.set(r.items.filter(i => i.status === 'Approved' || i.status === 'Processed').reduce((acc, curr) => acc + curr.amount, 0));
-      this.rejectionRate.set(r.items.length > 0 ? (r.items.filter(i => i.status === 'Rejected').length / r.items.length) * 100 : 0);
     } catch {
       this.refunds.set([]);
     } finally {

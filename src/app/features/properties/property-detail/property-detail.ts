@@ -8,12 +8,14 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { AuthService } from '../../../core/auth/auth.service';
 import { Property, PropertyListItem } from '../../../core/models';
 import { ToastService } from '../../../core/services/toast.service';
+import { ConfirmService } from '../../../core/services/confirm.service';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner';
 import { FormsModule } from '@angular/forms';
 import { ConversationService } from '../../conversations/services/conversation.service';
 import { PropertyService } from '../services/property.service';
 import { LocalImageService } from '../../../core/services/local-image.service';
 import { AiService } from '../../ai/services/ai.service';
+import { NavigationHistoryService } from '../../../core/services/navigation-history.service';
 import { CurrencyEgpPipe } from '../../../shared/pipes/currency-egp.pipe';
 import { SkeletonLoaderComponent } from '../../../shared/components/skeleton-loader/skeleton-loader';
 import { buildPropertyPlaceholder, getPropertyImageUrl } from '../../../core/utils/media';
@@ -50,11 +52,13 @@ import { buildPropertyPlaceholder, getPropertyImageUrl } from '../../../core/uti
           <!-- Navigation Breadcrumb Area -->
           <div class="flex items-center gap-2 mb-6 text-xs font-bold text-slate-400">
             <a routerLink="/" class="hover:text-[#0a8f96] transition-colors">{{ 'COMMON.HOME' | translate }}</a>
-            <svg class="w-3 h-3 rtl:rotate-180 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-            @if (isOwner()) {
-              <a [routerLink]="['/properties']" [queryParams]="{ agentUserId: auth.userId() }" class="hover:text-[#0a8f96] transition-colors">{{ 'PROPERTY_LIST.TITLE_MY' | translate }}</a>
-            } @else {
-              <a routerLink="/properties" class="hover:text-[#0a8f96] transition-colors">{{ 'NAV.BROWSE' | translate }}</a>
+            @if (shouldShowMiddleBreadcrumb()) {
+              <svg class="w-3 h-3 rtl:rotate-180 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+              @if (isOwner()) {
+                <a [routerLink]="['/properties']" [queryParams]="{ agentUserId: auth.userId() }" class="hover:text-[#0a8f96] transition-colors">{{ 'PROPERTY_LIST.TITLE_MY' | translate }}</a>
+              } @else {
+                <a [routerLink]="[getBackRoute()]" class="hover:text-[#0a8f96] transition-colors">{{ getBackLabel() | translate }}</a>
+              }
             }
             <svg class="w-3 h-3 rtl:rotate-180 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
             <span class="text-slate-800 font-black">{{ p.title }}</span>
@@ -446,6 +450,7 @@ export class PropertyDetailComponent implements OnInit {
   isOwner = signal(false);
   similarProperties = signal<PropertyListItem[]>([]);
   loadingSimilar = signal(false);
+  previousUrl = signal<string>('');
 
   reviewRating = signal(0);
   reviewComment = '';
@@ -599,9 +604,52 @@ export class PropertyDetailComponent implements OnInit {
     private aiService: AiService,
     public auth: AuthService,
     private toast: ToastService,
+    private confirmService: ConfirmService,
     private localImageService: LocalImageService,
-    private sanitizer: DomSanitizer
-  ) {}
+    private sanitizer: DomSanitizer,
+    private navigationHistory: NavigationHistoryService
+  ) {
+    const prev = this.navigationHistory.getPreviousUrl();
+    if (prev) {
+      this.previousUrl.set(prev);
+    }
+  }
+
+  getBackRoute(): string {
+    const prev = this.previousUrl();
+    if (!prev) return '/properties';
+    if (
+      prev.startsWith('/ai/search') ||
+      prev.startsWith('/ai/recommendations') ||
+      prev.startsWith('/bookings') ||
+      prev.startsWith('/conversations') ||
+      prev.startsWith('/admin') ||
+      prev === '/'
+    ) {
+      return prev;
+    }
+    return '/properties';
+  }
+
+  getBackLabel(): string {
+    const prev = this.previousUrl();
+    if (!prev) return 'NAV.BROWSE';
+    if (prev.startsWith('/ai/search')) return 'NAV.AI_SEARCH';
+    if (prev.startsWith('/ai/recommendations')) return 'NAV.RECOMMENDATIONS';
+    if (prev.startsWith('/bookings')) return 'NAV.BOOKINGS';
+    if (prev.startsWith('/conversations')) return 'NAV.MESSAGES';
+    if (prev.startsWith('/admin')) return 'NAV.ADMIN_PANEL';
+    if (prev === '/') return 'COMMON.HOME';
+    return 'NAV.BROWSE';
+  }
+
+  shouldShowMiddleBreadcrumb(): boolean {
+    const prev = this.previousUrl();
+    if (prev === '/' || prev.startsWith('/?')) {
+      return false;
+    }
+    return true;
+  }
 
   private destroyRef = inject(DestroyRef);
   private destroyed = false;
@@ -738,8 +786,15 @@ export class PropertyDetailComponent implements OnInit {
   async deleteProperty() {
     const property = this.property();
     if (!property) return;
-    
-    if (confirm(this.translate.instant('PROPERTY_LIST.MESSAGES.DELETE_CONFIRM'))) {
+
+    const ok = await this.confirmService.ask({
+      title: this.translate.instant('COMMON.CONFIRM_DELETE_TITLE'),
+      message: this.translate.instant('COMMON.CONFIRM_DELETE_DESC'),
+      confirmText: this.translate.instant('COMMON.DELETE'),
+      cancelText: this.translate.instant('COMMON.CANCEL'),
+      variant: 'danger',
+    });
+    if (ok) {
       try {
         await this.propertyService.delete(property.id);
         this.toast.success(this.translate.instant('PROPERTY_LIST.MESSAGES.DELETE_SUCCESS'));

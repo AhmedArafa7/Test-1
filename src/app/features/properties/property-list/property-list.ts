@@ -8,6 +8,7 @@ import { PropertyService } from '../services/property.service';
 import { PropertyListItem, GetPropertiesParams, Property } from '../../../core/models';
 import { AuthService } from '../../../core/auth/auth.service';
 import { ToastService } from '../../../core/services/toast.service';
+import { ConfirmService } from '../../../core/services/confirm.service';
 import { LocalImageService } from '../../../core/services/local-image.service';
 import { DecimalPipe, CommonModule } from '@angular/common';
 import { SkeletonLoaderComponent } from '../../../shared/components/skeleton-loader/skeleton-loader';
@@ -994,9 +995,10 @@ export class PropertyListComponent implements OnInit, AfterViewInit {
   }
 
   constructor(
-    public propertyService: PropertyService, 
-    public auth: AuthService, 
+    public propertyService: PropertyService,
+    public auth: AuthService,
     public toast: ToastService,
+    private confirmService: ConfirmService,
     private localImageService: LocalImageService,
     private route: ActivatedRoute
   ) {}
@@ -1163,7 +1165,14 @@ export class PropertyListComponent implements OnInit, AfterViewInit {
   }
 
   async deleteProperty(id: string) {
-    if (confirm(this.translate.instant('PROPERTY_LIST.MESSAGES.DELETE_CONFIRM'))) {
+    const ok = await this.confirmService.ask({
+      title: this.translate.instant('COMMON.CONFIRM_DELETE_TITLE'),
+      message: this.translate.instant('COMMON.CONFIRM_DELETE_DESC'),
+      confirmText: this.translate.instant('COMMON.DELETE'),
+      cancelText: this.translate.instant('COMMON.CANCEL'),
+      variant: 'danger',
+    });
+    if (ok) {
       try {
         await this.propertyService.delete(id);
         this.toast.success(this.translate.instant('PROPERTY_LIST.MESSAGES.DELETE_SUCCESS'));

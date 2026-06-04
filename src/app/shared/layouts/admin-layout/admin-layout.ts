@@ -2,13 +2,15 @@ import { Component, signal, inject } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { NgTemplateOutlet, CommonModule } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
+import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../core/auth/auth.service';
 import { NotificationSignalRService } from '../../../core/services/notification-signalr.service';
+import { AdminService } from '../../../features/admin/services/admin.service';
 
 @Component({
   selector: 'app-admin-layout',
   standalone: true,
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, NgTemplateOutlet, CommonModule, TranslateModule],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, NgTemplateOutlet, CommonModule, TranslateModule, FormsModule],
   template: `
     <div class="admin-layout flex font-sans">
       <!-- Sidebar (Desktop) -->
@@ -44,52 +46,52 @@ import { NotificationSignalRService } from '../../../core/services/notification-
               <span>{{ 'ADMIN.LAYOUT.MENU.DASHBOARD' | translate }}</span>
             </a>
             <a routerLink="/admin/users" routerLinkActive="active" (click)="sidebarOpen.set(false)" class="admin-sidebar-link group">
-              <span>{{ 'ADMIN.LAYOUT.MENU.USERS' | translate }}</span>
               <div class="p-2 rounded-lg bg-white/5 text-gray-500 group-hover:text-[#12b5bd] group-hover:bg-[#0a8f96]/10 transition-all">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
               </div>
+              <span>{{ 'ADMIN.LAYOUT.MENU.USERS' | translate }}</span>
             </a>
             <a routerLink="/admin/agents" routerLinkActive="active" (click)="sidebarOpen.set(false)" class="admin-sidebar-link group">
-              <span>{{ 'ADMIN.LAYOUT.MENU.AGENTS' | translate }}</span>
               <div class="p-2 rounded-lg bg-white/5 text-gray-500 group-hover:text-[#12b5bd] group-hover:bg-[#0a8f96]/10 transition-all">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
               </div>
+              <span>{{ 'ADMIN.LAYOUT.MENU.AGENTS' | translate }}</span>
             </a>
             <a routerLink="/admin/payments" routerLinkActive="active" (click)="sidebarOpen.set(false)" class="admin-sidebar-link group">
-              <span>{{ 'ADMIN.LAYOUT.MENU.FINANCE' | translate }}</span>
               <div class="p-2 rounded-lg bg-white/5 text-gray-500 group-hover:text-[#12b5bd] group-hover:bg-[#0a8f96]/10 transition-all">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
               </div>
+              <span>{{ 'ADMIN.LAYOUT.MENU.FINANCE' | translate }}</span>
             </a>
             <a routerLink="/admin/refunds" routerLinkActive="active" (click)="sidebarOpen.set(false)" class="admin-sidebar-link group">
-              <span>{{ 'ADMIN.LAYOUT.MENU.REFUNDS' | translate }}</span>
               <div class="p-2 rounded-lg bg-white/5 text-gray-500 group-hover:text-[#12b5bd] group-hover:bg-[#0a8f96]/10 transition-all">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 15v-1a4 4 0 00-4-4H8m0 0l3 3m-3-3l3-3m9 14V5a2 2 0 00-2-2H6a2 2 0 00-2 2v16l4-2 4 2 4-2 4 2z"/></svg>
               </div>
+              <span>{{ 'ADMIN.LAYOUT.MENU.REFUNDS' | translate }}</span>
             </a>
             <a routerLink="/admin/ai/search" routerLinkActive="active" (click)="sidebarOpen.set(false)" class="admin-sidebar-link group">
-              <span>{{ 'ADMIN.LAYOUT.MENU.AI_SEARCH' | translate }}</span>
               <div class="p-2 rounded-lg bg-white/5 text-gray-500 group-hover:text-[#12b5bd] group-hover:bg-[#0a8f96]/10 transition-all">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
               </div>
+              <span>{{ 'ADMIN.LAYOUT.MENU.AI_SEARCH' | translate }}</span>
             </a>
             <a routerLink="/admin/ai/recommendations" routerLinkActive="active" (click)="sidebarOpen.set(false)" class="admin-sidebar-link group">
-              <span>{{ 'ADMIN.LAYOUT.MENU.AI_RECOM' | translate }}</span>
               <div class="p-2 rounded-lg bg-white/5 text-gray-500 group-hover:text-[#12b5bd] group-hover:bg-[#0a8f96]/10 transition-all">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
               </div>
+              <span>{{ 'ADMIN.LAYOUT.MENU.AI_RECOM' | translate }}</span>
             </a>
             <a routerLink="/admin/audit-logs" routerLinkActive="active" (click)="sidebarOpen.set(false)" class="admin-sidebar-link group">
-              <span>{{ 'ADMIN.LAYOUT.MENU.AUDIT' | translate }}</span>
               <div class="p-2 rounded-lg bg-white/5 text-gray-500 group-hover:text-[#12b5bd] group-hover:bg-[#0a8f96]/10 transition-all">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
               </div>
+              <span>{{ 'ADMIN.LAYOUT.MENU.AUDIT' | translate }}</span>
             </a>
           </nav>
 
           <!-- Footer Actions -->
           <div class="p-6 border-t border-white/5 mt-auto space-y-3">
-            <button class="btn-support w-full">
+            <button routerLink="/faq" class="btn-support w-full cursor-pointer">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
               <span>{{ 'ADMIN.LAYOUT.SUPPORT' | translate }}</span>
             </button>
@@ -138,15 +140,15 @@ import { NotificationSignalRService } from '../../../core/services/notification-
                   <span class="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border border-white animate-pulse"></span>
                 }
               </button>
-              <button class="w-9 h-9 flex items-center justify-center text-gray-400 hover:text-[#0a8f96] transition-colors"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg></button>
-              <button class="w-9 h-9 flex items-center justify-center text-gray-400 hover:text-[#0a8f96] transition-colors"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></button>
+              <button routerLink="/settings" class="w-9 h-9 flex items-center justify-center text-gray-400 hover:text-[#0a8f96] transition-colors cursor-pointer" [title]="'SETTINGS.TITLE' | translate"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg></button>
+              <button routerLink="/faq" class="w-9 h-9 flex items-center justify-center text-gray-400 hover:text-[#0a8f96] transition-colors cursor-pointer" [title]="'FOOTER.HELP_CENTER' | translate"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></button>
             </div>
           </div>
 
           <div class="flex-1 flex items-center justify-center">
             <div class="admin-search-wrapper w-[450px]">
               <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-              <input type="text" [placeholder]="'ADMIN.LAYOUT.SEARCH_PLACEHOLDER' | translate" class="admin-search-input">
+              <input type="text" [ngModel]="adminService.globalSearchTerm()" (ngModelChange)="adminService.globalSearchTerm.set($event)" [placeholder]="'ADMIN.LAYOUT.SEARCH_PLACEHOLDER' | translate" class="admin-search-input">
             </div>
           </div>
 
@@ -177,6 +179,7 @@ export class AdminLayoutComponent {
   sidebarOpen = signal(false);
   public auth = inject(AuthService);
   public notificationService = inject(NotificationSignalRService);
+  public adminService = inject(AdminService);
 
   async logout() {
     await this.auth.logout();

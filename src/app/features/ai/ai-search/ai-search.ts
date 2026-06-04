@@ -2,19 +2,24 @@ import { Component, signal, inject, DestroyRef } from '@angular/core';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { firstValueFrom } from 'rxjs';
 
 import { SearchEngine, SearchInputType, SearchRequestDetail } from '../../../core/models';
 import { ToastService } from '../../../core/services/toast.service';
 import { CurrencyEgpPipe } from '../../../shared/pipes/currency-egp.pipe';
 import { AiService } from '../services/ai.service';
+import { CloudinaryService } from '../../../core/services/cloudinary.service';
 import { compressImage } from '../../../core/utils/media';
+import { PropertyService } from '../../properties/services/property.service';
+import { LocalImageService } from '../../../core/services/local-image.service';
+import { getPropertyImageUrl, buildPropertyPlaceholder } from '../../../core/utils/media';
 
 @Component({
   selector: 'app-ai-search',
   standalone: true,
   imports: [FormsModule, RouterLink, CurrencyEgpPipe, TranslateModule],
   template: `
-    <div class="min-h-screen bg-slate-50/50 font-sans p-4 md:p-8 pt-24 md:pt-28">
+    <div class="min-h-screen bg-slate-50/50 font-sans p-4 md:p-8 pt-8 md:pt-8">
       <div class="max-w-3xl mx-auto flex flex-col gap-6 md:gap-8">
         
         <!-- Header -->
@@ -247,22 +252,40 @@ import { compressImage } from '../../../core/utils/media';
           @if (r.results && r.results.length > 0) {
             <div class="space-y-4 animate-fade-in">
               @for (sr of r.results; track sr.propertyId) {
-                <a [routerLink]="['/properties', sr.propertyId]" class="block bg-white rounded-2xl border border-slate-100 p-6 hover:shadow-lg hover:shadow-[#0a8f96]/5 hover:-translate-y-0.5 transition-all duration-300">
-                  <div class="flex items-center justify-between">
-                    <div>
-                      <h3 class="font-black text-gray-900 text-lg">{{ sr.snapshotTitle || ('AI_SEARCH.FALLBACK_PROPERTY_TITLE' | translate) }}</h3>
-                      <div class="flex items-center gap-4 mt-2 text-xs font-bold text-gray-400">
-                        <span class="flex items-center gap-1">
-                          <svg class="w-3 h-3 text-[#0a8f96]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/></svg>
-                          {{ sr.snapshotCity }}
+                <a [routerLink]="['/properties', sr.propertyId]" class="block bg-white rounded-[24px] border border-slate-100 p-4 hover:shadow-[0_16px_36px_rgba(10,143,150,0.08)] hover:-translate-y-0.5 transition-all duration-300">
+                  <div class="flex flex-col sm:flex-row gap-5 items-stretch">
+                    <!-- Property image thumbnail -->
+                    <div class="w-full sm:w-40 h-28 rounded-2xl overflow-hidden bg-slate-50 shrink-0 relative">
+                      <img [src]="resultsImagesMap().get(sr.propertyId) || 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80'" 
+                           class="w-full h-full object-cover">
+                      <div class="absolute top-2 right-2 sm:hidden">
+                        <span class="bg-[#0a8f96] text-white text-[10px] font-bold px-2 py-1 rounded-lg">
+                          {{ (sr.relevanceScore * 100).toFixed(0) }}% {{ 'AI_SEARCH.MATCH_LABEL' | translate }}
                         </span>
-                        <span class="text-gray-900">{{ sr.snapshotPrice | currencyEgp }}</span>
-                        <span class="text-[9px] font-black uppercase tracking-[0.2em] bg-gray-50 text-gray-400 px-3 py-1 rounded-lg border border-gray-100">{{ sr.snapshotStatus === 'Available' ? ('AI_SEARCH.STATUS_AVAILABLE' | translate) : ('AI_SEARCH.STATUS_SOLD' | translate) }}</span>
                       </div>
                     </div>
-                    <div class="text-right shrink-0">
-                      <p class="text-2xl font-black text-[#0a8f96]">{{ (sr.relevanceScore * 100).toFixed(0) }}%</p>
-                      <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{{ 'AI_SEARCH.MATCH_LABEL' | translate }}</p>
+
+                    <!-- Details -->
+                    <div class="flex-1 flex flex-col justify-between py-1 text-right ltr:text-left rtl:text-right">
+                      <div>
+                        <h3 class="font-black text-gray-900 text-base leading-tight mb-2">{{ sr.snapshotTitle || ('AI_SEARCH.FALLBACK_PROPERTY_TITLE' | translate) }}</h3>
+                        <div class="flex flex-wrap items-center gap-3 text-xs font-bold text-gray-400">
+                          <span class="flex items-center gap-1 text-gray-500">
+                            <svg class="w-3.5 h-3.5 text-[#0a8f96]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/></svg>
+                            {{ sr.snapshotCity }}
+                          </span>
+                          <span class="text-[10px] font-black uppercase tracking-[0.15em] bg-slate-50 text-slate-500 px-2.5 py-1 rounded-lg border border-slate-100/80">{{ sr.snapshotStatus === 'Available' ? ('AI_SEARCH.STATUS_AVAILABLE' | translate) : ('AI_SEARCH.STATUS_SOLD' | translate) }}</span>
+                        </div>
+                      </div>
+                      <div class="mt-4 sm:mt-0">
+                        <span class="text-lg font-black text-[#0a8f96]">{{ sr.snapshotPrice | currencyEgp }}</span>
+                      </div>
+                    </div>
+
+                    <!-- Match score (Desktop) -->
+                    <div class="hidden sm:flex flex-col justify-center items-end text-right ltr:text-left rtl:text-right shrink-0 border-l ltr:border-l rtl:border-r border-slate-100 pl-6 ltr:pl-6 rtl:pr-6">
+                      <p class="text-3xl font-black text-[#0a8f96] leading-none mb-1">{{ (sr.relevanceScore * 100).toFixed(0) }}%</p>
+                      <p class="text-[9px] font-black text-gray-400 uppercase tracking-widest">{{ 'AI_SEARCH.MATCH_LABEL' | translate }}</p>
                     </div>
                   </div>
                 </a>
@@ -330,7 +353,12 @@ export class AiSearchComponent {
 
   private translate = inject(TranslateService);
   private destroyRef = inject(DestroyRef);
+  private cloudinaryService = inject(CloudinaryService);
+  private propertyService = inject(PropertyService);
+  private localImageService = inject(LocalImageService);
   private destroyed = false;
+
+  resultsImagesMap = signal<Map<string, string>>(new Map());
 
   cities: string[] = (this.translate.instant('AI_SEARCH.CITIES_LIST') as string[]) || [];
 
@@ -475,6 +503,7 @@ export class AiSearchComponent {
   async search() {
     this.searching.set(true);
     this.result.set(null);
+    this.resultsImagesMap.set(new Map());
     this.searchProgress.set(5);
     this.searchStepMessage.set(this.searchSteps[0]);
 
@@ -492,13 +521,15 @@ export class AiSearchComponent {
       let imageFileUrl: string | undefined;
 
       if (this.inputType === SearchInputType.Voice && this.audioBlob()) {
-        audioFileUrl = await this.blobToBase64(this.audioBlob()!);
+        const audioFile = new File([this.audioBlob()!], 'voice-search.webm', { type: 'audio/webm' });
+        audioFileUrl = await firstValueFrom(this.cloudinaryService.uploadAudio(audioFile));
       }
 
       if (this.inputType === SearchInputType.Image) {
         if (this.imageFile) {
           await new Promise(resolve => setTimeout(resolve, 50)); 
-          imageFileUrl = await compressImage(this.imageFile);
+          const compressedBase64 = await compressImage(this.imageFile);
+          imageFileUrl = await firstValueFrom(this.cloudinaryService.uploadImage(compressedBase64));
         } else {
           imageFileUrl = this.imageFileUrl.trim() || undefined;
         }
@@ -527,6 +558,29 @@ export class AiSearchComponent {
         if (this.destroyed) break;
         const status = await this.aiService.getSearchStatus(response.searchRequestId);
         if (status.status !== 'Pending') {
+          if (status.results && status.results.length > 0) {
+            const map = new Map<string, string>();
+            for (const sr of status.results) {
+              try {
+                const prop = await this.propertyService.getById(sr.propertyId);
+                let imgUrl = prop.images?.[0]?.url || '';
+                if (imgUrl) {
+                  imgUrl = getPropertyImageUrl(imgUrl, prop.title);
+                } else {
+                  imgUrl = this.localImageService.getThumbnail(prop.id) || buildPropertyPlaceholder(prop.title);
+                }
+                map.set(sr.propertyId, imgUrl);
+              } catch {
+                const local = await this.localImageService.getImages(sr.propertyId);
+                if (local && local.length > 0) {
+                  map.set(sr.propertyId, local[0]);
+                } else {
+                  map.set(sr.propertyId, buildPropertyPlaceholder(sr.snapshotTitle || 'property'));
+                }
+              }
+            }
+            this.resultsImagesMap.set(map);
+          }
           this.searchProgress.set(100);
           this.searchStepMessage.set('AI_SEARCH.SEARCH_SUCCESS');
           this.result.set(status);

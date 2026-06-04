@@ -1,4 +1,4 @@
-import { Component, signal, OnInit, inject } from '@angular/core';
+import { Component, signal, OnInit, inject, computed } from '@angular/core';
 import { AdminService } from '../services/admin.service';
 import { UserSummary } from '../../../core/models';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner';
@@ -38,7 +38,7 @@ import { CommonModule } from '@angular/common';
             </div>
           </div>
           <p class="text-[11px] font-black text-gray-400 uppercase tracking-wider mb-1">{{ 'ADMIN.USERS.STATS_TOTAL' | translate }}</p>
-          <p class="text-3xl font-black text-gray-900 tabular-nums">{{ users().length }}</p>
+          <p class="text-3xl font-black text-gray-900 tabular-nums">{{ filteredUsers().length }}</p>
         </div>
 
         <div class="admin-card p-8 group hover:border-[#0a8f96]/30 transition-all">
@@ -93,7 +93,7 @@ import { CommonModule } from '@angular/common';
               </tr>
             </thead>
             <tbody>
-              @for (u of users(); track u.userId; let i = $index) {
+              @for (u of filteredUsers(); track u.userId; let i = $index) {
                 <tr class="group">
                   <td class="text-start">
                     <div class="flex items-center gap-4">
@@ -146,7 +146,7 @@ import { CommonModule } from '@angular/common';
           
           <!-- Pagination -->
           <div class="p-8 border-t border-gray-50 flex items-center justify-between bg-white">
-            <p class="text-xs font-bold text-gray-400">{{ 'ADMIN.USERS.TABLE.COUNT' | translate:{ count: users().length } }}</p>
+            <p class="text-xs font-bold text-gray-400">{{ 'ADMIN.USERS.TABLE.COUNT' | translate:{ count: filteredUsers().length } }}</p>
             <div class="flex items-center gap-1">
               <button class="pagination-modern-item pagination-modern-inactive hover:bg-gray-50"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg></button>
               <button class="pagination-modern-item pagination-modern-active">1</button>
@@ -164,10 +164,19 @@ export class UsersComponent implements OnInit {
   private translate = inject(TranslateService);
 
   users = signal<UserSummary[]>([]); 
+  filteredUsers = computed(() => {
+    const term = this.adminService.globalSearchTerm()?.toLowerCase();
+    if (!term) return this.users();
+    return this.users().filter(u => 
+      u.email.toLowerCase().includes(term) || 
+      u.roles.some(r => r.toLowerCase().includes(term)) ||
+      (u.email.split('@')[0].toLowerCase().includes(term))
+    );
+  });
   loading = signal(true);
-  activeUsersCount = signal(0);
-  confirmedUsersCount = signal(0);
-  adminUsersCount = signal(0);
+  activeUsersCount = computed(() => this.filteredUsers().filter(u => u.isActive).length);
+  confirmedUsersCount = computed(() => this.filteredUsers().filter(u => u.emailConfirmed).length);
+  adminUsersCount = computed(() => this.filteredUsers().filter(u => u.roles.includes('Admin')).length);
 
   async ngOnInit() { await this.loadUsers(); }
 
@@ -176,9 +185,6 @@ export class UsersComponent implements OnInit {
     try { 
       const res = await this.adminService.getUsers();
       this.users.set(res); 
-      this.activeUsersCount.set(res.filter(u => u.isActive).length);
-      this.confirmedUsersCount.set(res.filter(u => u.emailConfirmed).length);
-      this.adminUsersCount.set(res.filter(u => u.roles.includes('Admin')).length);
     } catch {
       this.users.set([]);
     } finally { 

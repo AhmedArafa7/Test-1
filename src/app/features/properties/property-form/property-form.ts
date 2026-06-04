@@ -7,6 +7,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { PropertyService } from '../services/property.service';
 import { CreatePropertyRequest, FurnishingStatus, ListingType, PropertyType, ViewType, PropertyImage } from '../../../core/models';
 import { ToastService } from '../../../core/services/toast.service';
+import { ConfirmService } from '../../../core/services/confirm.service';
 import { LocalImageService } from '../../../core/services/local-image.service';
 import { UploadManagerService } from '../../../core/services/upload-manager.service';
 import { CloudinaryService } from '../../../core/services/cloudinary.service';
@@ -628,6 +629,7 @@ export class PropertyFormComponent implements OnInit {
     private router: Router,
     private propertyService: PropertyService,
     private toast: ToastService,
+    private confirmService: ConfirmService,
     private localImageService: LocalImageService,
     private uploadManager: UploadManagerService,
     private cloudinary: CloudinaryService,
@@ -767,8 +769,15 @@ export class PropertyFormComponent implements OnInit {
     this.triggerDraftSave();
   }
 
-  removeExistingImage(image: PropertyImage) {
-    if (!confirm(this.translate.instant('PROPERTY_FORM.MESSAGES.DELETE_IMAGE_CONFIRM'))) return;
+  async removeExistingImage(image: PropertyImage) {
+    const ok = await this.confirmService.ask({
+      title: this.translate.instant('COMMON.CONFIRM_DELETE_TITLE'),
+      message: this.translate.instant('PROPERTY_FORM.MESSAGES.DELETE_IMAGE_CONFIRM'),
+      confirmText: this.translate.instant('COMMON.DELETE'),
+      cancelText: this.translate.instant('COMMON.CANCEL'),
+      variant: 'danger',
+    });
+    if (!ok) return;
     this.existingImages.update(imgs => imgs.filter(x => x.id !== image.id));
     this.existingImageUrls.update(urls => urls.filter(u => u !== image.url));
     this.toast.success(this.translate.instant('PROPERTY_FORM.MESSAGES.DELETE_IMAGE_LOCAL_SUCCESS'));

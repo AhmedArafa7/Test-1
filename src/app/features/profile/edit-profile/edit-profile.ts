@@ -64,7 +64,7 @@ import { firstValueFrom } from 'rxjs';
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                       <div>
-                        <label class="block text-xs font-bold text-gray-800 mb-3 tracking-wide">{{ 'PROFILE.EDIT.PHONE_NUMBER' | translate }} <span class="text-red-500">*</span></label>
+                        <label class="block text-xs font-bold text-gray-800 mb-3 tracking-wide">{{ 'PROFILE.EDIT.PHONE_NUMBER' | translate }} </label>
                         <input [ngModel]="phoneNumber()" (ngModelChange)="phoneNumber.set($event)" name="phoneNumber" type="tel" dir="ltr" class="w-full bg-gray-50 border border-gray-200 rounded-2xl px-5 py-4 text-sm font-medium focus:bg-white focus:border-[#0a8f96] focus:ring-4 focus:ring-[#0a8f96]/5 outline-none transition-all ltr:text-left rtl:text-right" [placeholder]="'PROFILE.EDIT.PHONE_PLACEHOLDER' | translate" required>
                       </div>
                       <div>

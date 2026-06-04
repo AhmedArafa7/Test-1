@@ -1,7 +1,14 @@
-import { Pipe, PipeTransform } from '@angular/core';
+import { Pipe, PipeTransform, inject } from '@angular/core';
+import { LanguageService } from '../../core/services/language.service';
 
-@Pipe({ name: 'currencyEgp', standalone: true })
+@Pipe({ 
+  name: 'currencyEgp', 
+  standalone: true,
+  pure: false 
+})
 export class CurrencyEgpPipe implements PipeTransform {
+  private languageService = inject(LanguageService);
+
   transform(value: any, maxDigits: number = 0): string {
     if (value == null || value === '' || value === 'NaN') return '—';
     
@@ -14,7 +21,9 @@ export class CurrencyEgpPipe implements PipeTransform {
       return value.toString().trim() || '—';
     }
     
-    return new Intl.NumberFormat('en-EG', { 
+    const locale = this.languageService.currentLang() === 'ar' ? 'ar-EG' : 'en-EG';
+    
+    return new Intl.NumberFormat(locale, { 
       style: 'currency', 
       currency: 'EGP', 
       minimumFractionDigits: maxDigits, 

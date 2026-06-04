@@ -71,51 +71,110 @@ import { EGYPT_REGIONS, Governorate, City } from '../../core/constants/egypt-reg
                 </div>
                 
                 @if (showCityDropdown()) {
-                  <div class="absolute top-full left-0 right-0 mt-4 bg-white/95 backdrop-blur-2xl rounded-[32px] shadow-2xl border border-white/20 overflow-hidden z-50 animate-slide-up md:w-[600px] md:mx-auto">
-                    <div class="flex h-[320px] divide-x divide-slate-100/50 rtl:divide-x-reverse text-gray-900 font-bold">
+                  <div class="absolute top-full left-0 right-0 mt-4 bg-white/90 dark:bg-slate-900/90 backdrop-blur-3xl rounded-[24px] shadow-[0_24px_50px_-12px_rgba(0,0,0,0.18)] border border-slate-200/50 dark:border-slate-800/80 overflow-hidden z-50 animate-slide-up md:w-[600px] md:mx-auto">
+                    <div class="flex h-[340px] divide-x divide-slate-100 dark:divide-slate-800/80 rtl:divide-x-reverse text-slate-800 dark:text-slate-200 font-sans">
                       
                       <!-- Column 1: Governorates -->
-                      <div class="w-1/2 overflow-y-auto custom-scrollbar py-4">
-                        <div class="px-6 py-2 mb-2 text-[10px] font-black text-gray-400 uppercase tracking-widest">{{ 'PROPERTY_LIST.GOVERNORATE' | translate }}</div>
-                        @for (gov of filteredGovernorates(); track gov.id) {
-                          <button type="button" 
-                                  (click)="selectGovernorate(gov)"
-                                  (mouseenter)="hoverGovernorate(gov)"
-                                  [class.bg-[#0a8f96]/5]="activeGov()?.id === gov.id"
-                                  [class.text-[#0a8f96]]="activeGov()?.id === gov.id"
-                                  class="w-full flex items-center justify-between px-6 py-3.5 hover:bg-slate-50 transition-all group ltr:text-left rtl:text-right">
-                            <span>{{ translate.currentLang === 'ar' ? gov.nameAr : gov.nameEn }}</span>
-                            <svg class="w-3.5 h-3.5 text-gray-300 group-hover:text-[#0a8f96] transition-all rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
-                          </button>
-                        }
-                        @if (filteredGovernorates().length === 0) {
-                          <div class="px-6 py-8 text-center text-xs text-gray-400 font-bold">
-                            {{ 'COMMON.NO_RESULTS' | translate }}
-                          </div>
-                        }
+                      <div class="w-1/2 overflow-y-auto custom-scrollbar py-4 px-2">
+                        <div class="px-4 py-2 mb-2 flex items-center gap-2 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+                          <svg class="w-3.5 h-3.5 text-[#0a8f96]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                          </svg>
+                          <span>{{ 'PROPERTY_LIST.GOVERNORATE' | translate }}</span>
+                        </div>
+                        
+                        <div class="flex flex-col gap-0.5">
+                          @for (gov of filteredGovernorates(); track gov.id) {
+                            <button type="button" 
+                                    (click)="selectGovernorate(gov)"
+                                    (mouseenter)="hoverGovernorate(gov)"
+                                    [class.bg-[#0a8f96]/10]="activeGov()?.id === gov.id"
+                                    [class.text-[#0a8f96]]="activeGov()?.id === gov.id"
+                                    [class.font-semibold]="activeGov()?.id === gov.id"
+                                    [class.font-medium]="activeGov()?.id !== gov.id"
+                                    class="w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 group ltr:text-left rtl:text-right hover:bg-slate-50 dark:hover:bg-slate-800/40 relative">
+                              
+                              <!-- Selected Governorate Bar Indicator -->
+                              @if (activeGov()?.id === gov.id) {
+                                <div class="absolute top-1/2 -translate-y-1/2 w-1 h-5 bg-[#0a8f96] rounded-full ltr:left-1 rtl:right-1"></div>
+                              }
+                              
+                              <span class="ltr:pl-2 rtl:pr-2 text-sm">{{ translate.currentLang === 'ar' ? gov.nameAr : gov.nameEn }}</span>
+                              
+                              <svg class="w-3.5 h-3.5 text-slate-300 dark:text-slate-600 group-hover:text-[#0a8f96] transition-all duration-200 rtl:rotate-180 group-hover:translate-x-1 rtl:group-hover:-translate-x-1" 
+                                   fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/>
+                              </svg>
+                            </button>
+                          }
+                          @if (filteredGovernorates().length === 0) {
+                            <div class="px-6 py-8 text-center text-xs text-slate-400 dark:text-slate-500 font-medium">
+                              {{ 'COMMON.NO_RESULTS' | translate }}
+                            </div>
+                          }
+                        </div>
                       </div>
 
                       <!-- Column 2: Cities of Selected Governorate -->
-                      <div class="w-1/2 overflow-y-auto custom-scrollbar py-4 bg-slate-50/50">
-                        <div class="px-6 py-2 mb-2 text-[10px] font-black text-gray-400 uppercase tracking-widest">{{ 'PROPERTY_LIST.LABEL_CITY' | translate }}</div>
+                      <div class="w-1/2 overflow-y-auto custom-scrollbar py-4 px-2 bg-slate-50/30 dark:bg-slate-900/10">
+                        <div class="px-4 py-2 mb-2 flex items-center gap-2 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+                          <svg class="w-3.5 h-3.5 text-[#0a8f96]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                          </svg>
+                          <span>{{ 'PROPERTY_LIST.LABEL_CITY' | translate }}</span>
+                        </div>
+                        
                         @if (activeGov(); as gov) {
-                          <!-- All Cities option -->
-                          <button type="button"
-                                  (click)="selectCityOfGov({ id: '', nameAr: '', nameEn: '' })"
-                                  class="w-full flex items-center px-6 py-3.5 hover:bg-[#0a8f96]/5 text-[#0a8f96] transition-all ltr:text-left rtl:text-right">
-                            <div class="w-1.5 h-1.5 rounded-full bg-[#0a8f96] mr-2 rtl:ml-2 rtl:mr-0"></div>
-                            <span>{{ 'HOME.ALL_CITIES' | translate }}</span>
-                          </button>
-                          
-                          @for (city of gov.cities; track city.id) {
-                            <button type="button" 
-                                    (click)="selectCityOfGov(city)"
-                                    class="w-full flex items-center px-6 py-3.5 hover:bg-[#0a8f96]/5 transition-all text-gray-700 ltr:text-left rtl:text-right">
-                              <span>{{ translate.currentLang === 'ar' ? city.nameAr : city.nameEn }}</span>
+                          <div class="flex flex-col gap-0.5">
+                            <!-- All Cities option -->
+                            @let isAllCitiesSelected = !searchCity || searchCity === '';
+                            <button type="button"
+                                    (click)="selectCityOfGov({ id: '', nameAr: '', nameEn: '' })"
+                                    [class.bg-[#0a8f96]/10]="isAllCitiesSelected"
+                                    [class.text-[#0a8f96]]="isAllCitiesSelected"
+                                    [class.font-semibold]="isAllCitiesSelected"
+                                    [class.font-medium]="!isAllCitiesSelected"
+                                    class="w-full flex items-center justify-between px-4 py-3 rounded-xl hover:bg-[#0a8f96]/5 dark:hover:bg-[#0a8f96]/5 transition-all duration-200 text-sm ltr:text-left rtl:text-right">
+                              <span class="flex items-center gap-2">
+                                <span class="w-1.5 h-1.5 rounded-full transition-all duration-200"
+                                      [class.bg-[#0a8f96]]="isAllCitiesSelected"
+                                      [class.bg-slate-300]="!isAllCitiesSelected"
+                                      [class.dark:bg-slate-600]="!isAllCitiesSelected"></span>
+                                <span>{{ 'HOME.ALL_CITIES' | translate }}</span>
+                              </span>
+                              @if (isAllCitiesSelected) {
+                                <svg class="w-4 h-4 text-[#0a8f96]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                                </svg>
+                              }
                             </button>
-                          }
+                            
+                            @for (city of gov.cities; track city.id) {
+                              @let isCitySelected = searchCity === city.id;
+                              <button type="button" 
+                                      (click)="selectCityOfGov(city)"
+                                      [class.bg-[#0a8f96]/10]="isCitySelected"
+                                      [class.text-[#0a8f96]]="isCitySelected"
+                                      [class.font-semibold]="isCitySelected"
+                                      [class.font-medium]="!isCitySelected"
+                                      class="w-full flex items-center justify-between px-4 py-3 rounded-xl hover:bg-[#0a8f96]/5 dark:hover:bg-[#0a8f96]/5 transition-all duration-200 text-slate-700 dark:text-slate-300 text-sm ltr:text-left rtl:text-right">
+                                <span class="flex items-center gap-2">
+                                  <span class="w-1.5 h-1.5 rounded-full transition-all duration-200"
+                                        [class.bg-[#0a8f96]]="isCitySelected"
+                                        [class.bg-transparent]="!isCitySelected"></span>
+                                  <span>{{ translate.currentLang === 'ar' ? city.nameAr : city.nameEn }}</span>
+                                </span>
+                                @if (isCitySelected) {
+                                  <svg class="w-4 h-4 text-[#0a8f96]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                                  </svg>
+                                }
+                              </button>
+                            }
+                          </div>
                         } @else {
-                          <div class="h-full flex items-center justify-center text-xs text-gray-400 font-bold px-6 py-8">
+                          <div class="h-full flex items-center justify-center text-xs text-slate-400 dark:text-slate-500 font-semibold px-6 py-8">
                             {{ translate.currentLang === 'ar' ? 'اختر محافظة أولاً' : 'Select a governorate first' }}
                           </div>
                         }

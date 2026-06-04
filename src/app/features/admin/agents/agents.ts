@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, inject } from '@angular/core';
+import { Component, OnInit, signal, inject, computed } from '@angular/core';
 import { DecimalPipe, CommonModule } from '@angular/common';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
@@ -40,7 +40,7 @@ import { AdminService } from '../services/admin.service';
             <span class="badge-trend badge-trend-up">{{ 'ADMIN.AGENTS.STATS.TREND_TOTAL' | translate }}</span>
           </div>
           <p class="text-[11px] font-black text-gray-400 uppercase tracking-wider mb-1">{{ 'ADMIN.AGENTS.STATS.TOTAL' | translate }}</p>
-          <p class="text-3xl font-black text-gray-900 tabular-nums">{{ agents().length }}</p>
+          <p class="text-3xl font-black text-gray-900 tabular-nums">{{ filteredAgents().length }}</p>
         </div>
 
         <!-- Verified Agents -->
@@ -99,7 +99,7 @@ import { AdminService } from '../services/admin.service';
               </tr>
             </thead>
             <tbody>
-              @for (agent of agents(); track agent.userId; let i = $index) {
+              @for (agent of filteredAgents(); track agent.userId; let i = $index) {
                 <tr class="group">
                   <td class="ltr:text-left rtl:text-right">
                     <div class="flex items-center gap-4">
@@ -162,7 +162,7 @@ import { AdminService } from '../services/admin.service';
           <!-- Pagination -->
           <div class="p-8 border-t border-gray-50 flex items-center justify-between bg-white">
             <p class="text-xs font-bold text-gray-400">
-              {{ 'ADMIN.AGENTS.PAGINATION_SHOW' | translate:{count: agents().length} }}
+              {{ 'ADMIN.AGENTS.PAGINATION_SHOW' | translate:{count: filteredAgents().length} }}
             </p>
             <div class="flex items-center gap-1">
               <button class="pagination-modern-item pagination-modern-inactive hover:bg-gray-50 rtl:rotate-180"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg></button>
@@ -178,10 +178,25 @@ import { AdminService } from '../services/admin.service';
 })
 export class AgentsComponent implements OnInit {
   agents = signal<AdminAgent[]>([]);
+  filteredAgents = computed(() => {
+    const term = this.adminService.globalSearchTerm()?.toLowerCase();
+    if (!term) return this.agents();
+    return this.agents().filter(a => 
+      (a.displayName?.toLowerCase() || '').includes(term) || 
+      (a.email?.toLowerCase() || '').includes(term) ||
+      (a.agencyName?.toLowerCase() || '').includes(term) ||
+      (a.licenseNumber?.toLowerCase() || '').includes(term)
+    );
+  });
   loading = signal(true);
-  verifiedAgentsCount = signal(0);
-  pendingAgentsCount = signal(0);
-  avgRating = signal(0);
+  verifiedAgentsCount = computed(() => this.filteredAgents().filter(a => a.isVerified).length);
+  pendingAgentsCount = computed(() => this.filteredAgents().filter(a => !a.isVerified).length);
+  avgRating = computed(() => {
+    const list = this.filteredAgents();
+    if (list.length === 0) return 0;
+    const total = list.reduce((acc, curr) => acc + (curr.rating || 0), 0);
+    return total / list.length;
+  });
 
   private adminService = inject(AdminService);
   private toast = inject(ToastService);
@@ -196,10 +211,6 @@ export class AgentsComponent implements OnInit {
     try {
       const res = await this.adminService.getAgents();
       this.agents.set(res);
-      this.verifiedAgentsCount.set(res.filter(a => a.isVerified).length);
-      this.pendingAgentsCount.set(res.filter(a => !a.isVerified).length);
-      const totalRating = res.reduce((acc, curr) => acc + (curr.rating || 0), 0);
-      this.avgRating.set(res.length > 0 ? totalRating / res.length : 0);
     } catch {
       this.toast.error(this.translate.instant('ADMIN.AGENTS.TOAST.LOAD_ERROR'));
     } finally {

@@ -5,4 +5,5 @@ export const environment = {
   googleClientId: '638341844344-jio69o71pdeg26fuar0qlb24i0eu6fnm.apps.googleusercontent.com',
   cloudinaryCloudName: 'dtyjzvfnk',
   cloudinaryUploadPreset: 'ml_default',
+  bookingServiceFeeRate: 0.025,
 };

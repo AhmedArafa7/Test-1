@@ -1,4 +1,5 @@
 import { Component, ElementRef, effect, inject, signal, viewChild } from '@angular/core';
+import { ConfirmService } from '../../../core/services/confirm.service';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -321,6 +322,7 @@ export class ChatbotComponent {
   originalImageFile: File | null = null;
 
   private translate = inject(TranslateService);
+  private confirmService = inject(ConfirmService);
   private mediaRecorder: MediaRecorder | null = null;
   private audioChunks: Blob[] = [];
   private selectedImageFile: File | null = null;
@@ -347,8 +349,15 @@ export class ChatbotComponent {
     this.send();
   }
 
-  clearHistory() {
-    if (confirm(this.translate.instant('AI.CHATBOT.CLEAR_CONFIRM'))) {
+  async clearHistory() {
+    const ok = await this.confirmService.ask({
+      title: this.translate.instant('COMMON.CONFIRM_CLEAR_TITLE'),
+      message: this.translate.instant('COMMON.CONFIRM_CLEAR_DESC'),
+      confirmText: this.translate.instant('COMMON.CONFIRM'),
+      cancelText: this.translate.instant('COMMON.CANCEL'),
+      variant: 'danger',
+    });
+    if (ok) {
       this.messages.set([]);
       localStorage.removeItem('baytology_chat_history');
       this.aiService.resetSession();
@@ -463,7 +472,9 @@ export class ChatbotComponent {
     this.showCropperModal.set(false);
     this.imageFile = undefined;
     this.croppedImageTemp = '';
-    this.clearImage();
+    if (!this.selectedFileUrl) {
+      this.clearImage();
+    }
   }
 
   clearImage() {
@@ -575,8 +586,9 @@ export class ChatbotComponent {
   }
 
   reopenEditor() {
-    if (this.originalImageFile) {
-      this.imageFile = this.originalImageFile;
+    const fileToLoad = this.selectedImageFile || this.originalImageFile;
+    if (fileToLoad) {
+      this.imageFile = fileToLoad;
       this.showCropperModal.set(true);
       this.activeEditorMode.set('crop');
     }

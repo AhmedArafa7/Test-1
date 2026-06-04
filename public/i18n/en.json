@@ -132,7 +132,13 @@
       "MESSAGE": "We couldn't find any information in this section at the moment."
     },
     "NO_RESULTS": "No results",
-    "PROPERTY": "Property"
+    "PROPERTY": "Property",
+    "CONFIRM": "Confirm",
+    "CONFIRM_TITLE": "Are you sure?",
+    "CONFIRM_DELETE_TITLE": "Confirm deletion",
+    "CONFIRM_DELETE_DESC": "Are you sure you want to delete? This action cannot be undone.",
+    "CONFIRM_CLEAR_TITLE": "Confirm clear",
+    "CONFIRM_CLEAR_DESC": "Are you sure you want to clear the entire conversation history?"
   },
   "HOME": {
     "BADGE": "🤖 AI-Powered Platform",
@@ -1071,7 +1077,7 @@
       "SUBMIT_REVIEW": "Submit Review",
       "FINANCIAL_TITLE": "Financial Summary",
       "TOUR_FEE": "Tour Booking Fee",
-      "COMMISSION": "Booking Commission ({{ rate }}%)",
+      "COMMISSION": "Service Fee ({{ rate }}%)",
       "PAYMENT_ID": "Payment ID",
       "TOTAL_PAID": "Total Amount Paid",
       "TOTAL_VALUE": "Total Value",
@@ -1117,7 +1123,19 @@
     "ACCEPT_BTN": "Accept Booking",
     "REVIEW_CANCEL_DETAILS": "Review Cancellation Details",
     "MESSAGE_AGENT": "Message Agent",
-    "NEW_BADGE": "New"
+    "NEW_BADGE": "New",
+    "SLOTS": {
+      "TITLE": "Choose an available viewing slot",
+      "MORNING": "Morning",
+      "AFTERNOON": "Afternoon",
+      "EVENING": "Evening",
+      "PAST": "Past",
+      "EMPTY": "No slots available on this day",
+      "SELECTED": "Selected slot",
+      "DURATION_HINT": "Viewing duration: 1 hour",
+      "REQUIRED": "Please select a viewing slot",
+      "BTN_SELECT": "Select this slot"
+    }
   },
   "CREATE": {
     "TITLE": "Book a Viewing",
@@ -1188,7 +1206,7 @@
     "SUBMIT_REVIEW": "Submit Review",
     "FINANCIAL_TITLE": "Financial Summary",
     "TOUR_FEE": "Tour Booking Fee",
-    "COMMISSION": "Booking Commission ({{ rate }}%)",
+    "COMMISSION": "Service Fee ({{ rate }}%)",
     "PAYMENT_ID": "Payment ID",
     "TOTAL_PAID": "Total Amount Paid",
     "TOTAL_VALUE": "Total Value",

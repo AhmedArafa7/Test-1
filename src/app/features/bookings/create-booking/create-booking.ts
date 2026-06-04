@@ -1,4 +1,5 @@
-import { Component, OnInit, signal, inject } from '@angular/core';
+import { Component, OnInit, signal, inject, computed } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -14,10 +15,17 @@ import { ProfileService } from '../../profile/services/profile.service';
 import { PropertyService } from '../../properties/services/property.service';
 import { BookingService } from '../services/booking.service';
 
+interface Slot {
+  id: string;
+  start: string;
+  end: string;
+  hour: number;
+}
+
 @Component({
   selector: 'app-create-booking',
   standalone: true,
-  imports: [FormsModule, RouterLink, LoadingSpinnerComponent, CurrencyEgpPipe, TranslateModule],
+  imports: [FormsModule, RouterLink, LoadingSpinnerComponent, CurrencyEgpPipe, TranslateModule, CommonModule],
   template: `
     <div class="min-h-screen bg-gradient-to-b from-[#f0f4f5] to-[#f8f9fa] font-sans py-20 px-6" dir="rtl">
       @if (loadingProperty()) {
@@ -65,14 +73,50 @@ import { BookingService } from '../services/booking.service';
                   </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                <div class="grid grid-cols-1 gap-8 mb-8">
                   <div>
                     <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">{{ 'BOOKINGS.TOUR_DATE' | translate }} <span class="text-red-500">*</span></label>
-                    <input type="date" [(ngModel)]="form.startDate" name="startDate" class="w-full bg-gray-50 border-transparent rounded-2xl px-6 py-4.5 text-sm font-bold focus:bg-white focus:border-[#0a8f96] outline-none transition-all cursor-pointer" [min]="minDate" required>
+                    <input type="date" [(ngModel)]="form.startDate" name="startDate" (ngModelChange)="onDateChange()" class="w-full bg-gray-50 border-transparent rounded-2xl px-6 py-4.5 text-sm font-bold focus:bg-white focus:border-[#0a8f96] outline-none transition-all cursor-pointer" [min]="minDate" required>
                   </div>
+
                   <div>
-                    <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">{{ 'BOOKINGS.TOUR_TIME' | translate }} <span class="text-red-500">*</span></label>
-                    <input type="time" [(ngModel)]="tourTime" name="tourTime" class="w-full bg-gray-50 border-transparent rounded-2xl px-6 py-4.5 text-sm font-bold focus:bg-white focus:border-[#0a8f96] outline-none transition-all cursor-pointer" required>
+                    <div class="flex items-center justify-between mb-4">
+                      <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest">{{ 'BOOKINGS.SLOTS.TITLE' | translate }} <span class="text-red-500">*</span></label>
+                      <span class="text-[10px] font-bold text-gray-400">{{ 'BOOKINGS.SLOTS.DURATION_HINT' | translate }}</span>
+                    </div>
+
+                    @if (groupedSlots().length === 0) {
+                      <div class="p-6 bg-gray-50 rounded-2xl text-center text-xs font-bold text-gray-500">
+                        {{ 'BOOKINGS.SLOTS.EMPTY' | translate }}
+                      </div>
+                    } @else {
+                      <div class="space-y-5">
+                        @for (group of groupedSlots(); track group.key) {
+                          <div>
+                            <p class="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2.5">{{ group.label | translate }}</p>
+                            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5">
+                              @for (slot of group.slots; track slot.id) {
+                                <button
+                                  type="button"
+                                  (click)="selectSlot(slot)"
+                                  [disabled]="isSlotPast(slot)"
+                                  [class]="getSlotClass(slot)"
+                                  [title]="isSlotPast(slot) ? ('BOOKINGS.SLOTS.PAST' | translate) : ('BOOKINGS.SLOTS.BTN_SELECT' | translate)">
+                                  <span class="text-sm font-black tracking-tight" dir="ltr">{{ slot.start }} – {{ slot.end }}</span>
+                                </button>
+                              }
+                            </div>
+                          </div>
+                        }
+                      </div>
+                    }
+
+                    @if (selectedSlot(); as s) {
+                      <div class="mt-4 p-3 bg-[#0a8f96]/5 border border-[#0a8f96]/20 rounded-xl flex items-center gap-2 text-xs font-bold text-[#0a8f96]">
+                        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                        <span>{{ 'BOOKINGS.SLOTS.SELECTED' | translate }}: <strong dir="ltr">{{ s.start }} – {{ s.end }}</strong></span>
+                      </div>
+                    }
                   </div>
                 </div>
 
@@ -102,7 +146,7 @@ import { BookingService } from '../services/booking.service';
                     <div>
                       <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">{{ 'BOOKINGS.CREATE.PHONE' | translate }} <span class="text-red-500">*</span></label>
                       <input type="tel" [(ngModel)]="form.payerPhone" name="payerPhone" class="w-full bg-gray-50 border-transparent rounded-2xl px-6 py-4.5 text-sm font-bold focus:bg-white focus:border-[#0a8f96] outline-none transition-all text-left" dir="ltr" placeholder="+20 1x xxxx xxxx" required>
-                    </div>
+                    </div> 
                   </div>
                 </div>
 
@@ -137,12 +181,20 @@ import { BookingService } from '../services/booking.service';
 
                 <div class="pt-6 border-t border-gray-50 space-y-4 ltr:text-left rtl:text-right">
                   <div class="flex justify-between items-center">
-                    <span class="text-xs font-bold text-gray-400 uppercase tracking-widest">{{ 'BOOKINGS.FEE_LABEL' | translate }}</span>
+                    <span class="text-xs font-bold text-gray-400 uppercase tracking-widest">{{ 'BOOKINGS.DETAIL.TOUR_FEE' | translate }}</span>
                     <span class="text-lg font-black text-gray-900">{{ 100 | currencyEgp }}</span>
                   </div>
                   <div class="flex justify-between items-center">
-                    <span class="text-xs font-bold text-gray-400 uppercase tracking-widest">{{ 'BOOKINGS.TOTAL_PRICE_LABEL' | translate }}</span>
-                    <span class="text-lg font-black text-[#0a8f96]">{{ property()!.price | currencyEgp }}</span>
+                    <span class="text-xs font-bold text-gray-400 uppercase tracking-widest">{{ 'BOOKINGS.DETAIL.COMMISSION' | translate:{ rate: (form.commissionRate * 100) | number:'1.0-2' } }}</span>
+                    <span class="text-lg font-black text-gray-900" dir="ltr">+{{ (100 * form.commissionRate) | currencyEgp:2 }}</span>
+                  </div>
+                  <div class="flex justify-between items-center pt-4 border-t border-gray-100">
+                    <span class="text-xs font-black text-gray-900 uppercase tracking-widest">{{ 'BOOKINGS.DETAIL.TOTAL_VALUE' | translate }}</span>
+                    <span class="text-xl font-black text-[#0a8f96]">{{ (100 + (100 * form.commissionRate)) | currencyEgp:2 }}</span>
+                  </div>
+                  <div class="flex justify-between items-center pt-2 border-t border-gray-50/50">
+                    <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{{ 'BOOKINGS.TOTAL_PRICE_LABEL' | translate }}</span>
+                    <span class="text-sm font-bold text-gray-500">{{ property()!.price | currencyEgp }}</span>
                   </div>
                 </div>
 
@@ -166,10 +218,75 @@ export class CreateBookingComponent implements OnInit {
   submitting = signal(false);
   bookingUnavailableMessage = signal<string | null>(null);
   oldBookingId = signal<string | null>(null);
-  tourTime = '';
   notes = '';
   minDate = new Date().toISOString().split('T')[0];
   private translate = inject(TranslateService);
+
+  // --- Slot Picker ---
+  // Predefined 1-hour slots from 9:00 to 21:00 (avoids silent duration assumption).
+  // User picks an explicit (start, end) range instead of a single time + hidden +1h logic.
+  readonly SLOT_START_HOUR = 9;
+  readonly SLOT_END_HOUR = 21;
+  readonly SLOT_DURATION_MIN = 60;
+
+  private slots = signal<Slot[]>([]);
+  selectedSlot = signal<Slot | null>(null);
+
+  onDateChange() {
+    this.selectedSlot.set(null);
+    this.slots.set(this.generateSlots());
+  }
+
+  private generateSlots(): Slot[] {
+    const out: Slot[] = [];
+    for (let h = this.SLOT_START_HOUR; h < this.SLOT_END_HOUR; h++) {
+      const start = `${h.toString().padStart(2, '0')}:00`;
+      const end = `${(h + 1).toString().padStart(2, '0')}:00`;
+      out.push({ id: `s${h}`, start, end, hour: h });
+    }
+    return out;
+  }
+
+  groupedSlots = computed<{ key: 'MORNING' | 'AFTERNOON' | 'EVENING'; label: string; slots: Slot[] }[]>(() => {
+    const all = this.slots();
+    const groups: { key: 'MORNING' | 'AFTERNOON' | 'EVENING'; label: string; slots: Slot[] }[] = [
+      { key: 'MORNING', label: 'BOOKINGS.SLOTS.MORNING', slots: [] },
+      { key: 'AFTERNOON', label: 'BOOKINGS.SLOTS.AFTERNOON', slots: [] },
+      { key: 'EVENING', label: 'BOOKINGS.SLOTS.EVENING', slots: [] },
+    ];
+    for (const s of all) {
+      if (s.hour < 12) groups[0].slots.push(s);
+      else if (s.hour < 18) groups[1].slots.push(s);
+      else groups[2].slots.push(s);
+    }
+    return groups.filter(g => g.slots.length > 0);
+  });
+
+  selectSlot(slot: Slot) {
+    if (this.isSlotPast(slot)) return;
+    this.selectedSlot.set(slot);
+  }
+
+  isSlotPast(slot: Slot): boolean {
+    if (!this.form.startDate) return false;
+    const [h, m] = slot.start.split(':').map(Number);
+    const slotDate = new Date(this.form.startDate);
+    slotDate.setHours(h, m, 0, 0);
+    return slotDate.getTime() <= Date.now();
+  }
+
+  getSlotClass(slot: Slot): string {
+    const isSelected = this.selectedSlot()?.id === slot.id;
+    const isPast = this.isSlotPast(slot);
+    const base = 'w-full px-3 py-2.5 rounded-xl border-2 transition-all flex items-center justify-center text-center';
+    if (isPast) {
+      return `${base} bg-gray-100 border-gray-100 text-gray-300 cursor-not-allowed line-through opacity-50`;
+    }
+    if (isSelected) {
+      return `${base} bg-[#0a8f96] border-[#0a8f96] text-white shadow-lg shadow-[#0a8f96]/20 scale-[0.98]`;
+    }
+    return `${base} bg-white border-gray-100 text-gray-700 hover:border-[#0a8f96]/40 hover:bg-[#0a8f96]/5 cursor-pointer active:scale-95`;
+  }
 
   // Localization Mappings
   // NOTE: These maps are static backend API value→Arabic-label mappings used as a
@@ -295,9 +412,15 @@ export class CreateBookingComponent implements OnInit {
 
     this.form.propertyId = propertyId;
 
+    // Initialize slot picker with default 1-hour slots
+    this.slots.set(this.generateSlots());
+
     try {
       const property = await this.propertyService.getById(propertyId);
       this.property.set(property);
+
+      // Use the fixed administrative service fee rate from environment config
+      this.form.commissionRate = environment.bookingServiceFeeRate ?? 0.025;
 
       if (!this.canBookProperty(property)) {
         this.bookingUnavailableMessage.set(this.translate.instant('BOOKINGS.MESSAGES.UNAVAILABLE'));
@@ -329,18 +452,23 @@ export class CreateBookingComponent implements OnInit {
       return;
     }
 
-    if (!this.form.startDate || !this.tourTime) {
+    if (!this.form.startDate) {
       this.toast.error(this.translate.instant('BOOKINGS.MESSAGES.REQUIRED_DATES'));
       return;
     }
 
-    const [hours, minutes] = this.tourTime.split(':').map(Number);
-    const startDate = new Date(this.form.startDate);
-    startDate.setHours(hours, minutes, 0, 0);
+    const slot = this.selectedSlot();
+    if (!slot) {
+      this.toast.error(this.translate.instant('BOOKINGS.SLOTS.REQUIRED'));
+      return;
+    }
 
-    // endDate = same day, 1 hour after start (for tour duration)
-    const endDate = new Date(startDate);
-    endDate.setHours(endDate.getHours() + 1);
+    const [startH, startM] = slot.start.split(':').map(Number);
+    const [endH, endM] = slot.end.split(':').map(Number);
+    const startDate = new Date(this.form.startDate);
+    startDate.setHours(startH, startM, 0, 0);
+    const endDate = new Date(this.form.startDate);
+    endDate.setHours(endH, endM, 0, 0);
 
     const payload: CreateBookingRequest = {
       ...this.form,
@@ -360,15 +488,15 @@ export class CreateBookingComponent implements OnInit {
       this.toast.success(this.translate.instant('BOOKINGS.MESSAGES.CREATE_SUCCESS'));
 
       if (response.redirectUrl) {
-        window.location.href = response.redirectUrl.startsWith('http') 
-          ? response.redirectUrl 
+        window.location.href = response.redirectUrl.startsWith('http')
+          ? response.redirectUrl
           : new URL(response.redirectUrl, environment.apiUrl).toString();
       } else {
         this.router.navigate(['/bookings', response.bookingId]);
       }
     } catch (e: any) {
       let errorMessage = this.translate.instant('BOOKINGS.MESSAGES.CREATE_ERROR');
-      
+
       if (e?.error?.detail) {
         errorMessage = e.error.detail;
       } else if (e?.error?.errors) {

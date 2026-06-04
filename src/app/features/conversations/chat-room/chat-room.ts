@@ -254,6 +254,7 @@ export class ChatRoomComponent implements OnInit, OnDestroy {
   ctx: CanvasRenderingContext2D | null = null;
   isDrawingState = false;
   originalImageFile: File | null = null;
+  selectedImageFile: File | null = null;
   showSoundSettings = signal(false);
   soundEnabled = signal(true);
   soundType = signal<'premium' | 'pop' | 'classic' | 'custom' | 'none'>('premium');
@@ -694,6 +695,21 @@ export class ChatRoomComponent implements OnInit, OnDestroy {
       this.cloudinaryService.uploadImage(fileToUpload as any).subscribe({
         next: (url) => {
           this.selectedFileUrl = url;
+          if (fileToUpload instanceof File) {
+            this.selectedImageFile = fileToUpload;
+          } else if (fileToUpload instanceof Blob) {
+            this.selectedImageFile = new File([fileToUpload], this.originalImageFile?.name || 'image.jpg', { type: fileToUpload.type || 'image/jpeg' });
+          } else if (typeof fileToUpload === 'string' && fileToUpload.startsWith('data:image')) {
+            const byteString = atob(fileToUpload.split(',')[1]);
+            const mimeString = fileToUpload.split(',')[0].split(':')[1].split(';')[0];
+            const ab = new ArrayBuffer(byteString.length);
+            const ia = new Uint8Array(ab);
+            for (let i = 0; i < byteString.length; i++) {
+              ia[i] = byteString.charCodeAt(i);
+            }
+            const blob = new Blob([ab], { type: mimeString });
+            this.selectedImageFile = new File([blob], this.originalImageFile?.name || 'image.jpg', { type: mimeString });
+          }
           this.toast.success('MESSAGES.UPLOAD_SUCCESS');
           this.loading.set(false);
           this.showCropperModal.set(false);
@@ -717,12 +733,15 @@ export class ChatRoomComponent implements OnInit, OnDestroy {
     this.imageFile = undefined;
     this.croppedImageTemp = '';
     this.clearFileInput();
-    this.clearImage();
+    if (!this.selectedFileUrl) {
+      this.clearImage();
+    }
   }
 
   clearImage() {
     this.selectedFileUrl = '';
     this.originalImageFile = null;
+    this.selectedImageFile = null;
     this.clearFileInput();
   }
 
@@ -831,8 +850,9 @@ export class ChatRoomComponent implements OnInit, OnDestroy {
   }
 
   reopenEditor() {
-    if (this.originalImageFile) {
-      this.imageFile = this.originalImageFile;
+    const fileToLoad = this.selectedImageFile || this.originalImageFile;
+    if (fileToLoad) {
+      this.imageFile = fileToLoad;
       this.showCropperModal.set(true);
       this.activeEditorMode.set('crop');
     }

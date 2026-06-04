@@ -1,4 +1,4 @@
-import { Component, signal, OnInit, inject } from '@angular/core';
+import { Component, signal, OnInit, inject, computed } from '@angular/core';
 import { DecimalPipe, CommonModule } from '@angular/common';
 import { LocalizedDatePipe } from '../../../shared/pipes/localized-date.pipe';
 import { AdminService } from '../services/admin.service';
@@ -95,7 +95,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
               </tr>
             </thead>
             <tbody>
-              @for (p of payments(); track p.id) {
+              @for (p of filteredPayments(); track p.id) {
                 <tr class="group">
                   <td class="ltr:text-left rtl:text-right">
                     <p class="text-gray-900 font-black text-xs truncate max-w-[180px]">{{ p.propertyTitle }}</p>
@@ -139,7 +139,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
           
           <!-- Pagination -->
           <div class="p-8 border-t border-gray-50 flex items-center justify-between bg-white">
-            <p class="text-xs font-bold text-gray-400">{{ 'ADMIN.PAYMENTS.PAGINATION_SHOW' | translate:{count: payments().length, total: totalCount()} }}</p>
+            <p class="text-xs font-bold text-gray-400">{{ 'ADMIN.PAYMENTS.PAGINATION_SHOW' | translate:{count: filteredPayments().length, total: totalCount()} }}</p>
             <div class="flex items-center gap-1">
               <button (click)="page() > 1 && loadPage(page() - 1)" [disabled]="page() === 1" class="pagination-modern-item ltr:rotate-180" [ngClass]="page() === 1 ? 'opacity-30 cursor-not-allowed' : 'pagination-modern-inactive hover:bg-gray-100'">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
@@ -224,6 +224,17 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 })
 export class PaymentsComponent implements OnInit {
   payments = signal<PaymentAdmin[]>([]);
+  filteredPayments = computed(() => {
+    const term = this.adminService.globalSearchTerm()?.toLowerCase();
+    if (!term) return this.payments();
+    return this.payments().filter(p => 
+      (p.propertyTitle?.toLowerCase() || '').includes(term) || 
+      (p.propertyId?.toLowerCase() || '').includes(term) ||
+      (p.purpose?.toLowerCase() || '').includes(term) ||
+      (p.status?.toLowerCase() || '').includes(term) ||
+      (p.amount.toString()).includes(term)
+    );
+  });
   loading = signal(true);
   page = signal(1);
   totalPages = signal(1);
@@ -231,10 +242,21 @@ export class PaymentsComponent implements OnInit {
   selectedPayment = signal<PaymentAdmin | null>(null);
 
   // Stats
-  totalRevenue = signal(0);
-  pendingCount = signal(0);
-  netProfit = signal(0);
-  successRate = signal(0);
+  totalRevenue = computed(() => {
+    const successful = this.filteredPayments().filter(i => i.status === 'Completed' || i.status === 'Escrow');
+    return successful.reduce((acc, curr) => acc + curr.amount, 0);
+  });
+  pendingCount = computed(() => this.filteredPayments().filter(i => i.status === 'Pending').length);
+  netProfit = computed(() => {
+    const successful = this.filteredPayments().filter(i => i.status === 'Completed' || i.status === 'Escrow');
+    return successful.reduce((acc, curr) => acc + curr.netAmount, 0);
+  });
+  successRate = computed(() => {
+    const list = this.filteredPayments();
+    if (list.length === 0) return 0;
+    const successful = list.filter(i => i.status === 'Completed' || i.status === 'Escrow');
+    return (successful.length / list.length) * 100;
+  });
 
   private adminService = inject(AdminService);
 
@@ -250,13 +272,6 @@ export class PaymentsComponent implements OnInit {
       this.payments.set(r.items);
       this.totalPages.set(r.totalPages);
       this.totalCount.set(r.totalCount);
-      
-      // Calculate stats from successful payments only (Completed + Escrow)
-      const successful = r.items.filter(i => i.status === 'Completed' || i.status === 'Escrow');
-      this.totalRevenue.set(successful.reduce((acc, curr) => acc + curr.amount, 0));
-      this.pendingCount.set(r.items.filter(i => i.status === 'Pending').length);
-      this.netProfit.set(successful.reduce((acc, curr) => acc + curr.netAmount, 0));
-      this.successRate.set(r.items.length > 0 ? (successful.length / r.items.length) * 100 : 0);
     } catch {
       this.payments.set([]);
     } finally {

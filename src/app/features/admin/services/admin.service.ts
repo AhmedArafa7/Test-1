@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
 import { UserSummary, AdminAgent, AuditLog, DomainEventLog, PaymentAdmin, RefundRequestAdmin, SearchRequestAdmin, RecommendationRequestAdmin, ToggleUserStatusRequest, AssignRoleRequest, ReviewRefundRequest } from '../../../core/models';
@@ -7,6 +7,7 @@ import { firstValueFrom } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class AdminService {
+  public globalSearchTerm = signal<string>('');
   private url = `${environment.apiUrl}/admin`;
 
   constructor(private http: HttpClient) {}

@@ -108,7 +108,7 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
             </thead>
             <tbody>
               @if (isDomainEvents()) {
-                @for (e of domainEvents(); track e.id) {
+                @for (e of filteredDomainEvents(); track e.id) {
                   <tr class="group">
                     <td class="ltr:text-left rtl:text-right">
                       <p class="text-gray-900 font-bold text-xs">{{ e.occurredOnUtc | localizedDate:'yyyy/M/d' }}</p>
@@ -137,7 +137,7 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
                   </tr>
                 }
               } @else {
-                @for (l of auditLogs(); track l.id) {
+                @for (l of filteredAuditLogs(); track l.id) {
                   <tr class="group">
                     <td class="ltr:text-left rtl:text-right">
                       <p class="text-gray-900 font-bold text-xs">{{ l.occurredOnUtc | localizedDate:'yyyy/M/d' }}</p>
@@ -175,7 +175,7 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
           <!-- Pagination -->
           <div class="p-8 border-t border-gray-50 flex items-center justify-between bg-white">
             <p class="text-xs font-bold text-gray-400">
-              {{ 'ADMIN.AUDIT_LOGS.PAGINATION_SHOW' | translate:{count: (isDomainEvents() ? domainEvents() : auditLogs()).length, total: totalCount()} }}
+              {{ 'ADMIN.AUDIT_LOGS.PAGINATION_SHOW' | translate:{count: (isDomainEvents() ? filteredDomainEvents() : filteredAuditLogs()).length, total: totalCount()} }}
             </p>
             <div class="flex items-center gap-1">
               <button 
@@ -278,6 +278,28 @@ export class AuditLogsComponent implements OnInit {
   loading = signal(true);
   auditLogs = signal<AuditLog[]>([]);
   domainEvents = signal<DomainEventLog[]>([]);
+  
+  filteredAuditLogs = computed(() => {
+    const term = this.adminService.globalSearchTerm()?.toLowerCase();
+    if (!term) return this.auditLogs();
+    return this.auditLogs().filter(l => 
+      (l.userId?.toLowerCase() || '').includes(term) ||
+      (l.entityName?.toLowerCase() || '').includes(term) ||
+      (l.action?.toLowerCase() || '').includes(term) ||
+      (l.entityId?.toLowerCase() || '').includes(term)
+    );
+  });
+
+  filteredDomainEvents = computed(() => {
+    const term = this.adminService.globalSearchTerm()?.toLowerCase();
+    if (!term) return this.domainEvents();
+    return this.domainEvents().filter(e => 
+      (e.eventType?.toLowerCase() || '').includes(term) ||
+      (e.aggregateType?.toLowerCase() || '').includes(term) ||
+      (e.aggregateId?.toLowerCase() || '').includes(term)
+    );
+  });
+
   totalCount = signal(0);
   page = signal(1);
   totalPages = signal(1);
@@ -286,9 +308,9 @@ export class AuditLogsComponent implements OnInit {
   isDomainEvents = signal(false);
 
   // Dynamic stats
-  updatesCount = signal(0);
-  deletionsCount = signal(0);
-  creationsCount = signal(0);
+  updatesCount = computed(() => this.filteredAuditLogs().filter(l => l.action === 'Updated').length);
+  deletionsCount = computed(() => this.filteredAuditLogs().filter(l => l.action === 'Deleted').length);
+  creationsCount = computed(() => this.filteredAuditLogs().filter(l => l.action === 'Created').length);
 
   private adminService = inject(AdminService);
   private route = inject(ActivatedRoute);
@@ -315,10 +337,6 @@ export class AuditLogsComponent implements OnInit {
         this.auditLogs.set(r.items);
         this.totalPages.set(r.totalPages);
         this.totalCount.set(r.totalCount || r.items.length);
-
-        this.updatesCount.set(r.items.filter(l => l.action === 'Updated').length);
-        this.creationsCount.set(r.items.filter(l => l.action === 'Created').length);
-        this.deletionsCount.set(r.items.filter(l => l.action === 'Deleted').length);
       }
     } catch (error) {
       console.error('Failed to load logs', error);
