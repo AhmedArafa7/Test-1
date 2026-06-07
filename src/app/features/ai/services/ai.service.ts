@@ -28,12 +28,14 @@ export interface AiSearchRequest { filters: Record<string, any>; }
 export interface AiSearchResponse { count: number; properties: any[]; }
 export interface AiRankRequest { properties: any[]; }
 export interface AiRankResponse { ranked: any[]; }
+export type { MatchedProperty as ImageSearchResultItem } from '../../../core/models';
+import { MatchedProperty } from '../../../core/models';
 export interface AiImageSearchResponse {
   count: number;
-  properties: any[];
+  properties: MatchedProperty[];
   message: string;
   engine: string;
-  query_image: { content_type: string; size_bytes: number };
+  query_image?: { content_type: string; size_bytes: number };
 }
 
 @Injectable({ providedIn: 'root' })

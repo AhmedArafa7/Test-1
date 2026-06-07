@@ -20,12 +20,7 @@ import { TranslateModule } from '@ngx-translate/core';
           <!-- Brand Section -->
           <div class="md:col-span-5">
             <a routerLink="/" class="flex items-center gap-2.5 mb-6 group">
-              <div class="w-10 h-10 bg-gradient-to-br from-[#0a8f96] to-[#076b70] rounded-xl flex items-center justify-center shadow-lg shadow-[#0a8f96]/30 transition-transform group-hover:rotate-6 group-hover:scale-110">
-                <span class="text-white text-xl font-black italic">B</span>
-              </div>
-              <span class="text-2xl font-black tracking-tight text-white group-hover:text-[#12b5bd] transition-colors">
-                {{ 'COMMON.APP_NAME' | translate }}
-              </span>
+              <img src="/Baytology_image.png" alt="Baytology" class="h-21 w-44 object-cover object-center transition-transform group-hover:scale-110 drop-shadow-md">
             </a>
             <p class="text-gray-400 text-sm leading-relaxed max-w-sm mb-8 font-medium">
               {{ 'FOOTER.DESC' | translate }}

@@ -1,4 +1,4 @@
-import { Component, ElementRef, effect, inject, signal, viewChild } from '@angular/core';
+import { Component, ElementRef, effect, HostListener, inject, signal, viewChild } from '@angular/core';
 import { ConfirmService } from '../../../core/services/confirm.service';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -10,6 +10,7 @@ import { AuthService } from '../../../core/auth/auth.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { ConversationService } from '../../conversations/services/conversation.service';
 import { AiChatResponse, AiImageSearchResponse, AiService } from '../services/ai.service';
+import { AudioPlayerComponent } from '../../../shared/components/audio-player/audio-player';
 
 type AiProperty = Record<string, any>;
 
@@ -25,7 +26,7 @@ interface ChatMessage {
 @Component({
   selector: 'app-chatbot',
   standalone: true,
-  imports: [FormsModule, RouterLink, TranslateModule, ImageCropperComponent],
+  imports: [FormsModule, RouterLink, TranslateModule, ImageCropperComponent, AudioPlayerComponent],
   template: `
     <div class="bg-white font-sans flex justify-center">
       <div class="w-full max-w-6xl flex flex-col h-[calc(100vh-72px)] border-x border-gray-100 shadow-sm">
@@ -36,9 +37,11 @@ interface ChatMessage {
           </button>
 
           <div class="flex items-center gap-3 ltr:flex-row rtl:flex-row-reverse">
-            <button (click)="clearHistory()" class="text-[10px] font-black text-gray-400 hover:text-red-500 uppercase tracking-widest transition-colors px-4 py-2 border border-gray-100 rounded-full hover:bg-red-50">
-              {{ 'AI.CHATBOT.CLEAR_BTN' | translate }}
-            </button>
+            @if (messages().length > 0) {
+              <button (click)="clearHistory()" class="text-[10px] font-black text-gray-400 hover:text-red-500 uppercase tracking-widest transition-colors px-4 py-2 border border-gray-100 rounded-full hover:bg-red-50">
+                {{ 'AI.CHATBOT.CLEAR_BTN' | translate }}
+              </button>
+            }
             <span class="text-xs font-black text-[#0a8f96] bg-[#0a8f96]/5 px-4 py-2 rounded-full uppercase tracking-widest">{{ 'AI.CHATBOT.TITLE' | translate }}</span>
           </div>
         </div>
@@ -75,15 +78,15 @@ interface ChatMessage {
 
           @for (msg of messages(); track $index) {
             <div [class]="msg.role === 'user' ? 'flex ltr:justify-start rtl:justify-end mb-6' : 'flex ltr:justify-end rtl:justify-start mb-6'">
-              <div [class]="msg.role === 'user' ? 'bg-gradient-to-br from-gray-900 to-gray-800 text-white rounded-[26px] ltr:rounded-bl-md rtl:rounded-br-md max-w-[85%]' : 'bg-white text-gray-900 rounded-[26px] ltr:rounded-br-md rtl:rounded-bl-md max-w-[95%] border border-gray-100/80'" class="px-5 md:px-7 py-5 shadow-sm">
+              <div [class]="msg.role === 'user' ? 'bg-[#f2f4f6] text-slate-800 rounded-[20px] ltr:rounded-bl-md rtl:rounded-br-md max-w-[85%] border border-slate-200/40' : 'bg-white text-slate-800 rounded-[20px] ltr:rounded-br-md rtl:rounded-bl-md max-w-[95%] border border-slate-100 shadow-sm'" class="px-5 md:px-7 py-5">
                 @if (msg.imageSrc) {
-                  <div [class.mb-3]="msg.content" class="max-w-xs rounded-2xl overflow-hidden border border-white/10 shadow-md bg-white">
+                  <div [class.mb-3]="msg.content" class="max-w-xs rounded-2xl overflow-hidden border border-white/10 shadow-md bg-white cursor-pointer hover:opacity-95 active:scale-[0.98] transition-all" (click)="openImagePreview(msg.imageSrc)">
                     <img [src]="msg.imageSrc" class="w-full h-auto object-cover max-h-60" [alt]="'AI.CHATBOT.IMAGE_ALT' | translate">
                   </div>
                 }
                 @if (msg.voiceUrl) {
-                  <div [class.mb-2]="msg.content" class="min-w-[240px] py-1 flex items-center justify-center">
-                    <audio [src]="msg.voiceUrl" controls class="w-full max-w-[260px] h-9 rounded-full"></audio>
+                  <div [class.mb-2]="msg.content">
+                    <app-audio-player [audioUrl]="msg.voiceUrl"></app-audio-player>
                   </div>
                 }
                 @if (msg.content) {
@@ -166,34 +169,73 @@ interface ChatMessage {
 
           <div class="max-w-4xl mx-auto flex items-center gap-3 md:gap-4 ltr:flex-row rtl:flex-row-reverse">
             <input #imageInput type="file" accept="image/*" class="hidden" (change)="onImageSelected($event)">
-            <button (click)="imageInput.click()" [disabled]="thinking()" class="w-12 h-12 bg-gray-50 hover:bg-gray-100 disabled:opacity-40 rounded-xl border border-gray-100 flex items-center justify-center transition-all" [title]="'AI.CHATBOT.UPLOAD_IMAGE_TITLE' | translate">
+            <button (click)="imageInput.click()" [disabled]="thinking() || isRecording()" class="w-12 h-12 bg-gray-50 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed rounded-xl border border-gray-100 flex items-center justify-center transition-all" [title]="'AI.CHATBOT.UPLOAD_IMAGE_TITLE' | translate">
               <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14M14 6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
             </button>
-            <button (click)="toggleRecording()" [disabled]="thinking()" [class]="isRecording() ? 'w-12 h-12 bg-red-500 hover:bg-red-600 rounded-xl border border-red-300 flex items-center justify-center transition-all animate-pulse' : 'w-12 h-12 bg-gray-50 hover:bg-gray-100 rounded-xl border border-gray-100 flex items-center justify-center transition-all'" [title]="'AI.CHATBOT.VOICE_TITLE' | translate">
-              <svg class="w-5 h-5" [class]="isRecording() ? 'text-white' : 'text-gray-600'" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 1v11m0 0a3 3 0 003-3V7a3 3 0 10-6 0v2a3 3 0 003 3zm0 0v4m-4 0h8"/></svg>
-            </button>
 
-            <input [(ngModel)]="input" (keydown.enter)="send()" class="flex-1 bg-gray-50/80 border border-gray-200/60 rounded-[22px] px-5 md:px-7 py-4 ltr:pe-14 rtl:ps-14 text-sm font-bold focus:bg-white focus:border-[#0a8f96]/30 focus:ring-4 focus:ring-[#0a8f96]/5 transition-all outline-none ltr:text-left rtl:text-right" [placeholder]="'AI.CHATBOT.INPUT_PLACEHOLDER' | translate" autofocus>
+            @if (isRecording()) {
+              <!-- Recording State: pulsing red dot + timer + cancel + stop buttons -->
+              <div class="flex-1 bg-red-50 border border-red-200 rounded-2xl px-4 py-2.5 flex items-center gap-3 shadow-inner">
+                <span class="w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse shrink-0"></span>
+                <span class="text-sm font-black text-red-600 tabular-nums shrink-0">
+                  {{ formatDuration(recordingDuration()) }}
+                </span>
+                <span class="text-xs font-bold text-red-500">
+                  {{ 'MESSAGES.RECORDING' | translate }}
+                </span>
+                <div class="flex items-center gap-1 ltr:ml-auto rtl:mr-auto">
+                  <button (click)="cancelRecording()" class="w-9 h-9 text-red-500 hover:text-red-700 bg-white hover:bg-red-50 border border-red-100 rounded-full flex items-center justify-center shadow-sm cursor-pointer transition-all active:scale-95" [title]="'MESSAGES.CANCEL' | translate">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M1 10h22M9 3h6a1 1 0 011 1v2H8V4a1 1 0 011-1z"/>
+                    </svg>
+                  </button>
+                  <button (click)="toggleRecording()" class="w-9 h-9 bg-[#0a8f96] hover:bg-[#076b70] text-white rounded-full flex items-center justify-center shadow-md shadow-[#0a8f96]/20 cursor-pointer transition-all active:scale-95" [title]="'MESSAGES.SEND_VOICE' | translate">
+                    <svg class="w-4 h-4 ltr:ml-0.5 rtl:mr-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7L8 5z"/></svg>
+                  </button>
+                </div>
+              </div>
+            } @else {
+              <!-- Idle State: input + voice mic + send -->
+              <input [(ngModel)]="input" (keydown.enter)="send()" class="flex-1 bg-gray-50/80 border border-gray-200/60 rounded-[22px] px-5 md:px-7 py-4 ltr:pe-14 rtl:ps-14 text-sm font-bold focus:bg-white focus:border-[#0a8f96]/30 focus:ring-4 focus:ring-[#0a8f96]/5 transition-all outline-none ltr:text-left rtl:text-right" [placeholder]="'AI.CHATBOT.INPUT_PLACEHOLDER' | translate" autofocus>
 
-            <button (click)="send()" [disabled]="(!input.trim() && !selectedFileUrl) || thinking()" class="w-13 h-13 min-w-13 min-h-13 ltr:rotate-0 rtl:rotate-180 bg-[#0a8f96] hover:bg-[#076b70] disabled:opacity-40 text-white rounded-[20px] flex items-center justify-center transition-all active:scale-90 shadow-lg shadow-[#0a8f96]/20">
-              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 12h14M12 5l7 7-7 7"/></svg>
-            </button>
+              <button (click)="toggleRecording()" [disabled]="thinking()" class="w-12 h-12 bg-gray-50 hover:bg-gray-100 disabled:opacity-40 rounded-xl border border-gray-100 flex items-center justify-center transition-all" [title]="'AI.CHATBOT.VOICE_TITLE' | translate">
+                <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 1v11m0 0a3 3 0 003-3V7a3 3 0 10-6 0v2a3 3 0 003 3zm0 0v4m-4 0h8"/></svg>
+              </button>
+
+              <button (click)="send()" [disabled]="(!input.trim() && !selectedFileUrl) || thinking()" class="w-13 h-13 min-w-13 min-h-13 ltr:rotate-0 rtl:rotate-180 bg-[#0a8f96] hover:bg-[#076b70] disabled:opacity-40 text-white rounded-[20px] flex items-center justify-center transition-all active:scale-90 shadow-lg shadow-[#0a8f96]/20">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 12h14M12 5l7 7-7 7"/></svg>
+              </button>
+            }
           </div>
           <p class="text-center text-[10px] font-black text-gray-300 uppercase tracking-widest mt-4">{{ 'AI.CHATBOT.DISCLAIMER' | translate }}</p>
         </div>
       </div>
     </div>
 
+    <!-- Image Lightbox Modal -->
+    @if (imagePreviewUrl()) {
+      <div class="fixed inset-0 z-[300] bg-gray-900/95 backdrop-blur-xl animate-in fade-in duration-200 flex items-center justify-center p-6 cursor-zoom-out" (click)="closeImagePreview()">
+        <button (click)="closeImagePreview()" class="absolute top-4 ltr:right-4 rtl:left-4 z-10 text-white/80 hover:text-white bg-black/30 hover:bg-black/50 backdrop-blur-md rounded-full w-11 h-11 flex items-center justify-center transition-all cursor-pointer">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+        <div class="bg-white p-2 rounded-[24px] shadow-2xl overflow-hidden ring-1 ring-white/20 cursor-default" (click)="$event.stopPropagation()">
+          <img [src]="imagePreviewUrl()" class="max-h-[80vh] w-auto rounded-[20px] object-contain shadow-inner bg-white" [alt]="'AI.CHATBOT.IMAGE_ALT' | translate">
+        </div>
+      </div>
+    }
+
     <!-- Cropper & Draw Editor Modal -->
     @if (showCropperModal()) {
-      <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 md:p-10 animate-in fade-in duration-200">
-        <div class="bg-white rounded-3xl w-full max-w-3xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+      <div class="fixed inset-0 z-[300] flex items-center justify-center bg-black/85 backdrop-blur-md p-4 md:p-8 animate-in fade-in duration-200" (click)="onModalBackdropClick($event)">
+        <div class="bg-white rounded-3xl w-full max-w-4xl overflow-hidden shadow-2xl flex flex-col max-h-[92vh]" (click)="$event.stopPropagation()">
           <!-- Header -->
           <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50/50 ltr:flex-row rtl:flex-row-reverse">
             <h3 class="font-extrabold text-slate-900 text-lg ltr:text-left rtl:text-right">{{ 'AI.CHATBOT.EDIT_IMAGE_TITLE' | translate }}</h3>
-            <button (click)="cancelCrop()" class="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-500 hover:text-red-500 hover:bg-red-50 transition-colors shadow-sm cursor-pointer">
+            <button (click)="cancelCrop()" class="w-9 h-9 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-500 hover:text-red-500 hover:bg-red-50 hover:border-red-200 transition-colors shadow-sm cursor-pointer">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
               </svg>
             </button>
           </div>
@@ -207,6 +249,9 @@ interface ChatMessage {
                       [class.text-[#0a8f96]]="activeEditorMode() === 'crop'"
                       [class.text-slate-500]="activeEditorMode() !== 'crop'"
                       class="px-6 py-2.5 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 border-none">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 4h18M3 4v16M21 4v16M3 20h18M8 9h8M8 15h5"/>
+                </svg>
                 {{ 'AI.CHATBOT.MODE_CROP' | translate }}
               </button>
               <button (click)="activeEditorMode.set('draw')" 
@@ -215,13 +260,16 @@ interface ChatMessage {
                       [class.text-[#0a8f96]]="activeEditorMode() === 'draw'"
                       [class.text-slate-500]="activeEditorMode() !== 'draw'"
                       class="px-6 py-2.5 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 border-none">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+                </svg>
                 {{ 'AI.CHATBOT.MODE_DRAW' | translate }}
               </button>
             </div>
           </div>
 
           <!-- Editor Area -->
-          <div class="flex-1 bg-slate-100 overflow-hidden relative flex flex-col items-center justify-center min-h-[350px] p-6">
+          <div class="flex-1 bg-slate-100 overflow-hidden relative flex flex-col items-center justify-center min-h-[400px] p-6">
             @if (activeEditorMode() === 'crop') {
               <image-cropper
                 [imageFile]="imageFile"
@@ -229,7 +277,7 @@ interface ChatMessage {
                 [imageQuality]="90"
                 format="jpeg"
                 (imageCropped)="imageCropped($event)"
-                class="max-h-[50vh] w-full rounded-2xl overflow-hidden shadow-sm">
+                class="max-h-[60vh] w-full rounded-2xl overflow-hidden shadow-sm">
               </image-cropper>
             } @else {
               <!-- Draw Mode Controls & Canvas -->
@@ -258,7 +306,7 @@ interface ChatMessage {
                 </div>
 
                 <!-- Canvas Drawing Box -->
-                <div class="bg-white border border-slate-200/60 rounded-3xl p-3 shadow-inner flex items-center justify-center w-full max-w-[620px] overflow-auto">
+                <div class="bg-white border border-slate-200/60 rounded-3xl p-3 shadow-inner flex items-center justify-center w-full max-w-[720px] overflow-auto">
                   <canvas #drawingCanvas 
                           (mousedown)="startDrawing($event)" 
                           (mousemove)="draw($event)" 
@@ -274,19 +322,26 @@ interface ChatMessage {
           </div>
 
           <!-- Footer / Actions -->
-          <div class="p-6 bg-white border-t border-slate-100 flex items-center justify-between gap-3 ltr:flex-row rtl:flex-row-reverse">
+          <div class="p-5 bg-white border-t border-slate-100 flex items-center justify-between gap-3 ltr:flex-row rtl:flex-row-reverse">
             <!-- Reset Button on Left -->
-            <button (click)="resetToOriginal()" class="px-5 py-2.5 rounded-xl font-bold text-rose-600 bg-rose-50 hover:bg-rose-100 border border-rose-100 transition-colors cursor-pointer flex items-center gap-1.5">
-              <span>↩️</span>
+            <button (click)="resetToOriginal()" class="px-5 py-2.5 rounded-xl font-bold text-rose-600 bg-rose-50 hover:bg-rose-100 border border-rose-100 transition-colors cursor-pointer flex items-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+              </svg>
               <span>{{ 'AI.CHATBOT.RESET_BTN' | translate }}</span>
             </button>
 
             <!-- Action buttons on Right -->
             <div class="flex items-center gap-3">
-              <button (click)="cancelCrop()" class="px-6 py-2.5 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors cursor-pointer">{{ 'AI.CHATBOT.CANCEL_BTN' | translate }}</button>
+              <button (click)="cancelCrop()" class="px-6 py-2.5 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors cursor-pointer flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+                <span>{{ 'AI.CHATBOT.CANCEL_BTN' | translate }}</span>
+              </button>
               <button (click)="confirmCrop()" class="px-8 py-2.5 rounded-xl font-bold text-white bg-[#0a8f96] hover:bg-[#076b70] transition-colors shadow-lg shadow-[#0a8f96]/20 flex items-center gap-2 cursor-pointer">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
                 </svg>
                 <span>{{ 'AI.CHATBOT.APPLY_BTN' | translate }}</span>
               </button>
@@ -306,6 +361,8 @@ export class ChatbotComponent {
   chatContainer = viewChild<ElementRef>('chatContainer');
   imageInput = viewChild<ElementRef>('imageInput');
 
+  imagePreviewUrl = signal<string | null>(null);
+
   showCropperModal = signal(false);
   imageFile: File | undefined = undefined;
   croppedImageTemp: string = '';
@@ -314,6 +371,8 @@ export class ChatbotComponent {
 
   canvasRef = viewChild<ElementRef<HTMLCanvasElement>>('drawingCanvas');
   activeEditorMode = signal<'crop' | 'draw'>('crop');
+
+  recordingDuration = signal(0);
   drawingColor = '#ff4d4d';
   drawingLineWidth = 5;
   canvasElement: HTMLCanvasElement | null = null;
@@ -325,6 +384,7 @@ export class ChatbotComponent {
   private confirmService = inject(ConfirmService);
   private mediaRecorder: MediaRecorder | null = null;
   private audioChunks: Blob[] = [];
+  private recordingTimer: any = null;
   private selectedImageFile: File | null = null;
 
   constructor(
@@ -340,9 +400,38 @@ export class ChatbotComponent {
         this.initCanvas(ref.nativeElement);
       }
     });
+
+    effect(() => {
+      this.messages();
+      this.scroll();
+    });
   }
 
   goBack() { history.back(); }
+
+  openImagePreview(url: string) {
+    this.imagePreviewUrl.set(url);
+  }
+
+  closeImagePreview() {
+    this.imagePreviewUrl.set(null);
+  }
+
+  onModalBackdropClick(event: MouseEvent) {
+    if (event.target === event.currentTarget) {
+      this.cancelCrop();
+    }
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscapeKey() {
+    if (this.showCropperModal()) {
+      this.cancelCrop();
+    }
+    if (this.imagePreviewUrl()) {
+      this.closeImagePreview();
+    }
+  }
 
   quickAction(key: string) {
     this.input = this.translate.instant(key);
@@ -424,8 +513,8 @@ export class ChatbotComponent {
   }
 
   imageCropped(event: ImageCroppedEvent) {
-    this.croppedFile = event.blob || event.base64 || null;
-    this.croppedImageTemp = event.objectUrl || event.base64 || '';
+    this.croppedFile = event.blob || null;
+    this.croppedImageTemp = event.base64 || event.objectUrl || '';
   }
 
   confirmCrop() {
@@ -583,7 +672,7 @@ export class ChatbotComponent {
       this.croppedImageTemp = '';
       this.activeEditorMode.set('crop');
     }
-  }
+  } 
 
   reopenEditor() {
     const fileToLoad = this.selectedImageFile || this.originalImageFile;
@@ -619,9 +708,34 @@ export class ChatbotComponent {
 
       this.mediaRecorder.start();
       this.isRecording.set(true);
+      this.recordingDuration.set(0);
+      this.recordingTimer = setInterval(() => {
+        this.recordingDuration.update(d => d + 1);
+      }, 1000);
     } catch {
       this.addMessage({ role: 'assistant', content: this.translate.instant('AI.CHATBOT.MIC_PERMISSION_ERROR') });
     }
+  }
+
+  cancelRecording() {
+    if (this.mediaRecorder && this.mediaRecorder.state !== 'inactive') {
+      this.mediaRecorder.onstop = null as any;
+      this.mediaRecorder.stop();
+      this.mediaRecorder.stream?.getTracks().forEach(track => track.stop());
+    }
+    this.isRecording.set(false);
+    if (this.recordingTimer) {
+      clearInterval(this.recordingTimer);
+      this.recordingTimer = null;
+    }
+    this.recordingDuration.set(0);
+    this.audioChunks = [];
+  }
+
+  formatDuration(seconds: number): string {
+    const m = Math.floor(seconds / 60);
+    const s = Math.floor(seconds % 60);
+    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
   }
 
   async contactAgent(property: AiProperty) {
@@ -701,6 +815,10 @@ export class ChatbotComponent {
   private stopRecording() {
     this.mediaRecorder?.stop();
     this.isRecording.set(false);
+    if (this.recordingTimer) {
+      clearInterval(this.recordingTimer);
+      this.recordingTimer = null;
+    }
   }
 
   private async sendVoice(audioFile: File) {
@@ -864,6 +982,6 @@ export class ChatbotComponent {
     setTimeout(() => {
       const el = this.chatContainer()?.nativeElement;
       if (el) el.scrollTop = el.scrollHeight;
-    }, 50);
+    }, 100);
   }
 }

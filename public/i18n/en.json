@@ -107,6 +107,7 @@
     "FILTER": "Filter",
     "SAVE": "Save",
     "CANCEL": "Cancel",
+    "CLOSE": "Close",
     "DELETE": "Delete",
     "EDIT": "Edit",
     "VIEW_ALL": "View All",
@@ -138,7 +139,8 @@
     "CONFIRM_DELETE_TITLE": "Confirm deletion",
     "CONFIRM_DELETE_DESC": "Are you sure you want to delete? This action cannot be undone.",
     "CONFIRM_CLEAR_TITLE": "Confirm clear",
-    "CONFIRM_CLEAR_DESC": "Are you sure you want to clear the entire conversation history?"
+    "CONFIRM_CLEAR_DESC": "Are you sure you want to clear the entire conversation history?",
+    "LOCATION_SEPARATOR": ", "
   },
   "HOME": {
     "BADGE": "🤖 AI-Powered Platform",
@@ -196,7 +198,8 @@
       "REGISTER": "Create Account",
       "AI_SEARCH": "Try AI Search"
     },
-    "ALL_CITIES": "All Cities"
+    "ALL_CITIES": "All Cities",
+    "SELECT_GOVERNORATE_FIRST": "Select a governorate first"
   },
   "STATS": {
     "PROPERTIES": "Properties",
@@ -304,7 +307,12 @@
       "ERROR_FACEBOOK_SDK": "Facebook SDK is not loaded yet. Please try again.",
       "ERROR_FACEBOOK_LOAD": "Failed to load Facebook login.",
       "ERROR_FACEBOOK_CANCEL": "Facebook login was cancelled.",
-      "REMEMBER_ME": "Remember me on this browser"
+      "REMEMBER_ME": "Remember me on this browser",
+      "EMAIL_HINT": "Enter your email (e.g. user@example.com)",
+      "EMAIL_INVALID": "Invalid email — must contain @ and a domain",
+      "PASSWORD_MIN": "Password must be at least 6 characters",
+      "PASSWORD_HINT": "Minimum 6 characters",
+      "SAVE_DISABLED_HINT": "Complete email and password correctly to sign in"
     },
     "REGISTER": {
       "LEFT_TITLE": "Curated Spaces for a Better Life.",
@@ -340,7 +348,14 @@
       "RULE_MIN_LENGTH": "At least 8 characters",
       "RULE_UPPERCASE": "One uppercase letter (A-Z)",
       "RULE_NUMBER": "One number (0-9)",
-      "RULE_SPECIAL": "One special character (!@#$)"
+      "RULE_SPECIAL": "One special character (!@#$)",
+      "FIRST_NAME_MIN": "First name must be at least 2 characters",
+      "LAST_NAME_MIN": "Last name must be at least 2 characters",
+      "FIRST_NAME_HINT": "Minimum 2 characters",
+      "LAST_NAME_HINT": "Minimum 2 characters",
+      "PASSWORD_MIN": "Password must be at least 8 characters",
+      "REQUIRED": "This field is required",
+      "SAVE_DISABLED_HINT": "Complete all required fields correctly to create your account"
     },
     "FORGOT_PW": "Forgot Password",
     "RESET_PW": "Reset Password",
@@ -369,7 +384,8 @@
       "SUCCESS_MSG": "Reset link transmitted successfully!",
       "SUCCESS_DESC": "Please check your inbox at",
       "ISSUE_HINT": "Experiencing access issues?",
-      "CONTACT_SUPPORT": "Contact Concierge Security"
+      "CONTACT_SUPPORT": "Contact Concierge Security",
+      "SAVE_DISABLED_HINT": "Enter a valid email to send the reset link"
     },
     "RESET_PASSWORD": {
       "TITLE": "Reset Password",
@@ -705,10 +721,42 @@
     "EMOJI_CAT_HOME": "Properties",
     "EMOJI_CAT_NATURE": "Nature",
     "EMOJI_CAT_OBJECTS": "Symbols",
-    "VOICE_MESSAGE": "🎤 Voice message"
+    "VOICE_MESSAGE": "🎤 Voice message",
+    "SEND_VOICE": "Send voice message",
+    "MUTED_TITLE": "Notifications muted for this chat",
+    "MUTED_LABEL": "Muted",
+    "UNMUTE_NOTIF": "Enable notifications 🔔",
+    "TODAY": "Today",
+    "FOR_SALE": "For Sale",
+    "BEDROOMS_LABEL": "Bedrooms",
+    "BATHROOMS_LABEL": "Bathrooms",
+    "AREA_SQM_LABEL": "sqm",
+    "CLICK_TO_EDIT": "Click to edit or draw",
+    "CROP_MODE": "📐 Crop & Resize",
+    "DRAW_MODE": "🎨 Draw & Pen",
+    "BRUSH_THIN": "Thin",
+    "BRUSH_MEDIUM": "Medium",
+    "BRUSH_THICK": "Thick",
+    "RESET": "Reset to original",
+    "SOUND_SETTINGS_TITLE": "Notification sound settings",
+    "SOUND_ALERTS_LABEL": "Message sound alerts",
+    "CHOOSE_TONE": "Choose alert tone",
+    "TONE_CRYSTAL": "✨ Crystal",
+    "TONE_BUBBLE": "🎈 Bubble",
+    "TONE_CLASSIC": "🤖 Classic",
+    "TONE_CUSTOM": "🎵 Custom",
+    "MUTED_TOOLTIP": "Mute notifications",
+    "NEW_CHAT": "New conversation",
+    "EMAIL_LABEL": "Email",
+    "PHONE_LABEL": "Phone",
+    "INTERESTED_PROPERTY": "Property of interest",
+    "CALL_NOW": "Call now 📞",
+    "CLOSE_BTN": "Close"
   },
   "PROPERTY_DETAIL": {
     "LOADING": "Loading property...",
+    "PRIMARY_BADGE": "Primary",
+    "PRIMARY_BADGE_ARIA": "Primary image",
     "DETAILS_TITLE": "Details",
     "BEDROOMS": "Bedrooms",
     "BATHROOMS": "Bathrooms",
@@ -790,6 +838,13 @@
     "CURRENT_IMAGES": "Current image URLs",
     "ADD_IMAGES": "Add new image URLs (one per line)",
     "IMAGE_URLS": "Image URLs (one per line)",
+    "HINT": {
+      "TITLE": "Catchy title describing the property (min 3 characters)",
+      "PRICE": "Price in EGP — must be greater than zero",
+      "AREA": "Area in square meters — must be greater than zero",
+      "ADDRESS": "Detailed address (min 5 characters)"
+    },
+    "SAVE_DISABLED_HINT": "Complete all required fields correctly to continue",
     "IMAGE_HINT": "Existing images stay saved. Editing currently supports adding new image URLs only.",
     "SUBMIT_CREATE": "Create Property",
     "SUBMIT_UPDATE": "Update Property",
@@ -903,6 +958,16 @@
       "DELETE_IMAGE_CONFIRM": "Are you sure you want to remove this image from the property?",
       "DELETE_IMAGE_LOCAL_SUCCESS": "Image removed locally. Changes will be applied to the database on update.",
       "IMAGE_REQUIRED": "At least one image is required (upload files or add URLs).",
+      "IMAGE_DELETE_FAILED_LAST": "Cannot delete the last image. Please add another image first.",
+      "IMAGE_DELETE_FORBIDDEN": "You do not have permission to delete this image.",
+      "IMAGE_DELETE_NOT_FOUND": "This image no longer exists on the server.",
+      "IMAGE_ADD_INVALID": "Some image data is invalid (empty list, malformed URL, or URL exceeds 1000 characters).",
+      "IMAGE_ADD_NOT_FOUND": "This property no longer exists on the server.",
+      "IMAGES_SYNC_PARTIAL": "Property saved, but some image changes could not be applied. Please refresh and try again.",
+      "INVALID_FILE_TYPE": "Unsupported file type. Please upload JPG, PNG, or WEBP images only.",
+      "FILE_TOO_LARGE": "Image is too large (max {max} MB). Please compress or resize it.",
+      "URL_TOO_LONG": "Image URL is too long (max 1000 characters). Please use a shorter URL.",
+      "INVALID_IMAGE_URL": "Invalid image URL. Must start with http:// or https://.",
       "GEO_MIN_LENGTH": "Please type a location name of at least 3 characters.",
       "GEO_UPDATED": "Location identified and map updated successfully!",
       "GEO_NOT_FOUND": "Could not locate this place. Please type a known city or district.",
@@ -918,7 +983,15 @@
     "CURRENT_IMAGES_HINT": "🖼️ Existing uploaded images (click 🗑️ to remove)",
     "GEO_SEARCH_LABEL": "🔍 Smart geographic search (type area and press Enter or search)",
     "GEO_SEARCH_PLACEHOLDER": "e.g. Zamalek, New Cairo, Smouha...",
-    "GEO_SEARCH_BTN": "Geo Search"
+    "GEO_SEARCH_BTN": "Geo Search",
+    "NOTICE": {
+      "MISSING_TITLE": "Required fields in previous steps",
+      "MISSING_DESC": "Please complete these fields before continuing to the next step.",
+      "STEP_LABEL": "Step {step}",
+      "IMAGE_MISSING": "At least one image"
+    },
+    "STEP1_INCOMPLETE_TITLE": "Step 1 is incomplete",
+    "STEP1_INCOMPLETE_DESC": "Please fill in the price and area first, then come back here to upload images."
   },
   "VALIDATION": {
     "TITLE_REQ": "Title is required.",
@@ -955,6 +1028,8 @@
     "BROWSE_BTN": "Browse Properties",
     "LOADING": "Loading bookings...",
     "LOADING_PROPERTY": "Loading property details...",
+    "SAVE_DISABLED_HINT": "Complete date, time, and contact details to confirm the booking",
+    "START_DATE_HINT": "Select the day you want to view the property",
     "CREATE_TITLE": "Book a Viewing Tour",
     "CREATE_SUBTITLE": "You are about to schedule a visit for {{ title }}",
     "SCHEDULE_TITLE": "Schedule Appointments",
@@ -1033,7 +1108,11 @@
         "SUCCESS_REDIRECT": "Booking created! Redirecting to payment..."
       },
       "CONTACT_INFO_TITLE": "Contact Information",
-      "NAME_PLACEHOLDER": "Enter your full name"
+      "NAME_PLACEHOLDER": "Enter your full name",
+      "REQUIRED": "This field is required",
+      "NAME_MIN": "Name must be at least 2 characters",
+      "NAME_HINT": "Your full name as on your ID",
+      "PHONE_HINT": "11 digits (e.g. 01012345678)"
     },
     "DETAIL": {
       "TITLE": "Booking Details",
@@ -1075,6 +1154,9 @@
       "REVIEW_PLACEHOLDER": "Write your honest feedback about your interaction with the agent here...",
       "SUBMITTING": "Submitting...",
       "SUBMIT_REVIEW": "Submit Review",
+      "REVIEW_MIN": "Comment must be at least 3 characters",
+      "REVIEW_HINT": "Optional — share your experience to help others (max 500 characters)",
+      "REVIEW_SAVE_DISABLED_HINT": "Select a star rating and add a valid comment",
       "FINANCIAL_TITLE": "Financial Summary",
       "TOUR_FEE": "Tour Booking Fee",
       "COMMISSION": "Service Fee ({{ rate }}%)",
@@ -1584,8 +1666,21 @@
       "CROP_ERROR": "Failed to process image",
       "FIRST_NAME_MIN": "First name must be at least 2 characters",
       "LAST_NAME_MIN": "Last name must be at least 2 characters",
-      "COMMISSION_ERROR": "Commission rate must be between 0 and 100",
+      "FIRST_NAME_HINT": "Minimum 2 characters",
+      "LAST_NAME_HINT": "Minimum 2 characters",
+      "JOB_TITLE_HINT": "Optional — e.g. Engineer, Sales Manager",
+      "PHONE_HINT": "11 digits starting with 01 (e.g. 01012345678)",
+      "PHONE_INVALID": "Invalid phone — must be 11 digits starting with 01",
+      "AGENCY_HINT": "Optional — your agency name",
+      "LICENSE_HINT": "Optional — real estate license number",
+      "COMMISSION_HINT": "Commission rate between 0.1 and 99.9",
+      "COMMISSION_ERROR": "Commission rate must be between 0.1 and 99.9",
+      "BIO_HINT": "Brief summary of your expertise (max 500 characters)",
+      "SAVE": "Save changes",
+      "SAVE_DISABLED_HINT": "Complete all required fields correctly to enable save",
+      "REQUIRED": "This field is required",
       "UPLOAD_ERROR": "Failed to upload image, please try again",
+      "AVATAR_URL_TOO_LONG": "Avatar URL is too long (max 500 characters). Please use a shorter URL.",
       "SOUND_SECTION_TITLE": "Message sound alert settings",
       "ENABLE_SOUND": "Enable notification sound",
       "ENABLE_SOUND_DESC": "Play a sound when receiving a new message in the background",
@@ -2970,7 +3065,75 @@
     "GROUP_TODAY": "Today",
     "GROUP_YESTERDAY": "Yesterday",
     "GROUP_LAST_WEEK": "Last Week",
-    "GROUP_OLDER": "Older"
+    "GROUP_OLDER": "Older",
+    "GUIDE_BUTTON": "Notification Guide",
+    "GUIDE_BUTTON_ARIA": "Open notification guide",
+    "GUIDE_TITLE": "What do these notifications mean?",
+    "GUIDE_INTRO": "Baytology sends you 8 types of notifications. Each one helps you stay on top of conversations, bookings, and payments. Here is what they mean and how to benefit from them:",
+    "GUIDE_TYPES_TITLE": "Notification types",
+    "GUIDE_CLOSE": "Got it",
+    "GUIDE_TYPES": {
+      "NewMessage": {
+        "title": "New chat message",
+        "when": "Someone sends you a message in chat",
+        "icon": "message",
+        "explainer": "This notification appears when a buyer or agent sends you a message in the chat. You can open the conversation and reply instantly without opening the full site. All conversations are saved in your account and you can revisit them at any time."
+      },
+      "BookingConfirmed": {
+        "title": "Booking confirmed (auto)",
+        "when": "You paid and the system confirmed the booking",
+        "icon": "check",
+        "explainer": "This appears automatically the moment the bank or Paymob confirms the payment reached us. Without doing anything, your booking moves from awaiting payment to confirmed and the countdown to your viewing starts. This notification comes instantly from our secure payment system so you know the operation was successful."
+      },
+      "PaymentCompleted": {
+        "title": "Payment received (agent)",
+        "when": "A buyer paid for one of your properties",
+        "icon": "wallet",
+        "explainer": "When any buyer pays for a booking on one of your properties, you receive this notification in the same moment. From the dashboard you can open the booking details, see the buyer information, and reach out to schedule the viewing. The property status also updates automatically (for example, from available to reserved)."
+      },
+      "PaymentFailed": {
+        "title": "Payment failed",
+        "when": "Your card was declined or the bank rejected the payment",
+        "icon": "alert",
+        "explainer": "This appears if the card was declined, your balance was insufficient, or there was a connection issue with the bank. No money was charged from you - the operation fails before the actual charge. Tap the notification to return to the payment page and try again with a different card. If the problem persists, contact your card bank."
+      },
+      "BookingConfirmedManual": {
+        "title": "Booking confirmed (by agent)",
+        "when": "The agent approved your booking after payment",
+        "icon": "check",
+        "explainer": "This appears when the agent is the one who approves the booking after payment. This happens in special cases when the agent needs to review the request before confirming. The agent approves it from their account and you automatically receive this notification. Without doing anything, you can wait for the appointment details."
+      },
+      "BookingCancelledByAgent": {
+        "title": "Booking cancelled by agent",
+        "when": "The agent cancelled your booking",
+        "icon": "cancel",
+        "explainer": "This appears when the agent decides to cancel the booking. The reasons could be: the property was booked by someone else, there is an issue with the data, or for any other reason. Tap the notification to see the cancellation details, or you can search for alternative properties in the same area in one click."
+      },
+      "BookingCancelledByBuyer": {
+        "title": "Booking cancelled by buyer",
+        "when": "The buyer cancelled the booking (agent view)",
+        "icon": "cancel",
+        "explainer": "This appears instantly when the buyer cancels the booking. Good news: the property status updates automatically from reserved back to available, so if other people are asking, they will see the property is free. You do not need to do anything - the system adjusts everything on its own."
+      },
+      "NewBookingRequest": {
+        "title": "New booking request",
+        "when": "A buyer booked one of your properties and is paying",
+        "icon": "home",
+        "explainer": "When any buyer chooses a viewing time and pays the deposit, you receive this notification instantly. It means: someone serious is actually interested in the property. The property switches to tentatively reserved until the payment is confirmed. From here you can open the dashboard, see the buyer details, and start communicating with them."
+      },
+      "RefundApproved": {
+        "title": "Refund approved",
+        "when": "The admin approved your refund request",
+        "icon": "refund",
+        "explainer": "When the Baytology admin team reviews your refund request and approves it, this notification reaches you instantly. The money returns to the same original payment method within 5-10 business days depending on the bank. This notification is the official proof of approval - keep it."
+      },
+      "RefundRejected": {
+        "title": "Refund rejected",
+        "when": "The admin rejected your refund request",
+        "icon": "block",
+        "explainer": "When the Baytology admin team reviews your refund request and decides it does not meet the conditions. The details of the reason will follow on the details page. You can contact customer support from the same page if you feel there is a mistake, or read our terms to understand which cases are accepted."
+      }
+    }
   },
   "EMPTY": {
     "TITLE": "No Data Found",
@@ -3084,7 +3247,18 @@
     "VIEW_NILE": "Nile",
     "VIEW_BACK": "Back",
     "VIEW_ROAD": "Main Road",
-    "NOT_SPECIFIED": "Not Specified"
+    "NOT_SPECIFIED": "Not Specified",
+    "PRICE_SQM": "Price per Square Meter",
+    "AMENITIES_INTEGRATION": "Amenities Match Rate",
+    "AMENITIES_HIGH": "Rich in Amenities",
+    "AMENITIES_MED": "Moderate Amenities",
+    "AMENITIES_LOW": "Basic Amenities",
+    "WINNER_PRICE": "Best Price",
+    "WINNER_AREA": "Largest Area",
+    "WINNER_BEDS": "Most Bedrooms",
+    "WINNER_SQM": "Best Price/m²",
+    "CORE_SPECS": "Core Specifications",
+    "AMENITIES_SPECS": "Amenities & Additional Services"
   },
   "PROPERTIES": {
     "LIST": {
@@ -3130,16 +3304,47 @@
     "HELP_DESC": "Our support team is always available to answer your complex queries and provide technical assistance.",
     "HELP_CHAT_BTN": "Chat with AI Assistant",
     "HELP_EMAIL_BTN": "Email us",
-    "Q1": "How does the AI recommendation engine work?",
-    "A1": "Our system uses advanced algorithms to analyze your browsing history, properties you spent more time viewing, and your geographic and material preferences to deliver an accurate list of properties matching your personal taste.",
-    "Q2": "Can I contact agents directly?",
-    "A2": "Yes, the platform provides a built-in instant chat system that lets you communicate directly with agents, share images, and exchange property links to discuss details before any booking.",
-    "Q3": "How are property tour bookings confirmed?",
-    "A3": "Once you select a tour time, the agent receives an instant notification. Upon accepting, you'll get a confirmation message and a reminder on your phone before the appointment.",
-    "Q4": "What is the \"Smart Search\" feature?",
-    "A4": "It allows you to search using natural language — e.g., \"I want a spacious apartment in Cairo with Nile view at a fair price\" — and the search engine will understand your requirements precisely and show matching results.",
-    "Q5": "Are my personal data and profile photos secure?",
-    "A5": "Absolutely. We use SSL encryption and Cloudinary cloud services to secure all files and images, and we follow strict privacy protection standards."
+    "TABS": {
+      "BUYER": "Buyer",
+      "AGENT": "Agent",
+      "ADMIN": "Admin"
+    },
+    "BUYER": {
+      "Q1": "How does the AI recommendation engine work?",
+      "A1": "Our system uses advanced algorithms to analyze your browsing history, properties you spent more time viewing, and your geographic and material preferences to deliver an accurate list of properties matching your personal taste.",
+      "Q2": "Can I contact agents directly?",
+      "A2": "Yes, the platform provides a built-in instant chat system that lets you communicate directly with agents, share images, and exchange property links to discuss details before any booking.",
+      "Q3": "How are property tour bookings confirmed?",
+      "A3": "Once you select a tour time, the agent receives an instant notification. Upon accepting, you'll get a confirmation message and a reminder on your phone before the appointment.",
+      "Q4": "What is the \"Smart Search\" feature?",
+      "A4": "It allows you to search using natural language — e.g., \"I want a spacious apartment in Cairo with Nile view at a fair price\" — and the search engine will understand your requirements precisely and show matching results.",
+      "Q5": "How can I save properties to view them later?",
+      "A5": "You can save any property you like by clicking the \"Save Property\" button on the property details page. It will be immediately added to the \"Favorites\" list in your profile for easy access anytime."
+    },
+    "AGENT": {
+      "Q1": "How do I list a new property on Baytology?",
+      "A1": "You can easily add a property by clicking the \"Add Property\" button in the top navigation. Fill in basic details such as title, price, area, and amenities, then upload high-quality images and pin the property's location on the interactive map.",
+      "Q2": "How do I receive and accept property tour bookings?",
+      "A2": "When a buyer books a viewing for one of your properties, you'll get an instant notification in the app and an email alert. Navigate to the \"Bookings\" page to review the request, approve it, or propose a reschedule.",
+      "Q3": "Can I share multiple listings with a client in chat?",
+      "A3": "Absolutely. Our upgraded chat system includes a \"Share Properties\" tool directly within the chat window. You can search, select the relevant listings, and share them instantly as elegant interactive cards with your client.",
+      "Q4": "How does the platform verify my agent account?",
+      "A4": "Once you complete your profile and upload your real estate license credentials, our admin team reviews the documents. Upon successful validation, you will be granted a green \"Verified Agent\" badge to boost client trust.",
+      "Q5": "What is the commission policy for listings?",
+      "A5": "Listing properties on Baytology is completely free for agents. A nominal transaction commission is only applied upon successful sale or lease agreements finalized through the platform's escrow system, depending on your subscription tier."
+    },
+    "ADMIN": {
+      "Q1": "How do I verify a new real estate agent?",
+      "A1": "Navigate to the Admin Panel, select the \"Agents\" tab, and you will see a list of pending verification requests. You can examine their uploaded licensing documents and click \"Verify Agent\" to officially activate their verified status and grant the badge.",
+      "Q2": "How can I audit AI search queries and system logs?",
+      "A2": "The Admin Panel contains dedicated sections for AI Monitoring and System Audit Logs. You can inspect technical details, query-response correlations, execution times, outbox sync events, and review technical logs to troubleshoot system issues.",
+      "Q3": "How do I process payment refund requests?",
+      "A3": "When a booking is canceled, the request appears in the \"Refunds\" section of the Admin Panel. You can inspect the cancellation reasons, original payment references, and approve the refund to trigger the refund transaction through the payment gateway.",
+      "Q4": "What is the \"AI Recommendations\" dashboard?",
+      "A4": "It is an administrative tool to monitor the performance of our recommendation engine. It displays key metrics such as matching accuracy rates, predictive analytics precision, outbox synchronization events, and recommendation click-through rates.",
+      "Q5": "How can I monitor system performance and health?",
+      "A5": "The Admin Panel displays live System Health indicators, network latency stats, active SignalR chat connections, memory consumption trends, and Cloudinary media storage usage to ensure the system is running optimally."
+    }
   },
   "AUDIO_PLAYER": {
     "HIDE_TRANSCRIPT": "Hide transcript",

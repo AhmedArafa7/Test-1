@@ -103,9 +103,16 @@ import { buildPropertyPlaceholder, getPropertyImageUrl } from '../../../core/uti
               <div class="bg-white rounded-[24px] p-3 border border-slate-100 shadow-[0_10px_30px_rgba(0,0,0,0.01)] space-y-3">
                 <!-- Main top image -->
                 <div (click)="openLightbox(0)" class="relative h-[480px] rounded-[18px] overflow-hidden bg-slate-50 cursor-pointer group">
-                  <img [src]="getAllImages()[0] || getPlaceholder()" 
+                  <img [src]="getAllImages()[0] || getPlaceholder()"
                        (error)="onImageError($event, 0)"
                        class="w-full h-full object-cover group-hover:scale-102 transition-transform duration-700">
+                  @if (getImageMetadata()[0]?.isPrimary) {
+                    <span [attr.aria-label]="'PROPERTY_DETAIL.PRIMARY_BADGE_ARIA' | translate"
+                          class="absolute top-4 ltr:right-4 rtl:left-4 bg-[#0a8f96] text-white text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-md z-10">
+                      <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                      <span>{{ 'PROPERTY_DETAIL.PRIMARY_BADGE' | translate }}</span>
+                    </span>
+                  }
                   <button class="absolute bottom-4 left-4 bg-white/95 backdrop-blur-md text-slate-800 text-xs font-bold px-4 py-2 rounded-full flex items-center gap-1.5 shadow-md border border-slate-200/50 z-10 transition-transform group-hover:scale-105 active:scale-95 cursor-pointer">
                     <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"/></svg>
                     <span>{{ 'COMMON.VIEW_ALL' | translate }} ({{ getAllImages().length }})</span>
@@ -427,11 +434,19 @@ import { buildPropertyPlaceholder, getPropertyImageUrl } from '../../../core/uti
           <div class="w-full max-w-[800px] mx-auto overflow-x-auto py-4 px-2 scrollbar-none">
             <div class="flex justify-center gap-3">
               @for (img of getAllImages(); track $index) {
-                <button (click)="activeImageIndex.set($index)" 
-                        [class]="activeImageIndex() === $index ? 'border-2 border-[#0a8f96] scale-105 opacity-100 shadow-lg shadow-[#0a8f96]/20' : 'border border-white/10 opacity-50 hover:opacity-80'"
-                        class="w-20 h-14 md:w-24 md:h-16 rounded-xl overflow-hidden cursor-pointer transition-all duration-200 shrink-0 bg-slate-900">
-                  <img [src]="img" class="w-full h-full object-cover">
-                </button>
+                <div class="relative">
+                  <button (click)="activeImageIndex.set($index)"
+                          [class]="activeImageIndex() === $index ? 'border-2 border-[#0a8f96] scale-105 opacity-100 shadow-lg shadow-[#0a8f96]/20' : 'border border-white/10 opacity-50 hover:opacity-80'"
+                          class="w-20 h-14 md:w-24 md:h-16 rounded-xl overflow-hidden cursor-pointer transition-all duration-200 shrink-0 bg-slate-900">
+                    <img [src]="img" class="w-full h-full object-cover">
+                  </button>
+                  @if (getImageMetadata()[$index]?.isPrimary) {
+                    <span [attr.aria-label]="'PROPERTY_DETAIL.PRIMARY_BADGE_ARIA' | translate"
+                          class="absolute -top-1 ltr:-right-1 rtl:-left-1 w-4 h-4 bg-[#0a8f96] text-white rounded-full flex items-center justify-center shadow-md">
+                      <svg class="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                    </span>
+                  }
+                </div>
               }
             </div>
           </div>
@@ -563,6 +578,19 @@ export class PropertyDetailComponent implements OnInit {
     return this.localImages();
   }
 
+  getImageMetadata(): { url: string; isPrimary: boolean }[] {
+    const property = this.property();
+    if (!property) return [];
+    const serverImages = property.images || [];
+    if (serverImages.length > 0) {
+      return serverImages.map(img => ({
+        url: getPropertyImageUrl(img.url, property.title),
+        isPrimary: !!img.isPrimary,
+      }));
+    }
+    return this.localImages().map((url, idx) => ({ url, isPrimary: idx === 0 }));
+  }
+
   openLightbox(index: number) {
     this.activeImageIndex.set(index);
     this.isLightboxOpen.set(true);
@@ -617,39 +645,169 @@ export class PropertyDetailComponent implements OnInit {
 
   getBackRoute(): string {
     const prev = this.previousUrl();
-    if (!prev) return '/properties';
-    if (
-      prev.startsWith('/ai/search') ||
-      prev.startsWith('/ai/recommendations') ||
-      prev.startsWith('/bookings') ||
-      prev.startsWith('/conversations') ||
-      prev.startsWith('/admin') ||
-      prev === '/'
-    ) {
-      return prev;
-    }
-    return '/properties';
+    if (!prev) return '/';
+    const match = this.matchBreadcrumb(prev);
+    if (match) return match.route;
+    return '/';
   }
 
   getBackLabel(): string {
     const prev = this.previousUrl();
-    if (!prev) return 'NAV.BROWSE';
-    if (prev.startsWith('/ai/search')) return 'NAV.AI_SEARCH';
-    if (prev.startsWith('/ai/recommendations')) return 'NAV.RECOMMENDATIONS';
-    if (prev.startsWith('/bookings')) return 'NAV.BOOKINGS';
-    if (prev.startsWith('/conversations')) return 'NAV.MESSAGES';
-    if (prev.startsWith('/admin')) return 'NAV.ADMIN_PANEL';
-    if (prev === '/') return 'COMMON.HOME';
-    return 'NAV.BROWSE';
+    if (!prev) return 'COMMON.HOME';
+    const match = this.matchBreadcrumb(prev);
+    if (match) return match.label;
+    return 'COMMON.HOME';
   }
 
   shouldShowMiddleBreadcrumb(): boolean {
     const prev = this.previousUrl();
-    if (prev === '/' || prev.startsWith('/?')) {
-      return false;
-    }
+    if (!prev) return false;
+    if (prev === '/' || prev.startsWith('/?')) return false;
+    const match = this.matchBreadcrumb(prev);
+    if (!match) return false;
+    // Hide the middle crumb when it would duplicate the home crumb
+    if (match.route === '/' && match.label === 'COMMON.HOME') return false;
     return true;
   }
+
+  private matchBreadcrumb(prev: string): { route: string; label: string } | null {
+    if (prev === '/' || prev === '') {
+      return { route: '/', label: 'COMMON.HOME' };
+    }
+    for (const rule of this.breadcrumbRules) {
+      if (rule.match(prev)) {
+        return { route: rule.route(prev), label: rule.label };
+      }
+    }
+    return null;
+  }
+
+  private readonly breadcrumbRules: Array<{
+    match: (prev: string) => boolean;
+    route: (prev: string) => string;
+    label: string;
+  }> = [
+    // Home (root)
+    {
+      match: (p) => p === '/' || p === '',
+      route: () => '/',
+      label: 'COMMON.HOME',
+    },
+    // Edit property form (must come before generic /properties rule)
+    {
+      match: (p) => /^\/properties\/[^/]+\/edit(\?.*)?$/.test(p),
+      route: (p) => p,
+      label: 'NAV.EDIT_PROFILE',
+    },
+    // New property form (agent)
+    {
+      match: (p) => p.startsWith('/properties/new'),
+      route: (p) => p,
+      label: 'NAV.ADD_PROPERTY',
+    },
+    // Agent's properties list (filtered by agentUserId)
+    {
+      match: (p) => p.startsWith('/properties?agentUserId'),
+      route: (p) => p,
+      label: 'NAV.AGENTS',
+    },
+    // Generic property list
+    {
+      match: (p) => p === '/properties' || p.startsWith('/properties?'),
+      route: () => '/properties',
+      label: 'NAV.BROWSE',
+    },
+    // AI search
+    {
+      match: (p) => p.startsWith('/ai/search'),
+      route: (p) => p,
+      label: 'NAV.AI_SEARCH',
+    },
+    // AI recommendations
+    {
+      match: (p) => p.startsWith('/ai/recommendations'),
+      route: (p) => p,
+      label: 'NAV.RECOMMENDATIONS',
+    },
+    // AI chatbot
+    {
+      match: (p) => p.startsWith('/ai/chatbot'),
+      route: (p) => p,
+      label: 'NAV.ASSISTANT',
+    },
+    // Create booking
+    {
+      match: (p) => p.startsWith('/bookings/new'),
+      route: (p) => p,
+      label: 'CREATE.TITLE',
+    },
+    // Bookings list / detail
+    {
+      match: (p) => p.startsWith('/bookings'),
+      route: (p) => p,
+      label: 'NAV.BOOKINGS',
+    },
+    // Conversations (chat list / room)
+    {
+      match: (p) => p.startsWith('/conversations'),
+      route: (p) => p,
+      label: 'NAV.MESSAGES',
+    },
+    // Notifications
+    {
+      match: (p) => p.startsWith('/notifications'),
+      route: (p) => p,
+      label: 'NOTIFICATIONS.TITLE',
+    },
+    // Saved properties
+    {
+      match: (p) => p.startsWith('/saved'),
+      route: (p) => p,
+      label: 'NAV.SAVED',
+    },
+    // Settings
+    {
+      match: (p) => p.startsWith('/settings'),
+      route: (p) => p,
+      label: 'NAV.SETTINGS',
+    },
+    // Edit profile
+    {
+      match: (p) => p.startsWith('/profile/edit'),
+      route: (p) => p,
+      label: 'NAV.EDIT_PROFILE',
+    },
+    // User profile
+    {
+      match: (p) => p.startsWith('/profile'),
+      route: (p) => p,
+      label: 'NAV.PROFILE',
+    },
+    // Agent profile
+    {
+      match: (p) => p.startsWith('/agents/'),
+      route: (p) => p,
+      label: 'NAV.AGENTS',
+    },
+    // Admin (any sub-route)
+    {
+      match: (p) => p.startsWith('/admin'),
+      route: (p) => p,
+      label: 'NAV.ADMIN_PANEL',
+    },
+    // Auth pages — bounce back to home
+    {
+      match: (p) => p.startsWith('/auth/'),
+      route: () => '/',
+      label: 'COMMON.HOME',
+    },
+    // Static pages — bounce back to home
+    {
+      match: (p) => p === '/privacy' || p === '/faq' || p === '/about',
+      route: () => '/',
+      label: 'COMMON.HOME',
+    },
+  ];
 
   private destroyRef = inject(DestroyRef);
   private destroyed = false;

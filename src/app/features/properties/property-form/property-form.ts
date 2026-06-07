@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, inject, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, signal, computed, inject, ChangeDetectorRef } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -9,7 +9,6 @@ import { CreatePropertyRequest, FurnishingStatus, ListingType, PropertyType, Vie
 import { ToastService } from '../../../core/services/toast.service';
 import { ConfirmService } from '../../../core/services/confirm.service';
 import { LocalImageService } from '../../../core/services/local-image.service';
-import { UploadManagerService } from '../../../core/services/upload-manager.service';
 import { CloudinaryService } from '../../../core/services/cloudinary.service';
 import { compressImage } from '../../../core/utils/media';
 import { firstValueFrom } from 'rxjs';
@@ -84,36 +83,26 @@ import { firstValueFrom } from 'rxjs';
                   <div class="space-y-3">
                     <label class="block text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1 px-1">{{ 'PROPERTY_FORM.LABEL_TITLE' | translate }} <span class="text-red-500">*</span></label>
                     <input type="text" [(ngModel)]="form.title" name="title" id="title"
-                           (ngModelChange)="triggerDraftSave()"
+                           (ngModelChange)="triggerDraftSave(); markFieldTouched('title')"
+                           (blur)="markFieldTouched('title')"
+                           [class]="getFieldClasses('title', touchedFields()['title'], getFieldError('title')) + ' rounded-[28px] px-8 py-5 text-gray-900 placeholder:text-gray-300 focus:ring-4 focus:ring-[#0a8f96]/5 font-bold text-lg shadow-sm'"
                            [class.border-red-500]="validationErrors['title']"
-                           [placeholder]="'PROPERTY_FORM.PLACEHOLDER_TITLE' | translate"
-                           class="w-full bg-white border border-gray-100 rounded-[28px] px-8 py-5 text-gray-900 placeholder:text-gray-300 focus:border-[#0a8f96] focus:ring-4 focus:ring-[#0a8f96]/5 outline-none transition-all font-bold text-lg shadow-sm">
+                           [placeholder]="'PROPERTY_FORM.PLACEHOLDER_TITLE' | translate">
+                    <div class="flex items-center gap-1.5 text-[11px] font-bold tracking-wide px-1 mt-1">
+                      @if (touchedFields()['title'] && getFieldError('title')) {
+                        <svg class="w-3.5 h-3.5 text-red-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                        <span class="text-red-600">{{ 'PROPERTY_FORM.VALIDATION.TITLE_REQUIRED' | translate }}</span>
+                      } @else {
+                        <span class="text-gray-400">{{ 'PROPERTY_FORM.HINT.TITLE' | translate }}</span>
+                      }
+                    </div>
                   </div>
 
                   <!-- WYSIWYG Rich Text Editor -->
                   <div class="space-y-3">
                     <label class="block text-xs font-black text-gray-800 mb-3 tracking-wide">{{ 'PROPERTY_FORM.LABEL_DESC' | translate }} <span class="text-red-500">*</span></label>
                     <div class="border border-gray-100 rounded-3xl overflow-hidden shadow-sm bg-white">
-                      <!-- Toolbar -->
-                     <!-- <div class="bg-slate-50/50 border-b border-gray-100 px-4 py-2 flex items-center gap-2 flex-wrap">
-                        <button type="button" (click)="execEditorCommand('bold')" class="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm text-slate-700 hover:bg-slate-200 active:scale-95 transition-all cursor-pointer" title="عريض (Bold)">
-                          B
-                        </button>
-                        <button type="button" (click)="execEditorCommand('italic')" class="w-8 h-8 rounded-lg flex items-center justify-center italic font-bold text-sm text-slate-700 hover:bg-slate-200 active:scale-95 transition-all cursor-pointer" title="مائل (Italic)">
-                          I
-                        </button>
-                        <div class="w-px h-6 bg-slate-200"></div>
-                        <button type="button" (click)="execEditorCommand('insertUnorderedList')" class="px-3 h-8 rounded-lg flex items-center justify-center text-xs font-bold text-slate-700 hover:bg-slate-200 active:scale-95 transition-all cursor-pointer" title="قائمة نقطية (Bullet List)">
-                          • قائمة نقطية
-                        </button>
-                        <button type="button" (click)="execEditorCommand('insertOrderedList')" class="px-3 h-8 rounded-lg flex items-center justify-center text-xs font-bold text-slate-700 hover:bg-slate-200 active:scale-95 transition-all cursor-pointer" title="قائمة رقمية (Numbered List)">
-                          1. قائمة رقمية
-                        </button>
-                        <div class="w-px h-6 bg-slate-200"></div>
-                        <button type="button" (click)="execEditorCommand('removeFormat')" class="w-8 h-8 rounded-lg flex items-center justify-center text-red-500 hover:bg-red-50 active:scale-95 transition-all cursor-pointer" title="مسح التنسيق">
-                          x
-                        </button>
-                      </div> -->
+                      <!-- Toolbar (disabled: feature not yet enabled) -->
                       <!-- Editor Editable Area -->
                       <div #editorContent 
                            contenteditable="true"
@@ -152,11 +141,21 @@ import { firstValueFrom } from 'rxjs';
                       </label>
                       <div class="relative flex items-center">
                         <input type="number" [(ngModel)]="form.price" name="price" id="price"
+                               (ngModelChange)="markFieldTouched('price')"
+                               (blur)="markFieldTouched('price')"
+                               [class]="getFieldClasses('price', touchedFields()['price'], getFieldError('price')) + ' focus:ring-4 focus:ring-[#0a8f96]/5 rounded-2xl px-6 py-4 text-sm font-bold transition-all shadow-inner placeholder:text-gray-300'"
                                [class.border-red-500]="validationErrors['price']"
-                               class="w-full bg-gray-50 border border-transparent focus:bg-white focus:border-[#0a8f96] focus:ring-4 focus:ring-[#0a8f96]/5 outline-none rounded-2xl px-6 py-4 text-sm font-bold transition-all shadow-inner placeholder:text-gray-300"
                                [placeholder]="'PROPERTY_FORM.PLACEHOLDER_PRICE' | translate" min="1">
                         <span class="absolute ltr:right-6 rtl:left-6 text-xs font-extrabold text-[#0a8f96] pointer-events-none">{{ 'PROPERTY.CURRENCY' | translate }}</span>
                       </div>
+                      @if (touchedFields()['price'] && getFieldError('price')) {
+                        <div class="flex items-center gap-1.5 text-[11px] font-bold tracking-wide px-1 mt-1">
+                          <svg class="w-3.5 h-3.5 text-red-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                          <span class="text-red-600">{{ 'PROPERTY_FORM.VALIDATION.PRICE_POSITIVE' | translate }}</span>
+                        </div>
+                      } @else {
+                        <div class="text-[11px] font-bold tracking-wide text-gray-400 px-1 mt-1">{{ 'PROPERTY_FORM.HINT.PRICE' | translate }}</div>
+                      }
                     </div>
 
                     <div class="space-y-3">
@@ -165,11 +164,21 @@ import { firstValueFrom } from 'rxjs';
                       </label>
                       <div class="relative flex items-center">
                         <input type="number" [(ngModel)]="form.area" name="area" id="area"
+                               (ngModelChange)="markFieldTouched('area')"
+                               (blur)="markFieldTouched('area')"
+                               [class]="getFieldClasses('area', touchedFields()['area'], getFieldError('area')) + ' focus:ring-4 focus:ring-[#0a8f96]/5 rounded-2xl px-6 py-4 text-sm font-bold transition-all shadow-inner placeholder:text-gray-300'"
                                [class.border-red-500]="validationErrors['area']"
-                               class="w-full bg-gray-50 border border-transparent focus:bg-white focus:border-[#0a8f96] focus:ring-4 focus:ring-[#0a8f96]/5 outline-none rounded-2xl px-6 py-4 text-sm font-bold transition-all shadow-inner placeholder:text-gray-300"
                                [placeholder]="'PROPERTY_FORM.PLACEHOLDER_AREA' | translate" min="1">
                         <span class="absolute ltr:right-6 rtl:left-6 text-xs font-extrabold text-[#0a8f96] pointer-events-none">{{ 'PROPERTY.AREA_UNIT' | translate }}</span>
                       </div>
+                      @if (touchedFields()['area'] && getFieldError('area')) {
+                        <div class="flex items-center gap-1.5 text-[11px] font-bold tracking-wide px-1 mt-1">
+                          <svg class="w-3.5 h-3.5 text-red-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                          <span class="text-red-600">{{ 'PROPERTY_FORM.VALIDATION.AREA_POSITIVE' | translate }}</span>
+                        </div>
+                      } @else {
+                        <div class="text-[11px] font-bold tracking-wide text-gray-400 px-1 mt-1">{{ 'PROPERTY_FORM.HINT.AREA' | translate }}</div>
+                      }
                     </div>
                   </div>
 
@@ -201,6 +210,38 @@ import { firstValueFrom } from 'rxjs';
                   </div>
                 </div>
               </div>
+
+              <!-- Per-Stage Required-Field Notice (steps 2, 3, 4) -->
+              @if (currentStep() > 1) {
+                @let missingFields = getMissingRequiredFieldsInPreviousSteps();
+                @if (missingFields.length > 0) {
+                  <div class="mb-8 p-5 bg-amber-50 border border-amber-200 rounded-2xl animate-scale-in" dir="rtl">
+                    <div class="flex items-start gap-3">
+                      <svg class="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M5 19h14a2 2 0 001.84-2.75L13.74 4a2 2 0 00-3.48 0L3.16 16.25A2 2 0 005 19z"/>
+                      </svg>
+                      <div class="flex-1">
+                        <h4 class="text-sm font-black text-amber-800 mb-1">{{ 'PROPERTY_FORM.NOTICE.MISSING_TITLE' | translate }}</h4>
+                        <p class="text-xs text-amber-700 mb-3 leading-relaxed">{{ 'PROPERTY_FORM.NOTICE.MISSING_DESC' | translate }}</p>
+                        <div class="flex flex-wrap gap-2">
+                          @for (item of missingFields; track item.id) {
+                            <button type="button"
+                                    (click)="focusMissingField(item)"
+                                    [attr.aria-label]="'Go to ' + (item.labelKey | translate)"
+                                    class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-amber-300 rounded-lg text-xs font-bold text-amber-800 hover:bg-amber-100 hover:border-amber-400 transition-all active:scale-95 cursor-pointer">
+                              <span class="w-4 h-4 rounded-full bg-amber-200 text-amber-700 flex items-center justify-center text-[10px] font-black">{{ item.step }}</span>
+                              <span>{{ item.labelKey | translate }}</span>
+                              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                              </svg>
+                            </button>
+                          }
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                }
+              }
 
               <!-- Media Section -->
               <div [class.hidden]="currentStep() !== 2" class="bg-white rounded-[32px] p-8 shadow-sm border border-gray-100">
@@ -396,9 +437,11 @@ import { firstValueFrom } from 'rxjs';
                             <label class="block text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1 px-1">{{ 'PROPERTY_FORM.LABEL_CITY' | translate }} <span class="text-red-500">*</span></label>
                             <input type="text" [(ngModel)]="form.city" name="city" id="city"
                                    list="cities-form-list"
+                                   (ngModelChange)="markFieldTouched('city')"
+                                   (blur)="markFieldTouched('city')"
+                                   [class]="getFieldClasses('city', touchedFields()['city'], getFieldError('city')) + ' rounded-2xl px-6 py-4 text-gray-900 placeholder:text-gray-300 focus:ring-4 focus:ring-[#0a8f96]/5 font-bold shadow-sm'"
                                    [class.border-red-500]="validationErrors['city']"
-                                   [placeholder]="'PROPERTY_FORM.PLACEHOLDER_CITY' | translate"
-                                   class="w-full bg-white border border-gray-100 rounded-2xl px-6 py-4 text-gray-900 placeholder:text-gray-300 focus:border-[#0a8f96] focus:ring-4 focus:ring-[#0a8f96]/5 outline-none transition-all font-bold shadow-sm">
+                                   [placeholder]="'PROPERTY_FORM.PLACEHOLDER_CITY' | translate">
                             <datalist id="cities-form-list">
                               <option *ngFor="let city of cities" [value]="'CITIES.' + city | translate"></option>
                             </datalist>
@@ -407,9 +450,11 @@ import { firstValueFrom } from 'rxjs';
                             <label class="block text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1 px-1">{{ 'PROPERTY_FORM.LABEL_DISTRICT' | translate }} <span class="text-red-500">*</span></label>
                             <input type="text" [(ngModel)]="form.district" name="district" id="district"
                                    [attr.list]="getDistrictListId()"
+                                   (ngModelChange)="markFieldTouched('district')"
+                                   (blur)="markFieldTouched('district')"
+                                   [class]="getFieldClasses('district', touchedFields()['district'], getFieldError('district')) + ' rounded-2xl px-6 py-4 text-gray-900 placeholder:text-gray-300 focus:ring-4 focus:ring-[#0a8f96]/5 font-bold shadow-sm'"
                                    [class.border-red-500]="validationErrors['district']"
-                                   [placeholder]="'PROPERTY_FORM.PLACEHOLDER_DISTRICT' | translate"
-                                   class="w-full bg-white border border-gray-100 rounded-2xl px-6 py-4 text-gray-900 placeholder:text-gray-300 focus:border-[#0a8f96] focus:ring-4 focus:ring-[#0a8f96]/5 outline-none transition-all font-bold shadow-sm">
+                                   [placeholder]="'PROPERTY_FORM.PLACEHOLDER_DISTRICT' | translate">
                             
                             <datalist id="districts-cairo-form-list">
                               <option *ngFor="let d of districtsCairo" [value]="'DISTRICTS.' + d | translate"></option>
@@ -427,7 +472,20 @@ import { firstValueFrom } from 'rxjs';
                   </div>
                   <div class="md:col-span-2 space-y-3">
                     <label class="block text-xs font-black text-gray-800 mb-3 tracking-wide">{{ 'PROPERTY_FORM.LABEL_ADDRESS' | translate }} <span class="text-red-500">*</span></label>
-                    <input [(ngModel)]="form.addressLine" name="address" id="addressLine" [class.border-red-500]="validationErrors['addressLine']" class="w-full bg-gray-50 border-transparent rounded-2xl px-6 py-4.5 text-sm font-bold focus:bg-white focus:border-[#0a8f96] outline-none transition-all" [placeholder]="'PROPERTY_FORM.PLACEHOLDER_ADDRESS' | translate">
+                    <input [(ngModel)]="form.addressLine" name="address" id="addressLine"
+                           (ngModelChange)="markFieldTouched('addressLine')"
+                           (blur)="markFieldTouched('addressLine')"
+                           [class]="getFieldClasses('addressLine', touchedFields()['addressLine'], getFieldError('addressLine')) + ' focus:ring-4 focus:ring-[#0a8f96]/5 rounded-2xl px-6 py-4.5 text-sm font-bold transition-all'"
+                           [class.border-red-500]="validationErrors['addressLine']"
+                           [placeholder]="'PROPERTY_FORM.PLACEHOLDER_ADDRESS' | translate">
+                    @if (touchedFields()['addressLine'] && getFieldError('addressLine')) {
+                      <div class="flex items-center gap-1.5 text-[11px] font-bold tracking-wide px-1 mt-1">
+                        <svg class="w-3.5 h-3.5 text-red-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                        <span class="text-red-600">{{ 'PROPERTY_FORM.VALIDATION.ADDRESS_REQUIRED' | translate }}</span>
+                      </div>
+                    } @else {
+                      <div class="text-[11px] font-bold tracking-wide text-gray-400 px-1 mt-1">{{ 'PROPERTY_FORM.HINT.ADDRESS' | translate }}</div>
+                    }
                   </div>
                 </div>
 
@@ -479,12 +537,28 @@ import { firstValueFrom } from 'rxjs';
               </div>
 
             <!-- Navigation Buttons -->
-            <div class="flex justify-between mt-8">
-              <button type="button" (click)="currentStep.set(currentStep() - 1)" [disabled]="currentStep() === 1" class="px-8 py-4 rounded-2xl bg-white border border-gray-200 text-gray-600 font-bold disabled:opacity-50">{{ 'PROPERTY_FORM.BTN_PREV' | translate }}</button>
-              @if (currentStep() < 4) {
-                <button type="button" (click)="currentStep.set(currentStep() + 1)" class="px-8 py-4 rounded-2xl bg-[#0a8f96] text-white font-bold">{{ 'PROPERTY_FORM.BTN_NEXT' | translate }}</button>
-              } @else {
-                <button type="submit" [disabled]="loading" class="px-8 py-4 rounded-2xl bg-[#0a8f96] text-white font-bold">{{ (isEdit() ? 'PROPERTY_FORM.BTN_SUBMIT_EDIT' : 'PROPERTY_FORM.BTN_SUBMIT_CREATE') | translate }}</button>
+            <div class="flex flex-col gap-2 mt-8">
+              <div class="flex justify-between">
+                <button type="button" (click)="currentStep.set(currentStep() - 1)" [disabled]="currentStep() === 1" class="px-8 py-4 rounded-2xl bg-white border border-gray-200 text-gray-600 font-bold disabled:opacity-50">{{ 'PROPERTY_FORM.BTN_PREV' | translate }}</button>
+                @if (currentStep() < 4) {
+                  <button type="button" (click)="onNextClick()" [disabled]="!isCurrentStepValid()"
+                          [title]="!isCurrentStepValid() ? ('PROPERTY_FORM.SAVE_DISABLED_HINT' | translate) : ''"
+                          [class]="!isCurrentStepValid() ? 'px-8 py-4 rounded-2xl bg-gray-200 text-gray-400 font-bold cursor-not-allowed' : 'px-8 py-4 rounded-2xl bg-[#0a8f96] hover:bg-[#076b70] text-white font-bold transition-all'">
+                    {{ 'PROPERTY_FORM.BTN_NEXT' | translate }}
+                  </button>
+                } @else {
+                  <button type="submit" [disabled]="loading || !isFormValid()" (click)="markAllFieldsTouched()"
+                          [title]="!isFormValid() ? ('PROPERTY_FORM.SAVE_DISABLED_HINT' | translate) : ''"
+                          [class]="(loading || !isFormValid()) ? 'px-8 py-4 rounded-2xl bg-gray-200 text-gray-400 font-bold cursor-not-allowed' : 'px-8 py-4 rounded-2xl bg-[#0a8f96] hover:bg-[#076b70] text-white font-bold transition-all'">
+                    {{ (isEdit() ? 'PROPERTY_FORM.BTN_SUBMIT_EDIT' : 'PROPERTY_FORM.BTN_SUBMIT_CREATE') | translate }}
+                  </button>
+                }
+              </div>
+              @if (!isCurrentStepValid() && currentStep() < 4) {
+                <p class="text-[11px] font-bold text-amber-600 flex items-center gap-1.5 ltr:justify-end rtl:justify-start">
+                  <svg class="w-3.5 h-3.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                  <span>{{ 'PROPERTY_FORM.SAVE_DISABLED_HINT' | translate }}</span>
+                </p>
               }
             </div>
           </div>
@@ -497,7 +571,9 @@ import { firstValueFrom } from 'rxjs';
                   <h4 class="text-xl font-black mb-6 tracking-tight">{{ 'PROPERTY_FORM.SIDEBAR_TITLE' | translate }}</h4>
                   <p class="text-sm text-gray-400 mb-8 leading-relaxed font-medium">{{ 'PROPERTY_FORM.SIDEBAR_DESC' | translate }}</p>
                   
-                  <button type="submit" [disabled]="loading" class="w-full bg-[#0a8f96] hover:bg-[#076b70] disabled:opacity-50 text-white font-black py-4.5 rounded-[22px] transition-all flex items-center justify-center gap-3 active:scale-95 shadow-xl shadow-[#0a8f96]/20 mb-4 ltr:flex-row rtl:flex-row-reverse">
+                  <button type="submit" [disabled]="loading || !isFormValid()" (click)="markAllFieldsTouched()"
+                          [title]="!isFormValid() ? ('PROPERTY_FORM.SAVE_DISABLED_HINT' | translate) : ''"
+                          [class]="(loading || !isFormValid()) ? 'w-full bg-gray-200 text-gray-400 font-black py-4.5 rounded-[22px] flex items-center justify-center gap-3 cursor-not-allowed mb-4 ltr:flex-row rtl:flex-row-reverse' : 'w-full bg-[#0a8f96] hover:bg-[#076b70] text-white font-black py-4.5 rounded-[22px] transition-all flex items-center justify-center gap-3 active:scale-95 shadow-xl shadow-[#0a8f96]/20 mb-4 ltr:flex-row rtl:flex-row-reverse'">
                       @if (loading) { <div class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> }
                       {{ (isEdit() ? 'PROPERTY_FORM.BTN_SUBMIT_EDIT' : 'PROPERTY_FORM.BTN_SUBMIT_CREATE') | translate }}
                   </button>
@@ -598,8 +674,10 @@ export class PropertyFormComponent implements OnInit {
   loading = false;
   locating = false;
   validationErrors: { [key: string]: boolean } = {};
+  touchedFields = signal<{ [key: string]: boolean }>({});
   existingImageUrls = signal<string[]>([]);
   existingImages = signal<PropertyImage[]>([]);
+  deletedImageIds = signal<string[]>([]);
   propertyId = '';
   imageUrlsText = '';
   private translate = inject(TranslateService);
@@ -631,7 +709,6 @@ export class PropertyFormComponent implements OnInit {
     private toast: ToastService,
     private confirmService: ConfirmService,
     private localImageService: LocalImageService,
-    private uploadManager: UploadManagerService,
     private cloudinary: CloudinaryService,
     private sanitizer: DomSanitizer
   ) {}
@@ -727,20 +804,164 @@ export class PropertyFormComponent implements OnInit {
     return 'districts-form-list';
   }
 
+  getMissingRequiredFieldsInPreviousSteps(): { id: string; labelKey: string; step: number }[] {
+    const missing: { id: string; labelKey: string; step: number }[] = [];
+    const step = this.currentStep();
+    if (step <= 1) return missing;
+
+    if (!this.form.title || this.form.title.trim().length < 3) {
+      missing.push({ id: 'title', labelKey: 'PROPERTY_FORM.LABEL_TITLE', step: 1 });
+    }
+    if (!this.form.price || this.form.price <= 0) {
+      missing.push({ id: 'price', labelKey: 'PROPERTY_FORM.LABEL_PRICE', step: 1 });
+    }
+    if (!this.form.area || this.form.area <= 0) {
+      missing.push({ id: 'area', labelKey: 'PROPERTY_FORM.LABEL_AREA', step: 1 });
+    }
+
+    if (step > 2) {
+      const totalImages = (this.isEdit() ? this.existingImageUrls().length : 0) + this.localImages().length;
+      if (totalImages === 0) {
+        missing.push({ id: 'images', labelKey: 'PROPERTY_FORM.NOTICE.IMAGE_MISSING', step: 2 });
+      }
+    }
+
+    return missing;
+  }
+
+  // Per-step validity for the Next button + visual indicators
+  isStep1Valid(): boolean {
+    return !!(this.form.title && this.form.title.trim().length >= 3) &&
+           !!(this.form.price && this.form.price > 0) &&
+           !!(this.form.area && this.form.area > 0);
+  }
+  isStep2Valid(): boolean {
+    const totalImages = (this.isEdit() ? this.existingImageUrls().length : 0) + this.localImages().length;
+    return totalImages > 0;
+  }
+  isStep4Valid(): boolean {
+    return !!(this.form.city && this.form.city.trim().length >= 2) &&
+           !!(this.form.district && this.form.district.trim().length >= 2) &&
+           !!(this.form.addressLine && this.form.addressLine.trim().length >= 5);
+  }
+  isCurrentStepValid(): boolean {
+    const step = this.currentStep();
+    if (step === 1) return this.isStep1Valid();
+    if (step === 2) return true; // step 2: image upload only, not blocking
+    if (step === 3) return true; // step 3: amenities all optional
+    if (step === 4) return this.isStep4Valid();
+    return true;
+  }
+  isFormValid(): boolean {
+    return this.isStep1Valid() && this.isStep4Valid();
+  }
+
+  markFieldTouched(field: string) {
+    this.touchedFields.update(t => ({ ...t, [field]: true }));
+  }
+  markAllFieldsTouched() {
+    this.touchedFields.set({ title: true, price: true, area: true, city: true, district: true, addressLine: true });
+  }
+  onNextClick() {
+    // When advancing to a new step, mark all fields of the current step as touched
+    // so any errors are visible if user comes back.
+    this.markAllFieldsTouched();
+    this.currentStep.set(this.currentStep() + 1);
+  }
+  getFieldError(id: string): string | null {
+    if (id === 'title') {
+      if (!this.form.title || !this.form.title.trim()) return 'required';
+      if (this.form.title.trim().length < 3) return 'minLength';
+      return null;
+    }
+    if (id === 'price') {
+      if (!this.form.price || this.form.price <= 0) return 'required';
+      return null;
+    }
+    if (id === 'area') {
+      if (!this.form.area || this.form.area <= 0) return 'required';
+      return null;
+    }
+    if (id === 'city') {
+      if (!this.form.city || !this.form.city.trim()) return 'required';
+      if (this.form.city.trim().length < 2) return 'minLength';
+      return null;
+    }
+    if (id === 'district') {
+      if (!this.form.district || !this.form.district.trim()) return 'required';
+      if (this.form.district.trim().length < 2) return 'minLength';
+      return null;
+    }
+    if (id === 'addressLine') {
+      if (!this.form.addressLine || !this.form.addressLine.trim()) return 'required';
+      if (this.form.addressLine.trim().length < 5) return 'minLength';
+      return null;
+    }
+    return null;
+  }
+  getFieldClasses(id: string, touched: boolean, error: string | null): string {
+    const base = 'w-full bg-gray-50 border border-transparent rounded-2xl px-6 py-4.5 text-sm font-bold focus:bg-white focus:border-[#0a8f96] outline-none transition-all';
+    if (touched && error) return base + ' !border-red-300 !bg-red-50/30 focus:!border-red-400';
+    if (touched && !error) return base + ' !border-emerald-300';
+    return base;
+  }
+
+  focusMissingField(item: { id: string; step: number }) {
+    this.currentStep.set(item.step);
+    setTimeout(() => {
+      if (item.id === 'images') {
+        const fileInput = document.querySelector('input[type="file"]') as HTMLElement | null;
+        if (fileInput) {
+          fileInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        return;
+      }
+      const el = document.getElementById(item.id);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        (el as HTMLInputElement).focus();
+      }
+    }, 150);
+  }
+
   async onFileSelected(event: any) {
     const files = event.target.files as FileList;
     if (!files || files.length === 0) return;
 
+    if (this.currentStep() >= 2) {
+      const missing = this.getMissingRequiredFieldsInPreviousSteps().filter(m => m.step === 1);
+      if (missing.length > 0) {
+        this.toast.error(this.translate.instant('PROPERTY_FORM.STEP1_INCOMPLETE_TITLE'));
+        this.toast.info(this.translate.instant('PROPERTY_FORM.STEP1_INCOMPLETE_DESC'));
+        const fileInput = event.target as HTMLInputElement;
+        if (fileInput) fileInput.value = '';
+        this.focusMissingField({ id: missing[0].id, step: 1 });
+        return;
+      }
+    }
+
     this.loading = true;
     this.toast.info(this.translate.instant('PROPERTY_FORM.MESSAGES.COMPRESSING'));
-    
+
     const currentImages = [...this.localImages()];
-    
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    const maxSizeMb = 10;
+
     try {
+      let rejectedCount = 0;
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
-        if (!file.type.startsWith('image/')) continue;
-        
+        if (!allowedTypes.includes(file.type)) {
+          rejectedCount++;
+          this.toast.error(this.translate.instant('PROPERTY_FORM.MESSAGES.INVALID_FILE_TYPE'));
+          continue;
+        }
+        if (file.size > maxSizeMb * 1024 * 1024) {
+          rejectedCount++;
+          this.toast.error(this.translate.instant('PROPERTY_FORM.MESSAGES.FILE_TOO_LARGE', { max: maxSizeMb }));
+          continue;
+        }
+
         const reader = new FileReader();
         const dataUrl = await new Promise<string>((resolve) => {
           reader.onload = (e: any) => resolve(e.target.result);
@@ -770,6 +991,10 @@ export class PropertyFormComponent implements OnInit {
   }
 
   async removeExistingImage(image: PropertyImage) {
+    if (this.isLastRemainingImage()) {
+      this.toast.error(this.translate.instant('PROPERTY_FORM.MESSAGES.IMAGE_DELETE_FAILED_LAST'));
+      return;
+    }
     const ok = await this.confirmService.ask({
       title: this.translate.instant('COMMON.CONFIRM_DELETE_TITLE'),
       message: this.translate.instant('PROPERTY_FORM.MESSAGES.DELETE_IMAGE_CONFIRM'),
@@ -778,14 +1003,65 @@ export class PropertyFormComponent implements OnInit {
       variant: 'danger',
     });
     if (!ok) return;
+    this.deletedImageIds.update(ids => [...ids, image.id]);
     this.existingImages.update(imgs => imgs.filter(x => x.id !== image.id));
     this.existingImageUrls.update(urls => urls.filter(u => u !== image.url));
     this.toast.success(this.translate.instant('PROPERTY_FORM.MESSAGES.DELETE_IMAGE_LOCAL_SUCCESS'));
   }
 
+  isLastRemainingImage(): boolean {
+    if (!this.isEdit()) return false;
+    const remaining = this.existingImageUrls().length + this.localImages().length;
+    return remaining === 0;
+  }
+
+  isValidImageUrl(url: string): boolean {
+    try {
+      const u = new URL(url);
+      return u.protocol === 'http:' || u.protocol === 'https:';
+    } catch {
+      return false;
+    }
+  }
+
+  private async handleImageDelete(propertyId: string, imageId: string) {
+    try {
+      await this.propertyService.deleteImage(propertyId, imageId);
+    } catch (e: any) {
+      const status = e?.status;
+      if (status === 409) {
+        this.toast.error(this.translate.instant('PROPERTY_FORM.MESSAGES.IMAGE_DELETE_FAILED_LAST'));
+        throw e;
+      } else if (status === 403) {
+        this.toast.error(this.translate.instant('PROPERTY_FORM.MESSAGES.IMAGE_DELETE_FORBIDDEN'));
+        throw e;
+      } else if (status === 404) {
+        this.toast.error(this.translate.instant('PROPERTY_FORM.MESSAGES.IMAGE_DELETE_NOT_FOUND'));
+        return;
+      }
+      throw e;
+    }
+  }
+
+  private async handleImageAdd(propertyId: string, urls: string[]) {
+    try {
+      await this.propertyService.addImages(propertyId, urls);
+    } catch (e: any) {
+      const status = e?.status;
+      if (status === 400) {
+        this.toast.error(this.translate.instant('PROPERTY_FORM.MESSAGES.IMAGE_ADD_INVALID'));
+      } else if (status === 403) {
+        this.toast.error(this.translate.instant('PROPERTY_FORM.MESSAGES.IMAGE_DELETE_FORBIDDEN'));
+      } else if (status === 404) {
+        this.toast.error(this.translate.instant('PROPERTY_FORM.MESSAGES.IMAGE_ADD_NOT_FOUND'));
+      }
+      throw e;
+    }
+  }
+
   async submit() {
     this.validationErrors = {};
-    
+
     const scrollToError = (id: string, step: number) => {
       this.validationErrors[id] = true;
       this.currentStep.set(step);
@@ -839,10 +1115,24 @@ export class PropertyFormComponent implements OnInit {
       return;
     }
 
-    const manualImageUrls = Array.from(new Set(this.imageUrlsText
+    const rawManualUrls = this.imageUrlsText
       .split('\n')
       .map(url => url.trim())
-      .filter(url => url.length > 0)));
+      .filter(url => url.length > 0);
+
+    const validManualUrls: string[] = [];
+    for (const url of rawManualUrls) {
+      if (url.length > 1000) {
+        this.toast.error(this.translate.instant('PROPERTY_FORM.MESSAGES.URL_TOO_LONG'));
+        continue;
+      }
+      if (!this.isValidImageUrl(url)) {
+        this.toast.error(this.translate.instant('PROPERTY_FORM.MESSAGES.INVALID_IMAGE_URL'));
+        continue;
+      }
+      validManualUrls.push(url);
+    }
+    const manualImageUrls = Array.from(new Set(validManualUrls));
 
     const totalImages = (this.isEdit() ? this.existingImageUrls().length : 0) + 
                         this.localImages().length + 
@@ -960,9 +1250,25 @@ export class PropertyFormComponent implements OnInit {
       };
 
       if (this.isEdit()) {
-        const payload = { ...basePayload, imageUrls: allImageUrls, isFeatured: false };
+        const payload = { ...basePayload, isFeatured: false };
         await this.propertyService.update(this.propertyId, payload as any);
         this.toast.success(this.translate.instant('PROPERTY_FORM.MESSAGES.UPDATE_SUCCESS'));
+
+        const imageOps: Promise<unknown>[] = [];
+        if (cloudinaryUrls.length > 0) {
+          imageOps.push(this.handleImageAdd(this.propertyId, cloudinaryUrls));
+        }
+        for (const imgId of this.deletedImageIds()) {
+          imageOps.push(this.handleImageDelete(this.propertyId, imgId));
+        }
+        if (imageOps.length > 0) {
+          const results = await Promise.allSettled(imageOps);
+          const failed = results.filter(r => r.status === 'rejected');
+          if (failed.length > 0) {
+            console.warn(`${failed.length} image operation(s) failed during edit save.`, failed);
+            this.toast.warning(this.translate.instant('PROPERTY_FORM.MESSAGES.IMAGES_SYNC_PARTIAL'));
+          }
+        }
       } else {
         const payload = { ...basePayload, imageUrls: allImageUrls };
         const r = await this.propertyService.create(payload as any);

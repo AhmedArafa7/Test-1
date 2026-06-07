@@ -175,7 +175,7 @@ import { EGYPT_REGIONS, Governorate, City } from '../../core/constants/egypt-reg
                           </div>
                         } @else {
                           <div class="h-full flex items-center justify-center text-xs text-slate-400 dark:text-slate-500 font-semibold px-6 py-8">
-                            {{ translate.currentLang === 'ar' ? 'اختر محافظة أولاً' : 'Select a governorate first' }}
+                            {{ 'HOME.SELECT_GOVERNORATE_FIRST' | translate }}
                           </div>
                         }
                       </div>

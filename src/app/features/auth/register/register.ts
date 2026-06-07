@@ -1,4 +1,4 @@
-import { Component, signal, inject } from '@angular/core';
+import { Component, signal, inject, computed } from '@angular/core';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -32,10 +32,7 @@ import { ToastService } from '../../../core/services/toast.service';
 
         <!-- Logo -->
         <div class="relative z-10 flex items-center gap-3">
-          <div class="w-10 h-10 bg-white/15 backdrop-blur-md border border-white/20 rounded-lg flex items-center justify-center">
-            <span class="text-white text-xl font-black italic">B</span>
-          </div>
-          <span class="text-2xl font-bold text-white tracking-tight ltr:ml-3 rtl:mr-3">Baytology</span>
+          <img src="/Baytology_image.png" alt="Baytology" class="h-14 w-44 object-cover object-center drop-shadow-md">
         </div>
 
         <!-- Big Text -->
@@ -107,34 +104,57 @@ import { ToastService } from '../../../core/services/toast.service';
             <div class="grid grid-cols-2 gap-4">
               <div class="space-y-2 ltr:text-left rtl:text-right">
                 <label class="text-[10px] font-black text-gray-400 uppercase tracking-wider">{{ 'AUTH.REGISTER.FIRST_NAME' | translate }} <span class="text-red-500">*</span></label>
-                <input type="text" [(ngModel)]="firstName" name="firstName" 
-                       class="input-field" 
-                       [placeholder]="'AUTH.REGISTER.FIRST_NAME' | translate" required>
+                <input type="text" [ngModel]="firstName()" (ngModelChange)="firstName.set($event); firstNameTouched.set(true)" (blur)="firstNameTouched.set(true)" name="firstName"
+                       [class]="firstNameFieldClass()"
+                       [placeholder]="'AUTH.REGISTER.FIRST_NAME' | translate">
+                <div [class]="firstNameHintClass()">
+                  @if (firstNameTouched() && firstNameError()) {
+                    <svg class="icon" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                    <span>{{ firstNameError() === 'required' ? ('AUTH.REGISTER.REQUIRED' | translate) : ('AUTH.REGISTER.FIRST_NAME_MIN' | translate) }}</span>
+                  } @else {
+                    <span>{{ 'AUTH.REGISTER.FIRST_NAME_HINT' | translate }}</span>
+                  }
+                </div>
               </div>
               <div class="space-y-2 ltr:text-left rtl:text-right">
                 <label class="text-[10px] font-black text-gray-400 uppercase tracking-wider">{{ 'AUTH.REGISTER.LAST_NAME' | translate }} <span class="text-red-500">*</span></label>
-                <input type="text" [(ngModel)]="lastName" name="lastName" 
-                       class="input-field" 
-                       [placeholder]="'AUTH.REGISTER.LAST_NAME' | translate" required>
+                <input type="text" [ngModel]="lastName()" (ngModelChange)="lastName.set($event); lastNameTouched.set(true)" (blur)="lastNameTouched.set(true)" name="lastName"
+                       [class]="lastNameFieldClass()"
+                       [placeholder]="'AUTH.REGISTER.LAST_NAME' | translate">
+                <div [class]="lastNameHintClass()">
+                  @if (lastNameTouched() && lastNameError()) {
+                    <svg class="icon" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                    <span>{{ lastNameError() === 'required' ? ('AUTH.REGISTER.REQUIRED' | translate) : ('AUTH.REGISTER.LAST_NAME_MIN' | translate) }}</span>
+                  } @else {
+                    <span>{{ 'AUTH.REGISTER.LAST_NAME_HINT' | translate }}</span>
+                  }
+                </div>
               </div>
             </div>
 
             <div class="space-y-2 ltr:text-left rtl:text-right">
               <label class="text-[10px] font-black text-gray-400 uppercase tracking-wider">{{ 'AUTH.REGISTER.EMAIL' | translate }} <span class="text-red-500">*</span></label>
-              <input type="email" [(ngModel)]="email" name="email" 
-                     class="input-field" 
-                     [placeholder]="'AUTH.REGISTER.EMAIL' | translate" required>
+              <input type="email" [ngModel]="email()" (ngModelChange)="email.set($event); emailTouched.set(true)" (blur)="emailTouched.set(true)" name="email"
+                     [class]="emailFieldClass()"
+                     [placeholder]="'AUTH.REGISTER.EMAIL_PLACEHOLDER' | translate">
+              <div [class]="emailHintClass()">
+                @if (emailTouched() && emailError()) {
+                  <svg class="icon" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                  <span>{{ 'AUTH.LOGIN.EMAIL_INVALID' | translate }}</span>
+                } @else {
+                  <span>{{ 'AUTH.LOGIN.EMAIL_HINT' | translate }}</span>
+                }
+              </div>
             </div>
 
             <div class="space-y-2 ltr:text-left rtl:text-right">
               <label class="text-[10px] font-black text-gray-400 uppercase tracking-wider">{{ 'AUTH.REGISTER.PASSWORD' | translate }} <span class="text-red-500">*</span></label>
               <div class="relative">
-                <input [type]="showPassword ? 'text' : 'password'" [(ngModel)]="password" name="password" 
-                       (input)="onPasswordInput(password)"
-                       class="input-field" 
-                       [placeholder]="'AUTH.REGISTER.PASSWORD_HINT' | translate" required>
-                <button type="button" (click)="showPassword = !showPassword" class="absolute ltr:right-4 rtl:left-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
-                  @if (showPassword) {
+                <input [type]="showPassword() ? 'text' : 'password'" [ngModel]="password()" (ngModelChange)="password.set($event); onPasswordInput($event); passwordTouched.set(true)" (blur)="passwordTouched.set(true)" name="password"
+                       [class]="passwordFieldClass()"
+                       [placeholder]="'AUTH.REGISTER.PASSWORD_HINT' | translate">
+                <button type="button" (click)="showPassword.set(!showPassword())" class="absolute ltr:right-4 rtl:left-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
+                  @if (showPassword()) {
                     <!-- Eye Off Icon -->
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88"/>
@@ -149,8 +169,13 @@ import { ToastService } from '../../../core/services/toast.service';
                 </button>
               </div>
 
-              <!-- Password Strength Indicator -->
-              @if (password.length > 0) {
+              @if (passwordTouched() && passwordError() === 'minLength') {
+                <div class="field-hint is-error">
+                  <svg class="icon" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                  <span>{{ 'AUTH.REGISTER.PASSWORD_MIN' | translate }}</span>
+                </div>
+              } @else if (password().length > 0) {
+                <!-- Password Strength Indicator -->
                 <div class="mt-3 space-y-3 animate-fade-in bg-slate-50/60 border border-slate-100 rounded-2xl p-4">
                   <!-- Bar and label -->
                   <div class="flex items-center justify-between text-[11px] font-bold">
@@ -161,34 +186,30 @@ import { ToastService } from '../../../core/services/toast.service';
                   </div>
                   <!-- Dynamic Bar -->
                   <div class="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                    <div [class]="passwordStrengthColor()" 
+                    <div [class]="passwordStrengthColor()"
                          [style.width]="passwordStrengthPercentage() + '%'"
                          class="h-full transition-all duration-500 rounded-full"></div>
                   </div>
                   <!-- Checklist grid -->
                   <div class="grid grid-cols-2 gap-2 text-[10px] font-bold">
-                    <!-- Rule 1: Min Length -->
                     <div class="flex items-center gap-1.5 transition-colors" [class.text-emerald-500]="hasMinLength()" [class.text-slate-400]="!hasMinLength()">
                       <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/>
                       </svg>
                       <span>{{ 'AUTH.REGISTER.RULE_MIN_LENGTH' | translate }}</span>
                     </div>
-                    <!-- Rule 2: Upper Case -->
                     <div class="flex items-center gap-1.5 transition-colors" [class.text-emerald-500]="hasUppercase()" [class.text-slate-400]="!hasUppercase()">
                       <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/>
                       </svg>
                       <span>{{ 'AUTH.REGISTER.RULE_UPPERCASE' | translate }}</span>
                     </div>
-                    <!-- Rule 3: Number -->
                     <div class="flex items-center gap-1.5 transition-colors" [class.text-emerald-500]="hasNumber()" [class.text-slate-400]="!hasNumber()">
                       <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/>
                       </svg>
                       <span>{{ 'AUTH.REGISTER.RULE_NUMBER' | translate }}</span>
                     </div>
-                    <!-- Rule 4: Special Char -->
                     <div class="flex items-center gap-1.5 transition-colors" [class.text-emerald-500]="hasSpecialChar()" [class.text-slate-400]="!hasSpecialChar()">
                       <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/>
@@ -200,14 +221,23 @@ import { ToastService } from '../../../core/services/toast.service';
               }
             </div>
 
-            <button type="submit" [disabled]="loading()" 
-                    class="btn-luxury w-full py-4 mt-6 cursor-pointer">
-              @if (loading()) { <div class="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> }
-              @if (!loading()) {
-                <span>{{ 'AUTH.REGISTER.SUBMIT_BTN' | translate }}</span>
-                <svg class="w-5 h-5 transition-transform ltr:group-hover:translate-x-1 rtl:group-hover:-translate-x-1 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+            <div class="space-y-2">
+              <button type="submit" [disabled]="loading() || !isFormValid()" (click)="markAllTouched()"
+                      [title]="!isFormValid() ? ('AUTH.REGISTER.SAVE_DISABLED_HINT' | translate) : ''"
+                      [class]="(loading() || !isFormValid()) ? 'btn-luxury w-full py-4 mt-6 cursor-not-allowed opacity-60' : 'btn-luxury w-full py-4 mt-6 cursor-pointer'">
+                @if (loading()) { <div class="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> }
+                @if (!loading()) {
+                  <span>{{ 'AUTH.REGISTER.SUBMIT_BTN' | translate }}</span>
+                  <svg class="w-5 h-5 transition-transform ltr:group-hover:translate-x-1 rtl:group-hover:-translate-x-1 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+                }
+              </button>
+              @if (!isFormValid() && (firstNameTouched() || lastNameTouched() || emailTouched() || passwordTouched())) {
+                <p class="field-hint is-error justify-center">
+                  <svg class="icon" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                  <span>{{ 'AUTH.REGISTER.SAVE_DISABLED_HINT' | translate }}</span>
+                </p>
               }
-            </button>
+            </div>
           </form>
 
           <p class="text-center text-sm font-bold text-gray-400 mt-10">
@@ -221,20 +251,105 @@ import { ToastService } from '../../../core/services/toast.service';
 })
 export class RegisterComponent {
   private translate = inject(TranslateService);
-  firstName = '';
-  lastName = '';
-  email = '';
-  password = '';
+  firstName = signal('');
+  lastName = signal('');
+  email = signal('');
+  password = signal('');
   role = 'Buyer';
-  showPassword = false;
+  showPassword = signal(false);
   bgLoaded = signal(false);
   loading = signal(false);
+
+  // Validation: touched state
+  firstNameTouched = signal(false);
+  lastNameTouched = signal(false);
+  emailTouched = signal(false);
+  passwordTouched = signal(false);
+
+  // Validation: error code per field
+  readonly firstNameError = computed<string | null>(() => {
+    const v = this.firstName().trim();
+    if (!v) return 'required';
+    if (v.length < 2) return 'minLength';
+    return null;
+  });
+  readonly lastNameError = computed<string | null>(() => {
+    const v = this.lastName().trim();
+    if (!v) return 'required';
+    if (v.length < 2) return 'minLength';
+    return null;
+  });
+  readonly emailError = computed<string | null>(() => {
+    const v = this.email().trim();
+    if (!v) return 'required';
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) return 'invalid';
+    return null;
+  });
+  readonly passwordError = computed<string | null>(() => {
+    const v = this.password();
+    if (!v) return 'required';
+    if (v.length < 8) return 'minLength';
+    return null;
+  });
+
+  readonly isFormValid = computed<boolean>(() => {
+    if (this.firstNameError() !== null) return false;
+    if (this.lastNameError() !== null) return false;
+    if (this.emailError() !== null) return false;
+    if (this.passwordError() !== null) return false;
+    return true;
+  });
+
+  // Field class getters
+  readonly firstNameFieldClass = computed<string>(() => {
+    const base = 'input-field';
+    if (this.firstNameTouched() && this.firstNameError()) return `${base} is-invalid`;
+    if (this.firstNameTouched() && !this.firstNameError()) return `${base} is-valid`;
+    return base;
+  });
+  readonly firstNameHintClass = computed<string>(() => {
+    if (this.firstNameTouched() && this.firstNameError()) return 'field-hint is-error';
+    return 'field-hint is-neutral';
+  });
+  readonly lastNameFieldClass = computed<string>(() => {
+    const base = 'input-field';
+    if (this.lastNameTouched() && this.lastNameError()) return `${base} is-invalid`;
+    if (this.lastNameTouched() && !this.lastNameError()) return `${base} is-valid`;
+    return base;
+  });
+  readonly lastNameHintClass = computed<string>(() => {
+    if (this.lastNameTouched() && this.lastNameError()) return 'field-hint is-error';
+    return 'field-hint is-neutral';
+  });
+  readonly emailFieldClass = computed<string>(() => {
+    const base = 'input-field';
+    if (this.emailTouched() && this.emailError()) return `${base} is-invalid`;
+    if (this.emailTouched() && !this.emailError()) return `${base} is-valid`;
+    return base;
+  });
+  readonly emailHintClass = computed<string>(() => {
+    if (this.emailTouched() && this.emailError()) return 'field-hint is-error';
+    return 'field-hint is-neutral';
+  });
+  readonly passwordFieldClass = computed<string>(() => {
+    const base = 'input-field';
+    if (this.passwordTouched() && this.passwordError()) return `${base} is-invalid`;
+    if (this.passwordTouched() && !this.passwordError() && this.password()) return `${base} is-valid`;
+    return base;
+  });
+
+  markAllTouched() {
+    this.firstNameTouched.set(true);
+    this.lastNameTouched.set(true);
+    this.emailTouched.set(true);
+    this.passwordTouched.set(true);
+  }
 
   // Strength signals
   passwordStrengthLabel = signal('');
   passwordStrengthColor = signal('bg-rose-500');
   passwordStrengthPercentage = signal(0);
-  
+
   hasMinLength = signal(false);
   hasNumber = signal(false);
   hasUppercase = signal(false);
@@ -285,25 +400,26 @@ export class RegisterComponent {
   constructor(private auth: AuthService, private router: Router, private toast: ToastService) {}
 
   async register() {
+    this.markAllTouched();
+    if (!this.isFormValid()) return;
     this.loading.set(true);
     try {
-      const displayName = `${this.firstName} ${this.lastName}`.trim();
-      await this.auth.register({ 
-        email: this.email, 
-        password: this.password, 
-        displayName: displayName || this.email, 
-        role: this.role 
+      const displayName = `${this.firstName()} ${this.lastName()}`.trim();
+      await this.auth.register({
+        email: this.email(),
+        password: this.password(),
+        displayName: displayName || this.email(),
+        role: this.role
       });
       this.toast.success('AUTH.REGISTER.SUCCESS');
-      this.router.navigate(['/auth/login'], { queryParams: { email: this.email } });
+      this.router.navigate(['/auth/login'], { queryParams: { email: this.email() } });
     } catch (e: any) {
       console.error('Registration error full details:', e);
       let errorMessage = 'AUTH.REGISTER.ERROR';
-      
+
       if (e?.error?.detail) {
         errorMessage = e.error.detail;
       } else if (e?.error?.errors) {
-        // Extract the first error message from the validation errors object
         const firstErrorKey = Object.keys(e.error.errors)[0];
         const firstErrorMessages = e.error.errors[firstErrorKey];
         if (Array.isArray(firstErrorMessages) && firstErrorMessages.length > 0) {
@@ -312,7 +428,7 @@ export class RegisterComponent {
           errorMessage = firstErrorMessages;
         }
       }
-      
+
       if (e?.error?.instance) {
         console.error('Backend Trace ID (Instance):', e.error.instance);
       }

@@ -20,12 +20,7 @@ import { ChatSignalRService } from '../../../core/services/chat-signalr.service'
           <!-- Left: Logo -->
           <div class="flex items-center gap-12">
             <a routerLink="/" class="flex items-center gap-3 group transition-all">
-              <div class="relative w-10 h-10 bg-gradient-to-br from-[#0a8f96] to-[#076b70] rounded-xl flex items-center justify-center transition-all group-hover:shadow-lg group-hover:shadow-[#0a8f96]/30 group-hover:scale-105">
-                <span class="text-white text-lg font-black tracking-tighter italic">B</span>
-              </div>
-              <span class="text-xl font-black tracking-widest text-gray-900 uppercase">
-                {{ 'COMMON.APP_NAME' | translate }}
-              </span>
+              <img src="/Baytology_image.png" alt="Baytology" class="h-17 w-36 object-cover object-center transition-all group-hover:scale-105 group-hover:drop-shadow-md">
             </a>
 
             <!-- Center: Main Nav Links (Luxury Style) -->

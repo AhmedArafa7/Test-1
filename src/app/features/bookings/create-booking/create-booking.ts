@@ -76,7 +76,15 @@ interface Slot {
                 <div class="grid grid-cols-1 gap-8 mb-8">
                   <div>
                     <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">{{ 'BOOKINGS.TOUR_DATE' | translate }} <span class="text-red-500">*</span></label>
-                    <input type="date" [(ngModel)]="form.startDate" name="startDate" (ngModelChange)="onDateChange()" class="w-full bg-gray-50 border-transparent rounded-2xl px-6 py-4.5 text-sm font-bold focus:bg-white focus:border-[#0a8f96] outline-none transition-all cursor-pointer" [min]="minDate" required>
+                    <input type="date" [ngModel]="form().startDate" (ngModelChange)="onStartDateChange($event)" name="startDate" [class]="startDateFieldClass() + ' cursor-pointer'" [min]="minDate">
+                    <div [class]="startDateHintClass()">
+                      @if (startDateTouched() && startDateError()) {
+                        <svg class="icon" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                        <span>{{ 'BOOKINGS.MESSAGES.REQUIRED_DATES' | translate }}</span>
+                      } @else {
+                        <span>{{ 'BOOKINGS.START_DATE_HINT' | translate }}</span>
+                      }
+                    </div>
                   </div>
 
                   <div>
@@ -116,13 +124,18 @@ interface Slot {
                         <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
                         <span>{{ 'BOOKINGS.SLOTS.SELECTED' | translate }}: <strong dir="ltr">{{ s.start }} – {{ s.end }}</strong></span>
                       </div>
+                    } @else if (slotsTouched() && slotError()) {
+                      <div class="mt-2 field-hint is-error">
+                        <svg class="icon" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                        <span>{{ 'BOOKINGS.SLOTS.REQUIRED' | translate }}</span>
+                      </div>
                     }
                   </div>
                 </div>
 
                 <div class="mb-12">
                   <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">{{ 'BOOKINGS.NOTES' | translate }}</label>
-                  <textarea [(ngModel)]="notes" name="notes" rows="4" class="w-full bg-gray-50 border-transparent rounded-2xl px-6 py-4 text-sm font-bold focus:bg-white focus:border-[#0a8f96] outline-none transition-all resize-none" [placeholder]="'BOOKINGS.NOTES_PLACEHOLDER' | translate"></textarea>
+                  <textarea [ngModel]="notes()" (ngModelChange)="notes.set($event)" name="notes" rows="4" class="w-full bg-gray-50 border border-transparent rounded-2xl px-6 py-4 text-sm font-bold focus:bg-white focus:border-[#0a8f96] outline-none transition-all resize-none" [placeholder]="'BOOKINGS.NOTES_PLACEHOLDER' | translate"></textarea>
                 </div>
 
                 <!-- Personal Info -->
@@ -132,32 +145,66 @@ interface Slot {
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                   </div>
                 </div>
- 
+
                 <div class="space-y-6">
                   <div>
                     <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">{{ 'BOOKINGS.CREATE.FULL_NAME' | translate }} <span class="text-red-500">*</span></label>
-                    <input type="text" [(ngModel)]="form.payerName" name="payerName" class="w-full bg-gray-50 border-transparent rounded-2xl px-6 py-4.5 text-sm font-bold focus:bg-white focus:border-[#0a8f96] outline-none transition-all" [placeholder]="'BOOKINGS.CREATE.NAME_PLACEHOLDER' | translate" required>
+                    <input type="text" [ngModel]="form().payerName" (ngModelChange)="updateField('payerName', $event); payerNameTouched.set(true)" (blur)="payerNameTouched.set(true)" name="payerName" [class]="payerNameFieldClass()" [placeholder]="'BOOKINGS.CREATE.NAME_PLACEHOLDER' | translate">
+                    <div [class]="payerNameHintClass()">
+                      @if (payerNameTouched() && payerNameError()) {
+                        <svg class="icon" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                        <span>{{ payerNameError() === 'required' ? ('BOOKINGS.CREATE.REQUIRED' | translate) : ('BOOKINGS.CREATE.NAME_MIN' | translate) }}</span>
+                      } @else {
+                        <span>{{ 'BOOKINGS.CREATE.NAME_HINT' | translate }}</span>
+                      }
+                    </div>
                   </div>
                   <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div>
                       <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">{{ 'BOOKINGS.CREATE.EMAIL' | translate }} <span class="text-red-500">*</span></label>
-                      <input type="email" [(ngModel)]="form.payerEmail" name="payerEmail" class="w-full bg-gray-50 border-transparent rounded-2xl px-6 py-4.5 text-sm font-bold focus:bg-white focus:border-[#0a8f96] outline-none transition-all text-left" dir="ltr" placeholder="you@example.com" required>
+                      <input type="email" [ngModel]="form().payerEmail" (ngModelChange)="updateField('payerEmail', $event); payerEmailTouched.set(true)" (blur)="payerEmailTouched.set(true)" name="payerEmail" [class]="payerEmailFieldClass() + ' text-left'" dir="ltr" placeholder="you@example.com">
+                      <div [class]="payerEmailHintClass()">
+                        @if (payerEmailTouched() && payerEmailError()) {
+                          <svg class="icon" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                          <span>{{ 'AUTH.LOGIN.EMAIL_INVALID' | translate }}</span>
+                        } @else {
+                          <span>{{ 'AUTH.LOGIN.EMAIL_HINT' | translate }}</span>
+                        }
+                      </div>
                     </div>
                     <div>
                       <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">{{ 'BOOKINGS.CREATE.PHONE' | translate }} <span class="text-red-500">*</span></label>
-                      <input type="tel" [(ngModel)]="form.payerPhone" name="payerPhone" class="w-full bg-gray-50 border-transparent rounded-2xl px-6 py-4.5 text-sm font-bold focus:bg-white focus:border-[#0a8f96] outline-none transition-all text-left" dir="ltr" placeholder="+20 1x xxxx xxxx" required>
-                    </div> 
+                      <input type="tel" [ngModel]="form().payerPhone" (ngModelChange)="updateField('payerPhone', $event); payerPhoneTouched.set(true)" (blur)="payerPhoneTouched.set(true)" name="payerPhone" [class]="payerPhoneFieldClass() + ' text-left'" dir="ltr" placeholder="+20 1x xxxx xxxx">
+                      <div [class]="payerPhoneHintClass()">
+                        @if (payerPhoneTouched() && payerPhoneError()) {
+                          <svg class="icon" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                          <span>{{ 'BOOKINGS.CREATE.PHONE_HINT' | translate }}</span>
+                        } @else {
+                          <span>{{ 'BOOKINGS.CREATE.PHONE_HINT' | translate }}</span>
+                        }
+                      </div>
+                    </div>
                   </div>
                 </div>
 
-                <div class="mt-12 flex flex-col sm:flex-row gap-5">
-                  <button type="submit" [disabled]="submitting()" class="flex-[2] bg-[#0a8f96] hover:bg-[#076b70] text-white font-black py-5 px-8 rounded-[22px] shadow-xl shadow-[#0a8f96]/20 transition-all flex items-center justify-center gap-3 active:scale-95">
-                    @if (submitting()) { <div class="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> }
-                    {{ submitting() ? ('BOOKINGS.SUBMITTING' | translate) : ('BOOKINGS.CONFIRM_BTN' | translate) }}
-                  </button>
-                  <a [routerLink]="['/properties', property()!.id]" class="flex-1 bg-gray-50 hover:bg-gray-100 text-gray-600 font-black py-5 px-8 rounded-[22px] transition-all text-center">
-                    {{ 'COMMON.CANCEL' | translate }}
-                  </a>
+                <div class="mt-12 space-y-3">
+                  <div class="flex flex-col sm:flex-row gap-5">
+                    <button type="submit" [disabled]="submitting() || !isFormValid()" (click)="markAllTouched()"
+                            [title]="!isFormValid() ? ('BOOKINGS.SAVE_DISABLED_HINT' | translate) : ''"
+                            [class]="(submitting() || !isFormValid()) ? 'flex-[2] bg-gray-200 text-gray-400 font-black py-5 px-8 rounded-[22px] flex items-center justify-center gap-3 cursor-not-allowed' : 'flex-[2] bg-[#0a8f96] hover:bg-[#076b70] text-white font-black py-5 px-8 rounded-[22px] shadow-xl shadow-[#0a8f96]/20 transition-all flex items-center justify-center gap-3 active:scale-95'">
+                      @if (submitting()) { <div class="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> }
+                      {{ submitting() ? ('BOOKINGS.SUBMITTING' | translate) : ('BOOKINGS.CONFIRM_BTN' | translate) }}
+                    </button>
+                    <a [routerLink]="['/properties', property()!.id]" class="flex-1 bg-gray-50 hover:bg-gray-100 text-gray-600 font-black py-5 px-8 rounded-[22px] transition-all text-center">
+                      {{ 'COMMON.CANCEL' | translate }}
+                    </a>
+                  </div>
+                  @if (!isFormValid() && (startDateTouched() || slotsTouched() || payerNameTouched() || payerEmailTouched() || payerPhoneTouched())) {
+                    <p class="field-hint is-error justify-center">
+                      <svg class="icon" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                      <span>{{ 'BOOKINGS.SAVE_DISABLED_HINT' | translate }}</span>
+                    </p>
+                  }
                 </div>
               </form>
             </div>
@@ -185,12 +232,12 @@ interface Slot {
                     <span class="text-lg font-black text-gray-900">{{ 100 | currencyEgp }}</span>
                   </div>
                   <div class="flex justify-between items-center">
-                    <span class="text-xs font-bold text-gray-400 uppercase tracking-widest">{{ 'BOOKINGS.DETAIL.COMMISSION' | translate:{ rate: (form.commissionRate * 100) | number:'1.0-2' } }}</span>
-                    <span class="text-lg font-black text-gray-900" dir="ltr">+{{ (100 * form.commissionRate) | currencyEgp:2 }}</span>
+                    <span class="text-xs font-bold text-gray-400 uppercase tracking-widest">{{ 'BOOKINGS.DETAIL.COMMISSION' | translate:{ rate: (form().commissionRate * 100) | number:'1.0-2' } }}</span>
+                    <span class="text-lg font-black text-gray-900" >+{{ (100 * form().commissionRate) | currencyEgp:2 }}</span>
                   </div>
                   <div class="flex justify-between items-center pt-4 border-t border-gray-100">
                     <span class="text-xs font-black text-gray-900 uppercase tracking-widest">{{ 'BOOKINGS.DETAIL.TOTAL_VALUE' | translate }}</span>
-                    <span class="text-xl font-black text-[#0a8f96]">{{ (100 + (100 * form.commissionRate)) | currencyEgp:2 }}</span>
+                    <span class="text-xl font-black text-[#0a8f96]">{{ (100 + (100 * form().commissionRate)) | currencyEgp:2 }}</span>
                   </div>
                   <div class="flex justify-between items-center pt-2 border-t border-gray-50/50">
                     <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{{ 'BOOKINGS.TOTAL_PRICE_LABEL' | translate }}</span>
@@ -218,13 +265,119 @@ export class CreateBookingComponent implements OnInit {
   submitting = signal(false);
   bookingUnavailableMessage = signal<string | null>(null);
   oldBookingId = signal<string | null>(null);
-  notes = '';
+  notes = signal('');
   minDate = new Date().toISOString().split('T')[0];
   private translate = inject(TranslateService);
 
+  // Form state as a signal
+  form = signal<CreateBookingRequest>({
+    propertyId: '',
+    startDate: '',
+    endDate: '',
+    amount: 100,
+    commissionRate: 0,
+    currency: 'EGP',
+    payerName: '',
+    payerEmail: '',
+    payerPhone: ''
+  });
+
+  // Touched state per field
+  startDateTouched = signal(false);
+  slotsTouched = signal(false);
+  payerNameTouched = signal(false);
+  payerEmailTouched = signal(false);
+  payerPhoneTouched = signal(false);
+
+  // Validation
+  readonly startDateError = computed<string | null>(() => {
+    if (!this.form().startDate) return 'required';
+    return null;
+  });
+  readonly slotError = computed<string | null>(() => {
+    if (!this.selectedSlot()) return 'required';
+    return null;
+  });
+  readonly payerNameError = computed<string | null>(() => {
+    const v = (this.form().payerName || '').trim();
+    if (!v) return 'required';
+    if (v.length < 2) return 'minLength';
+    return null;
+  });
+  readonly payerEmailError = computed<string | null>(() => {
+    const v = (this.form().payerEmail || '').trim();
+    if (!v) return 'required';
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) return 'invalid';
+    return null;
+  });
+  readonly payerPhoneError = computed<string | null>(() => {
+    const v = (this.form().payerPhone || '').trim();
+    if (!v) return 'required';
+    // Accept Egyptian numbers with or without +20 prefix
+    if (!/^(\+20|0)?1[0-9]{9}$/.test(v.replace(/[\s-]/g, ''))) return 'invalid';
+    return null;
+  });
+
+  readonly isFormValid = computed<boolean>(() => {
+    if (this.startDateError() !== null) return false;
+    if (this.slotError() !== null) return false;
+    if (this.payerNameError() !== null) return false;
+    if (this.payerEmailError() !== null) return false;
+    if (this.payerPhoneError() !== null) return false;
+    return true;
+  });
+
+  // Field class getters
+  readonly startDateFieldClass = computed<string>(() => {
+    const base = 'w-full bg-gray-50 border border-transparent rounded-2xl px-6 py-4.5 text-sm font-bold focus:bg-white focus:border-[#0a8f96] outline-none transition-all';
+    if (this.startDateTouched() && this.startDateError()) return base + ' !border-red-300 !bg-red-50/30 focus:!border-red-400';
+    if (this.startDateTouched() && !this.startDateError()) return base + ' !border-emerald-300';
+    return base;
+  });
+  readonly startDateHintClass = computed<string>(() => {
+    if (this.startDateTouched() && this.startDateError()) return 'field-hint is-error';
+    return 'field-hint is-neutral';
+  });
+  readonly payerNameFieldClass = computed<string>(() => {
+    const base = 'w-full bg-gray-50 border border-transparent rounded-2xl px-6 py-4.5 text-sm font-bold focus:bg-white focus:border-[#0a8f96] outline-none transition-all';
+    if (this.payerNameTouched() && this.payerNameError()) return base + ' !border-red-300 !bg-red-50/30 focus:!border-red-400';
+    if (this.payerNameTouched() && !this.payerNameError()) return base + ' !border-emerald-300';
+    return base;
+  });
+  readonly payerNameHintClass = computed<string>(() => {
+    if (this.payerNameTouched() && this.payerNameError()) return 'field-hint is-error';
+    return 'field-hint is-neutral';
+  });
+  readonly payerEmailFieldClass = computed<string>(() => {
+    const base = 'w-full bg-gray-50 border border-transparent rounded-2xl px-6 py-4.5 text-sm font-bold focus:bg-white focus:border-[#0a8f96] outline-none transition-all';
+    if (this.payerEmailTouched() && this.payerEmailError()) return base + ' !border-red-300 !bg-red-50/30 focus:!border-red-400';
+    if (this.payerEmailTouched() && !this.payerEmailError()) return base + ' !border-emerald-300';
+    return base;
+  });
+  readonly payerEmailHintClass = computed<string>(() => {
+    if (this.payerEmailTouched() && this.payerEmailError()) return 'field-hint is-error';
+    return 'field-hint is-neutral';
+  });
+  readonly payerPhoneFieldClass = computed<string>(() => {
+    const base = 'w-full bg-gray-50 border border-transparent rounded-2xl px-6 py-4.5 text-sm font-bold focus:bg-white focus:border-[#0a8f96] outline-none transition-all';
+    if (this.payerPhoneTouched() && this.payerPhoneError()) return base + ' !border-red-300 !bg-red-50/30 focus:!border-red-400';
+    if (this.payerPhoneTouched() && !this.payerPhoneError()) return base + ' !border-emerald-300';
+    return base;
+  });
+  readonly payerPhoneHintClass = computed<string>(() => {
+    if (this.payerPhoneTouched() && this.payerPhoneError()) return 'field-hint is-error';
+    return 'field-hint is-neutral';
+  });
+
+  markAllTouched() {
+    this.startDateTouched.set(true);
+    this.slotsTouched.set(true);
+    this.payerNameTouched.set(true);
+    this.payerEmailTouched.set(true);
+    this.payerPhoneTouched.set(true);
+  }
+
   // --- Slot Picker ---
-  // Predefined 1-hour slots from 9:00 to 21:00 (avoids silent duration assumption).
-  // User picks an explicit (start, end) range instead of a single time + hidden +1h logic.
   readonly SLOT_START_HOUR = 9;
   readonly SLOT_END_HOUR = 21;
   readonly SLOT_DURATION_MIN = 60;
@@ -232,9 +385,15 @@ export class CreateBookingComponent implements OnInit {
   private slots = signal<Slot[]>([]);
   selectedSlot = signal<Slot | null>(null);
 
-  onDateChange() {
+  onStartDateChange(value: string) {
+    this.form.update(f => ({ ...f, startDate: value }));
+    this.startDateTouched.set(true);
     this.selectedSlot.set(null);
     this.slots.set(this.generateSlots());
+  }
+
+  updateField(field: keyof CreateBookingRequest, value: any) {
+    this.form.update(f => ({ ...f, [field]: value }));
   }
 
   private generateSlots(): Slot[] {
@@ -268,9 +427,9 @@ export class CreateBookingComponent implements OnInit {
   }
 
   isSlotPast(slot: Slot): boolean {
-    if (!this.form.startDate) return false;
+    if (!this.form().startDate) return false;
     const [h, m] = slot.start.split(':').map(Number);
-    const slotDate = new Date(this.form.startDate);
+    const slotDate = new Date(this.form().startDate);
     slotDate.setHours(h, m, 0, 0);
     return slotDate.getTime() <= Date.now();
   }
@@ -347,18 +506,6 @@ export class CreateBookingComponent implements OnInit {
     return translated !== translationKey ? translated : value;
   }
 
-  form: CreateBookingRequest = {
-    propertyId: '',
-    startDate: '',
-    endDate: '',
-    amount: 100, // Fixed refundable deposit for now
-    commissionRate: 0,
-    currency: 'EGP',
-    payerName: '',
-    payerEmail: '',
-    payerPhone: ''
-  };
-
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -381,24 +528,24 @@ export class CreateBookingComponent implements OnInit {
   async ngOnInit() {
     const propertyId = this.route.snapshot.queryParams['propertyId'];
     const oldId = this.route.snapshot.queryParams['oldBookingId'];
-    
+
     if (oldId) {
       this.oldBookingId.set(oldId);
       try {
         const oldBooking = await this.bookingService.getById(oldId);
-        // Pre-fill form from old booking
         // [BACKEND_MISSING]: These fields are not returned by the backend BookingDto/BookingDetail yet.
         // Once added to the backend, uncomment these lines to enable pre-filling for rescheduling.
-        // this.form.payerName = (oldBooking as any).payerName ?? '';
-        // this.form.payerEmail = (oldBooking as any).payerEmail ?? '';
-        // this.form.payerPhone = (oldBooking as any).payerPhone ?? '';
-        
-        // Format ISO dates to YYYY-MM-DD for date inputs
+        // this.form.update(f => ({ ...f, payerName: (oldBooking as any).payerName ?? '' }));
+        // this.form.update(f => ({ ...f, payerEmail: (oldBooking as any).payerEmail ?? '' }));
+        // this.form.update(f => ({ ...f, payerPhone: (oldBooking as any).payerPhone ?? '' }));
+
         if (oldBooking.startDate) {
-          this.form.startDate = new Date(oldBooking.startDate).toISOString().split('T')[0];
+          const startStr = new Date(oldBooking.startDate).toISOString().split('T')[0];
+          this.form.update(f => ({ ...f, startDate: startStr }));
         }
         if (oldBooking.endDate) {
-          this.form.endDate = new Date(oldBooking.endDate).toISOString().split('T')[0];
+          const endStr = new Date(oldBooking.endDate).toISOString().split('T')[0];
+          this.form.update(f => ({ ...f, endDate: endStr }));
         }
       } catch {
         console.error('Failed to load old booking details');
@@ -410,17 +557,15 @@ export class CreateBookingComponent implements OnInit {
       return;
     }
 
-    this.form.propertyId = propertyId;
+    this.form.update(f => ({ ...f, propertyId }));
 
-    // Initialize slot picker with default 1-hour slots
     this.slots.set(this.generateSlots());
 
     try {
       const property = await this.propertyService.getById(propertyId);
       this.property.set(property);
 
-      // Use the fixed administrative service fee rate from environment config
-      this.form.commissionRate = environment.bookingServiceFeeRate ?? 0.025;
+      this.form.update(f => ({ ...f, commissionRate: environment.bookingServiceFeeRate ?? 0.025 }));
 
       if (!this.canBookProperty(property)) {
         this.bookingUnavailableMessage.set(this.translate.instant('BOOKINGS.MESSAGES.UNAVAILABLE'));
@@ -430,14 +575,15 @@ export class CreateBookingComponent implements OnInit {
       // Pre-fill payer/contact info from the logged-in user's database profile and session
       try {
         const profile = await this.profileService.getMyProfile();
-        this.form.payerName = profile.displayName || this.auth.currentUser()?.displayName || '';
-        this.form.payerEmail = this.auth.currentUser()?.email || '';
-        this.form.payerPhone = profile.phoneNumber || '';
+        const name = profile.displayName || this.auth.currentUser()?.displayName || '';
+        const email = this.auth.currentUser()?.email || '';
+        const phone = profile.phoneNumber || '';
+        this.form.update(f => ({ ...f, payerName: name, payerEmail: email, payerPhone: phone }));
       } catch (err) {
         console.error('Failed to pre-fill user profile info:', err);
-        // Fallback to auth session values if profile fetch fails
-        this.form.payerName = this.auth.currentUser()?.displayName || '';
-        this.form.payerEmail = this.auth.currentUser()?.email || '';
+        const name = this.auth.currentUser()?.displayName || '';
+        const email = this.auth.currentUser()?.email || '';
+        this.form.update(f => ({ ...f, payerName: name, payerEmail: email }));
       }
     } catch {
       this.toast.error(this.translate.instant('PROPERTY_DETAIL.MESSAGES.NOT_FOUND'));
@@ -447,34 +593,31 @@ export class CreateBookingComponent implements OnInit {
   }
 
   async submit() {
+    this.markAllTouched();
+
     if (this.bookingUnavailableMessage()) {
       this.toast.info(this.bookingUnavailableMessage()!);
       return;
     }
 
-    if (!this.form.startDate) {
-      this.toast.error(this.translate.instant('BOOKINGS.MESSAGES.REQUIRED_DATES'));
+    if (!this.isFormValid()) {
+      // Inline errors shown via the template
       return;
     }
 
-    const slot = this.selectedSlot();
-    if (!slot) {
-      this.toast.error(this.translate.instant('BOOKINGS.SLOTS.REQUIRED'));
-      return;
-    }
-
+    const slot = this.selectedSlot()!;
     const [startH, startM] = slot.start.split(':').map(Number);
     const [endH, endM] = slot.end.split(':').map(Number);
-    const startDate = new Date(this.form.startDate);
+    const startDate = new Date(this.form().startDate);
     startDate.setHours(startH, startM, 0, 0);
-    const endDate = new Date(this.form.startDate);
+    const endDate = new Date(this.form().startDate);
     endDate.setHours(endH, endM, 0, 0);
 
     const payload: CreateBookingRequest = {
-      ...this.form,
+      ...this.form(),
       startDate: startDate.toISOString(),
       endDate: endDate.toISOString(),
-      notes: this.notes || undefined,
+      notes: this.notes() || undefined,
     };
 
     this.submitting.set(true);

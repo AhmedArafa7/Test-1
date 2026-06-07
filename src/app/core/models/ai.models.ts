@@ -29,6 +29,38 @@ export interface SearchResult {
   snapshotStatus?: string;
 }
 
+export interface MatchedProperty {
+  property_id?: number | string;
+  propertyId?: number | string;
+  id?: string;
+  title: string;
+  description?: string;
+  type?: string;
+  property_type?: string;
+  listing_type?: string;
+  price: number;
+  area?: number;
+  size_sqm?: number;
+  bedrooms?: number;
+  bathrooms?: number;
+  city?: string;
+  district?: string;
+  location?: string;
+  url?: string;
+  image_url?: string;
+  status?: string;
+  visual_similarity_score?: number;
+  visual_similarity_engine?: string;
+}
+
+export interface ImageSearchResponse {
+  count: number;
+  properties: MatchedProperty[];
+  message: string;
+  engine: string;
+  query_image?: { content_type: string; size_bytes: number };
+}
+
 export interface SearchRequestDetail {
   id: string;
   userId: string;

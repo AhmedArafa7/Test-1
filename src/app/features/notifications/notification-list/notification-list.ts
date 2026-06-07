@@ -1,4 +1,4 @@
-import { Component, signal, OnInit, ElementRef, viewChild, effect, OnDestroy, inject } from '@angular/core';
+import { Component, signal, OnInit, ElementRef, viewChild, effect, OnDestroy, inject, HostListener } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { ProfileService } from '../../profile/services/profile.service';
@@ -17,11 +17,21 @@ import { EmptyStateComponent } from '../../../shared/components/empty-state/empt
       <div class="max-w-3xl mx-auto flex flex-col gap-6 md:gap-8">
         
         <!-- Header -->
-        <div class="flex items-center justify-between pb-6 border-b border-slate-100 w-full">
-          <div>
-            <h1 class="text-3xl md:text-[40px] font-black text-slate-900 tracking-tight mb-2">
-              {{ 'NOTIFICATIONS.TITLE' | translate }}
-            </h1>
+        <div class="flex items-center justify-between pb-6 border-b border-slate-100 w-full gap-4">
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-3 mb-2">
+              <h1 class="text-3xl md:text-[40px] font-black text-slate-900 tracking-tight">
+                {{ 'NOTIFICATIONS.TITLE' | translate }}
+              </h1>
+              <button (click)="openGuide()"
+                      [attr.aria-label]="'NOTIFICATIONS.GUIDE_BUTTON_ARIA' | translate"
+                      [title]="'NOTIFICATIONS.GUIDE_BUTTON' | translate"
+                      class="w-9 h-9 shrink-0 rounded-full bg-[#0a8f96]/10 hover:bg-[#0a8f96] text-[#0a8f96] hover:text-white border-2 border-[#0a8f96]/30 hover:border-[#0a8f96] flex items-center justify-center transition-all duration-200 shadow-sm hover:shadow-md cursor-pointer group">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z"/>
+                </svg>
+              </button>
+            </div>
             <p class="text-slate-500 font-bold text-sm md:text-base">
               {{ 'NOTIFICATIONS.SUBTITLE' | translate }}
             </p>
@@ -209,6 +219,113 @@ import { EmptyStateComponent } from '../../../shared/components/empty-state/empt
         }
       </div>
     </div>
+
+    <!-- Notification Guide Modal -->
+    @if (showGuide()) {
+      <div class="fixed inset-0 z-[200] flex items-center justify-center p-4 md:p-6"
+           role="dialog"
+           aria-modal="true"
+           [attr.aria-label]="'NOTIFICATIONS.GUIDE_TITLE' | translate"
+           (click)="closeGuide()">
+        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm animate-fade-in"></div>
+
+        <div class="relative bg-white rounded-3xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden animate-scale-in"
+             (click)="$event.stopPropagation()">
+          <!-- Header -->
+          <div class="flex items-center justify-between gap-4 p-6 md:p-8 border-b border-slate-100 bg-gradient-to-br from-[#0a8f96]/5 to-transparent">
+            <div class="flex items-center gap-4 min-w-0">
+              <div class="w-12 h-12 shrink-0 rounded-2xl bg-[#0a8f96] text-white flex items-center justify-center shadow-md">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z"/>
+                </svg>
+              </div>
+              <div class="min-w-0">
+                <h2 class="text-xl md:text-2xl font-black text-slate-900 leading-tight">
+                  {{ 'NOTIFICATIONS.GUIDE_TITLE' | translate }}
+                </h2>
+              </div>
+            </div>
+            <button (click)="closeGuide()"
+                    [attr.aria-label]="'NOTIFICATIONS.GUIDE_CLOSE' | translate"
+                    class="w-10 h-10 shrink-0 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-400 hover:text-slate-700 flex items-center justify-center transition-all cursor-pointer">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Body (scrollable) -->
+          <div class="flex-1 overflow-y-auto p-6 md:p-8 custom-scrollbar">
+            <p class="text-slate-600 text-sm md:text-base font-medium leading-relaxed mb-6">
+              {{ 'NOTIFICATIONS.GUIDE_INTRO' | translate }}
+            </p>
+
+            <h3 class="text-xs font-black uppercase tracking-wider text-[#0a8f96] mb-4">
+              {{ 'NOTIFICATIONS.GUIDE_TYPES_TITLE' | translate }}
+            </h3>
+
+            <div class="flex flex-col gap-4">
+              @for (type of guideTypesList; track type.key) {
+                <div class="bg-slate-50/50 border border-slate-100 rounded-2xl p-5 hover:border-[#0a8f96]/30 hover:bg-white transition-all">
+                  <div class="flex items-start gap-4">
+                    <div class="w-11 h-11 shrink-0 rounded-xl flex items-center justify-center shadow-sm"
+                         [class]="getGuideIconBg(type.icon)">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+                        @switch (type.icon) {
+                          @case ('message') {
+                            <path d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
+                          }
+                          @case ('check') {
+                            <path d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                          }
+                          @case ('wallet') {
+                            <path d="M21 12a2.25 2.25 0 00-2.25-2.25H15a3 3 0 11-6 0H5.25A2.25 2.25 0 003 12m18 0v6a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 18v-6m18 0V9M3 12V9m18 0a2.25 2.25 0 00-2.25-2.25H5.25A2.25 2.25 0 003 9m18 0V6a2.25 2.25 0 00-2.25-2.25H5.25A2.25 2.25 0 003 6v3"/>
+                          }
+                          @case ('alert') {
+                            <path d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/>
+                          }
+                          @case ('cancel') {
+                            <path d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
+                          }
+                          @case ('home') {
+                            <path d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/>
+                          }
+                          @case ('refund') {
+                            <path d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z"/>
+                          }
+                          @case ('block') {
+                            <path d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
+                          }
+                        }
+                      </svg>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                      <h4 class="font-black text-slate-900 text-base mb-1">
+                        {{ 'NOTIFICATIONS.GUIDE_TYPES.' + type.key + '.title' | translate }}
+                      </h4>
+                      <p class="text-[11px] font-black uppercase tracking-wider text-[#0a8f96] mb-2">
+                        {{ 'NOTIFICATIONS.GUIDE_TYPES.' + type.key + '.when' | translate }}
+                      </p>
+                      <p class="text-sm text-slate-600 font-medium leading-relaxed">
+                        {{ 'NOTIFICATIONS.GUIDE_TYPES.' + type.key + '.explainer' | translate }}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- Footer -->
+          <div class="p-6 md:p-8 border-t border-slate-100 bg-slate-50/30">
+            <button (click)="closeGuide()"
+                    class="w-full bg-[#0a8f96] hover:bg-[#076b70] text-white font-black text-sm py-3.5 rounded-2xl transition-all shadow-md shadow-[#0a8f96]/15 hover:shadow-lg active:scale-[0.99] cursor-pointer">
+              {{ 'NOTIFICATIONS.GUIDE_CLOSE' | translate }}
+            </button>
+          </div>
+        </div>
+      </div>
+    }
   `,
   styles: [`
     :host { display: block; }
@@ -259,6 +376,23 @@ export class NotificationListComponent implements OnInit, OnDestroy {
   // Push Permission State
   pushPermissionStatus = signal<string>('default');
 
+  // Notification Guide Modal
+  showGuide = signal(false);
+
+  // Guide types ordered list (mirrors NOTIFICATIONS.GUIDE_TYPES keys)
+  readonly guideTypesList: Array<{ key: string; icon: string }> = [
+    { key: 'NewMessage', icon: 'message' },
+    { key: 'BookingConfirmed', icon: 'check' },
+    { key: 'PaymentCompleted', icon: 'wallet' },
+    { key: 'PaymentFailed', icon: 'alert' },
+    { key: 'BookingConfirmedManual', icon: 'check' },
+    { key: 'BookingCancelledByAgent', icon: 'cancel' },
+    { key: 'BookingCancelledByBuyer', icon: 'cancel' },
+    { key: 'NewBookingRequest', icon: 'home' },
+    { key: 'RefundApproved', icon: 'refund' },
+    { key: 'RefundRejected', icon: 'block' }
+  ];
+
   // Infinite Scroll Observer
   infiniteScrollSentinel = viewChild<ElementRef>('infiniteScrollSentinel');
   private observer: IntersectionObserver | null = null;
@@ -285,6 +419,14 @@ export class NotificationListComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.observer?.disconnect();
+    document.body.style.overflow = '';
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscape() {
+    if (this.showGuide()) {
+      this.closeGuide();
+    }
   }
 
   checkPushPermission() {
@@ -399,6 +541,30 @@ export class NotificationListComponent implements OnInit, OnDestroy {
 
   goToProperties() {
     this.router.navigate(['/properties']);
+  }
+
+  openGuide() {
+    this.showGuide.set(true);
+    document.body.style.overflow = 'hidden';
+  }
+
+  closeGuide() {
+    this.showGuide.set(false);
+    document.body.style.overflow = '';
+  }
+
+  getGuideIconBg(icon: string): string {
+    const map: Record<string, string> = {
+      message: 'bg-blue-50 text-blue-600',
+      check: 'bg-emerald-50 text-emerald-600',
+      wallet: 'bg-emerald-50 text-emerald-600',
+      alert: 'bg-red-50 text-red-600',
+      cancel: 'bg-slate-100 text-slate-500',
+      home: 'bg-blue-50 text-blue-600',
+      refund: 'bg-emerald-50 text-emerald-600',
+      block: 'bg-amber-50 text-amber-600'
+    };
+    return map[icon] || 'bg-slate-50 text-slate-500';
   }
 
   async markAllRead() {

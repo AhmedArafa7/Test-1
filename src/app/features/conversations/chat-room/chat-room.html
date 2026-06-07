@@ -38,11 +38,11 @@
                 {{ recipientName() | translate }}
               </h2>
               @if (isMuted()) {
-                <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-black bg-rose-50 border border-rose-100 text-rose-500 shadow-sm animate-in fade-in zoom-in duration-300" title="تم كتم إشعارات المحادثة">
+                <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-black bg-rose-50 border border-rose-100 text-rose-500 shadow-sm animate-in fade-in zoom-in duration-300" [title]="'MESSAGES.MUTED_TITLE' | translate">
                   <svg class="w-3 h-3 text-rose-500 animate-pulse" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                   </svg>
-                  <span>مكتوم</span>
+                  <span>{{ 'MESSAGES.MUTED_LABEL' | translate }}</span>
                 </span>
               }
             </div>
@@ -61,7 +61,7 @@
               <input type="text" 
                      [ngModel]="msgSearchQuery()"
                      (ngModelChange)="msgSearchQuery.set($event)"
-                     placeholder="ابحث في الرسائل..." 
+                      [placeholder]="'MESSAGES.SEARCH_MSG' | translate"
                      class="bg-transparent border-none outline-none text-[11px] text-slate-800 w-32 py-0.5 px-1 ltr:text-left rtl:text-right font-medium">
               @if (msgSearchQuery()) {
                 <button (click)="msgSearchQuery.set('')" class="text-slate-400 hover:text-slate-600 cursor-pointer">
@@ -91,7 +91,7 @@
               <div class="absolute top-11 ltr:right-0 rtl:left-0 w-48 bg-white shadow-xl rounded-2xl py-2.5 z-50 text-[13px] font-bold border border-slate-100 animate-in fade-in duration-100">
                 <button (click)="showContactInfo()" class="w-full text-start px-5 py-2 hover:bg-slate-50 transition-colors text-slate-700 ltr:text-left rtl:text-right">{{ 'MESSAGES.CONTACT_INFO' | translate }}</button>
                 <button (click)="toggleMute()" class="w-full text-start px-5 py-2 hover:bg-slate-50 transition-colors text-slate-700 ltr:text-left rtl:text-right">
-                  {{ isMuted() ? 'تفعيل الإشعارات 🔔' : ('MESSAGES.MUTE_NOTIF' | translate) }}
+                  {{ (isMuted() ? 'MESSAGES.UNMUTE_NOTIF' : 'MESSAGES.MUTE_NOTIF') | translate }}
                 </button>
                 <div class="h-px bg-slate-100 my-1.5"></div>
                 <button (click)="closeChat()" class="w-full text-start px-5 py-2 hover:bg-red-50 transition-colors text-red-600 ltr:text-left rtl:text-right">{{ 'MESSAGES.CLOSE_CHAT' | translate }}</button>
@@ -109,7 +109,7 @@
         
         <div class="text-center my-4">
           <span class="bg-slate-200/60 text-slate-600 text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full shadow-sm">
-            اليوم
+            {{ 'MESSAGES.TODAY' | translate }}
           </span>
         </div>
 
@@ -136,7 +136,7 @@
                            (error)="onImageError($event, p.id)">
                       <!-- Premium Label Tag -->
                       <div class="absolute top-4 right-4 bg-[#0a8f96] text-white text-[10px] font-black tracking-widest px-3.5 py-1.5 rounded-full uppercase shadow-md">
-                        للبيع
+                        {{ 'MESSAGES.FOR_SALE' | translate }}
                       </div>
                     </div>
                     
@@ -152,21 +152,21 @@
                           <svg class="w-4.5 h-4.5 text-slate-500" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M2 4v16M2 8h18a2 2 0 0 1 2 2v10M2 17h20M6 8v9"/>
                           </svg>
-                          <span class="text-[11px] font-black text-slate-700">4 غرف</span>
+                          <span class="text-[11px] font-black text-slate-700">{{ 'MESSAGES.BEDROOMS_LABEL' | translate }}</span>
                         </div>
                         <div class="bg-slate-50/50 border border-slate-100 rounded-2xl py-3 flex flex-col items-center justify-center gap-2 shadow-sm hover:bg-slate-50 transition-colors">
                           <!-- Bath Icon -->
                           <svg class="w-4.5 h-4.5 text-slate-500" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M2 18a4 4 0 0 0 4 4h12a4 4 0 0 0 4-4v-2H2v2ZM22 14V6a3 3 0 0 0-3-3h-4M19 6h-2"/>
                           </svg>
-                          <span class="text-[11px] font-black text-slate-700">3 حمام</span>
+                          <span class="text-[11px] font-black text-slate-700">{{ 'MESSAGES.BATHROOMS_LABEL' | translate }}</span>
                         </div>
                         <div class="bg-slate-50/50 border border-slate-100 rounded-2xl py-3 flex flex-col items-center justify-center gap-2 shadow-sm hover:bg-slate-50 transition-colors">
                           <!-- Area Icon -->
                           <svg class="w-4.5 h-4.5 text-slate-500" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M4 4h16v16H4zM4 9h16M4 14h16M9 4v16M14 4v16"/>
                           </svg>
-                          <span class="text-[11px] font-black text-slate-700">450 م²</span>
+                          <span class="text-[11px] font-black text-slate-700">{{ 'MESSAGES.AREA_SQM_LABEL' | translate }}</span>
                         </div>
                       </div>
                       
@@ -334,7 +334,7 @@
             <div class="px-4 py-2 bg-[#0a8f96]/5 rounded-2xl border border-[#0a8f96]/20 flex items-center justify-between animate-in slide-in-from-bottom-1 overflow-hidden shrink-0">
               <div class="flex items-center gap-3">
                 @if (selectedFileUrl.startsWith('data:image') || selectedFileUrl.startsWith('https://res.cloudinary.com')) {
-                  <div (click)="reopenEditor()" class="w-10 h-10 rounded-xl overflow-hidden border border-[#0a8f96]/20 shrink-0 shadow-sm cursor-pointer hover:opacity-80 active:scale-95 transition-all" title="اضغط للتعديل أو الرسم">
+                  <div (click)="reopenEditor()" class="w-10 h-10 rounded-xl overflow-hidden border border-[#0a8f96]/20 shrink-0 shadow-sm cursor-pointer hover:opacity-80 active:scale-95 transition-all" [title]="'MESSAGES.CLICK_TO_EDIT' | translate">
                     <img [src]="selectedFileUrl" class="w-full h-full object-cover">
                   </div>
                 }
@@ -443,7 +443,7 @@
           <div class="bg-white rounded-3xl w-full max-w-3xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
             <!-- Header -->
             <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50/50">
-              <h3 class="font-extrabold text-slate-900 text-lg ltr:text-left rtl:text-right">تعديل وتحرير الصورة</h3>
+              <h3 class="font-extrabold text-slate-900 text-lg ltr:text-left rtl:text-right">{{ 'MESSAGES.CROP_TITLE' | translate }}</h3>
               <button (click)="cancelCrop()" class="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-500 hover:text-red-500 hover:bg-red-50 transition-colors shadow-sm cursor-pointer">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -460,15 +460,15 @@
                         [class.text-[#0a8f96]]="activeEditorMode() === 'crop'"
                         [class.text-slate-500]="activeEditorMode() !== 'crop'"
                         class="px-6 py-2.5 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 border-none">
-                  📐 قص وأبعاد
+                  {{ 'MESSAGES.CROP_MODE' | translate }}
                 </button>
-                <button (click)="activeEditorMode.set('draw')" 
+                <button (click)="activeEditorMode.set('draw')"
                         [class.bg-white]="activeEditorMode() === 'draw'" 
                         [class.shadow-sm]="activeEditorMode() === 'draw'" 
                         [class.text-[#0a8f96]]="activeEditorMode() === 'draw'"
                         [class.text-slate-500]="activeEditorMode() !== 'draw'"
                         class="px-6 py-2.5 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 border-none">
-                  🎨 رسم وقلم
+                  {{ 'MESSAGES.DRAW_MODE' | translate }}
                 </button>
               </div>
             </div>
@@ -504,9 +504,9 @@
                     
                     <!-- Brush sizes -->
                     <div class="flex items-center gap-3">
-                      <button (click)="changeWidth(2)" [class.bg-slate-200]="drawingLineWidth === 2" class="px-3 py-1 text-[10px] font-black rounded-lg border border-slate-100 cursor-pointer transition-colors">رفيع</button>
-                      <button (click)="changeWidth(5)" [class.bg-slate-200]="drawingLineWidth === 5" class="px-3 py-1 text-[10px] font-black rounded-lg border border-slate-100 cursor-pointer transition-colors">متوسط</button>
-                      <button (click)="changeWidth(10)" [class.bg-slate-200]="drawingLineWidth === 10" class="px-3 py-1 text-[10px] font-black rounded-lg border border-slate-100 cursor-pointer transition-colors">سميك</button>
+                      <button (click)="changeWidth(2)" [class.bg-slate-200]="drawingLineWidth === 2" class="px-3 py-1 text-[10px] font-black rounded-lg border border-slate-100 cursor-pointer transition-colors">{{ 'MESSAGES.BRUSH_THIN' | translate }}</button>
+                      <button (click)="changeWidth(5)" [class.bg-slate-200]="drawingLineWidth === 5" class="px-3 py-1 text-[10px] font-black rounded-lg border border-slate-100 cursor-pointer transition-colors">{{ 'MESSAGES.BRUSH_MEDIUM' | translate }}</button>
+                      <button (click)="changeWidth(10)" [class.bg-slate-200]="drawingLineWidth === 10" class="px-3 py-1 text-[10px] font-black rounded-lg border border-slate-100 cursor-pointer transition-colors">{{ 'MESSAGES.BRUSH_THICK' | translate }}</button>
                     </div>
                   </div>
 
@@ -531,17 +531,17 @@
               <!-- Reset Button on Left -->
               <button (click)="resetToOriginal()" class="px-5 py-2.5 rounded-xl font-bold text-rose-600 bg-rose-50 hover:bg-rose-100 border border-rose-100 transition-colors cursor-pointer flex items-center gap-1.5">
                 <span>↩️</span>
-                <span>إعادة للأصل</span>
+                <span>{{ 'MESSAGES.RESET' | translate }}</span>
               </button>
 
               <!-- Action buttons on Right -->
               <div class="flex items-center gap-3">
-                <button (click)="cancelCrop()" class="px-6 py-2.5 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors cursor-pointer">إلغاء</button>
+                <button (click)="cancelCrop()" class="px-6 py-2.5 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors cursor-pointer">{{ 'MESSAGES.CROP_CANCEL' | translate }}</button>
                 <button (click)="confirmCrop()" class="px-8 py-2.5 rounded-xl font-bold text-white bg-[#0a8f96] hover:bg-[#076b70] transition-colors shadow-lg shadow-[#0a8f96]/20 flex items-center gap-2 cursor-pointer">
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                   </svg>
-                  <span>اعتماد التعديل</span>
+                  <span>{{ 'MESSAGES.CROP_CONFIRM' | translate }}</span>
                 </button>
               </div>
             </div>
@@ -573,7 +573,7 @@
                 [class.bg-slate-100]="showSoundSettings()"
                 [class.text-[#0a5c60]]="showSoundSettings()"
                 class="p-2 rounded-full border border-slate-200 bg-white hover:bg-slate-50 transition-all text-slate-500 hover:text-slate-700 cursor-pointer" 
-                title="إعدادات صوت التنبيهات">
+                [title]="'MESSAGES.SOUND_SETTINGS_TITLE' | translate">
           <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
             <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -605,7 +605,7 @@
     @if (showSoundSettings()) {
       <div class="px-5 py-4 bg-slate-50 border-b border-slate-100 animate-in slide-in-from-top duration-300">
         <div class="flex items-center justify-between mb-3.5">
-          <span class="text-xs font-black text-slate-800">تنبيهات الصوت للرسائل</span>
+          <span class="text-xs font-black text-slate-800">{{ 'MESSAGES.SOUND_ALERTS_LABEL' | translate }}</span>
           <label class="relative inline-flex items-center cursor-pointer">
             <input type="checkbox" 
                    [checked]="soundEnabled()" 
@@ -617,7 +617,7 @@
 
         @if (soundEnabled()) {
           <div class="space-y-2">
-            <span class="text-[10px] font-black text-slate-400 block mb-1">اختر نغمة التنبيه</span>
+            <span class="text-[10px] font-black text-slate-400 block mb-1">{{ 'MESSAGES.CHOOSE_TONE' | translate }}</span>
             <div class="grid grid-cols-4 gap-2">
               <button (click)="changeSoundType('premium')"
                       [class.bg-[#0a8f96]]="soundType() === 'premium'"
@@ -626,7 +626,7 @@
                       [class.text-slate-700]="soundType() !== 'premium'"
                       [class.border-slate-200]="soundType() !== 'premium'"
                       class="px-2 py-2 rounded-xl text-[11px] font-bold border transition-all cursor-pointer flex flex-col items-center gap-1">
-                <span>✨ بلوري</span>
+                <span>{{ 'MESSAGES.TONE_CRYSTAL' | translate }}</span>
               </button>
               <button (click)="changeSoundType('pop')"
                       [class.bg-[#0a8f96]]="soundType() === 'pop'"
@@ -635,7 +635,7 @@
                       [class.text-slate-700]="soundType() !== 'pop'"
                       [class.border-slate-200]="soundType() !== 'pop'"
                       class="px-2 py-2 rounded-xl text-[11px] font-bold border transition-all cursor-pointer flex flex-col items-center gap-1">
-                <span>🎈 فقاعة</span>
+                <span>{{ 'MESSAGES.TONE_BUBBLE' | translate }}</span>
               </button>
               <button (click)="changeSoundType('classic')"
                       [class.bg-[#0a8f96]]="soundType() === 'classic'"
@@ -644,7 +644,7 @@
                       [class.text-slate-700]="soundType() !== 'classic'"
                       [class.border-slate-200]="soundType() !== 'classic'"
                       class="px-2 py-2 rounded-xl text-[11px] font-bold border transition-all cursor-pointer flex flex-col items-center gap-1">
-                <span>🤖 &#1603;&#1604;&#1575;&#1587;&#1610;&#1603;&#1610;</span>
+                <span>{{ 'MESSAGES.TONE_CLASSIC' | translate }}</span>
               </button>
               <button (click)="changeSoundType('custom')"
                       [class.bg-[#0a8f96]]="soundType() === 'custom'"
@@ -653,7 +653,7 @@
                       [class.text-slate-700]="soundType() !== 'custom'"
                       [class.border-slate-200]="soundType() !== 'custom'"
                       class="px-2 py-2 rounded-xl text-[11px] font-bold border transition-all cursor-pointer flex flex-col items-center gap-1">
-                <span>🎵 &#1605;&#1582;&#1589;&#1589;&#1577;</span>
+                <span>{{ 'MESSAGES.TONE_CUSTOM' | translate }}</span>
               </button>
             </div>
           </div>
@@ -664,15 +664,16 @@
     <!-- Search in Chats -->
     <div class="px-5 py-3 bg-white border-b border-slate-50">
       <div class="relative flex items-center bg-slate-50 border border-slate-100 rounded-2xl px-4 py-2 transition-all focus-within:bg-white focus-within:border-[#0a8f96] focus-within:ring-2 focus-within:ring-[#0a8f96]/10 shadow-inner">
-        <svg class="w-4 h-4 text-slate-400 ltr:mr-2.5 rtl:ml-2.5 transition-colors" [class.text-[#0a8f96]]="searchQuery" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg class="w-4 h-4 text-slate-400 ltr:mr-2.5 rtl:ml-2.5 transition-colors" [class.text-[#0a8f96]]="searchQuery()" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
         </svg>
         <input type="text" 
-               [(ngModel)]="searchQuery" 
+               [ngModel]="searchQuery()" 
+               (ngModelChange)="searchQuery.set($event)"
                class="bg-transparent border-0 focus:ring-0 text-[13px] text-slate-800 w-full placeholder-slate-400 py-1 outline-none font-medium ltr:text-left rtl:text-right" 
                [placeholder]="'MESSAGES.SEARCH_PLACEHOLDER' | translate">
-        @if (searchQuery) {
-          <button (click)="searchQuery = ''" class="text-slate-400 hover:text-slate-900 cursor-pointer">
+        @if (searchQuery()) {
+          <button (click)="searchQuery.set('')" class="text-slate-400 hover:text-slate-900 cursor-pointer">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
             </svg>
@@ -706,7 +707,7 @@
                   {{ getOtherName(conv) }}
                 </h3>
                 @if (mutedConversations().includes(conv.id)) {
-                  <svg class="w-3.5 h-3.5 text-slate-400 shrink-0 animate-in fade-in duration-200" fill="none" stroke="currentColor" stroke-width="2.3" viewBox="0 0 24 24" title="كتم الإشعارات">
+                  <svg class="w-3.5 h-3.5 text-slate-400 shrink-0 animate-in fade-in duration-200" fill="none" stroke="currentColor" stroke-width="2.3" viewBox="0 0 24 24"                     [title]="'MESSAGES.MUTED_TOOLTIP' | translate">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                   </svg>
                 }
@@ -743,14 +744,14 @@
       }
     </div>
 
-    <!-- Bottom sidebar button "+ محادثة جديدة" -->
+    <!-- Bottom sidebar button: new conversation -->
     @if (!auth.isAgent()) {
       <div class="p-4 border-t border-slate-100 bg-white shrink-0">
         <button (click)="startNewConversation()" class="w-full py-3.5 bg-slate-100 hover:bg-slate-200/80 text-slate-800 text-xs font-black uppercase tracking-wider rounded-2xl transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer">
           <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
           </svg>
-          <span>محادثة جديدة</span>
+          <span>{{ 'MESSAGES.NEW_CHAT' | translate }}</span>
         </button>
       </div>
     }
@@ -784,7 +785,7 @@
           <!-- Name & Role Badge -->
           <h3 class="text-xl font-extrabold text-slate-900 mb-2">{{ recipientName() | translate }}</h3>
           <span class="px-4 py-1.5 rounded-full text-xs font-black bg-teal-50 border border-teal-100 text-[#0a8f96] mb-6 uppercase tracking-wider">
-            {{ (activeConversation()?.agentUserId === auth.userId() ? 'مشتري عقارات' : 'وكيل عقاري رئيسي') }}
+            {{ (activeConversation()?.agentUserId === auth.userId() ? 'MESSAGES.BUYER' : 'MESSAGES.AGENT') | translate }}
           </span>
 
           <!-- Separator Line -->
@@ -799,7 +800,7 @@
                 </svg>
               </div>
               <div>
-                <span class="text-[9px] font-black text-slate-400 block uppercase tracking-wider">البريد الإلكتروني</span>
+                <span class="text-[9px] font-black text-slate-400 block uppercase tracking-wider">{{ 'MESSAGES.EMAIL_LABEL' | translate }}</span>
                 <span class="text-xs font-bold text-slate-700">
                   {{ (activeConversation()?.agentUserId === auth.userId() ? 'buyer@baytology.com' : 'agent@baytology.com') }}
                 </span>
@@ -813,7 +814,7 @@
                 </svg>
               </div>
               <div>
-                <span class="text-[9px] font-black text-slate-400 block uppercase tracking-wider">رقم الهاتف</span>
+                <span class="text-[9px] font-black text-slate-400 block uppercase tracking-wider">{{ 'MESSAGES.PHONE_LABEL' | translate }}</span>
                 <span class="text-xs font-bold text-slate-700">+20 102 345 6789</span>
               </div>
             </div>
@@ -826,7 +827,7 @@
                   </svg>
                 </div>
                 <div>
-                  <span class="text-[9px] font-black text-slate-400 block uppercase tracking-wider">العقار المهتم به</span>
+                  <span class="text-[9px] font-black text-slate-400 block uppercase tracking-wider">{{ 'MESSAGES.INTERESTED_PROPERTY' | translate }}</span>
                   <span class="text-xs font-bold text-slate-700 leading-snug">
                     {{ activeConversation()?.propertyTitle }}
                   </span>
@@ -838,10 +839,10 @@
           <!-- Quick Action Buttons -->
           <div class="w-full grid grid-cols-2 gap-3 mt-8">
             <a href="tel:+201023456789" class="py-3 rounded-2xl bg-[#0a8f96] hover:bg-[#076b70] text-white text-xs font-black shadow-md shadow-[#0a8f96]/15 hover:shadow-lg transition-all duration-200 text-center cursor-pointer">
-              اتصال هاتفي 📞
+              {{ 'MESSAGES.CALL_NOW' | translate }}
             </a>
             <button (click)="showContactModal.set(false)" class="py-3 rounded-2xl bg-slate-50 hover:bg-slate-100 border border-slate-100 text-slate-700 text-xs font-black transition-all duration-200 cursor-pointer">
-              إغلاق
+              {{ 'MESSAGES.CLOSE_BTN' | translate }}
             </button>
           </div>
         </div>

@@ -13,15 +13,16 @@ import { LocalImageService } from '../../../core/services/local-image.service';
 import { DecimalPipe, CommonModule } from '@angular/common';
 import { SkeletonLoaderComponent } from '../../../shared/components/skeleton-loader/skeleton-loader';
 import { CurrencyEgpPipe } from '../../../shared/pipes/currency-egp.pipe';
-import { resolveBackendAssetUrl } from '../../../core/utils/media';
+import { resolveBackendAssetUrl, buildPropertyPlaceholder } from '../../../core/utils/media';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { PropertyCompareComponent } from '../../../shared/components/property-compare/property-compare';
 import * as L from 'leaflet';
 import { EGYPT_REGIONS, Governorate, City } from '../../../core/constants/egypt-regions';
 
 @Component({
   selector: 'app-property-list',
   standalone: true,
-  imports: [FormsModule, RouterLink, PaginationComponent, SkeletonLoaderComponent, EmptyStateComponent, DecimalPipe, CurrencyEgpPipe, TranslateModule, CommonModule],
+  imports: [FormsModule, RouterLink, PaginationComponent, SkeletonLoaderComponent, EmptyStateComponent, DecimalPipe, CurrencyEgpPipe, TranslateModule, CommonModule, PropertyCompareComponent],
   template: `
     <div class="min-h-[calc(100vh-72px)] bg-white font-sans flex flex-col lg:flex-row-reverse text-gray-800 relative">
       
@@ -409,311 +410,10 @@ import { EGYPT_REGIONS, Governorate, City } from '../../../core/constants/egypt-
         </div>
       </div>
 
-      <!-- Floating Comparison Tray -->
-      @if (selectedPropertiesForCompare().length > 0) {
-        <div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[200] w-[90%] max-w-xl bg-white/95 backdrop-blur-md border border-slate-100 shadow-[0_20px_50px_rgba(0,0,0,0.12)] rounded-2xl p-4 flex items-center justify-between gap-4 animate-slide-up select-none">
-          <div class="flex items-center gap-3">
-            <span class="w-8 h-8 rounded-full bg-[#0a8f96]/10 text-[#0a8f96] flex items-center justify-center font-black text-sm select-none animate-scale-in">
-              {{ selectedPropertiesForCompare().length }}
-            </span>
-            <div class="text-right">
-              <h3 class="text-xs font-black text-slate-800 leading-none mb-1">{{ 'COMPARE.TRAY_TITLE' | translate }}</h3>
-              <p class="text-[9px] text-slate-400 font-bold">{{ 'COMPARE.TRAY_HELP' | translate }}</p>
-            </div>
-          </div>
-          
-          <!-- Selected Thumbnails -->
-          <div class="hidden sm:flex items-center gap-2 overflow-hidden max-w-[200px]">
-            @for (item of selectedPropertiesForCompare(); track item.id) {
-              <div class="relative w-10 h-10 rounded-lg overflow-hidden border border-slate-100 shrink-0 group/thumb animate-scale-in">
-                <img [src]="item.primaryImageUrl || '/assets/logo.svg'" class="w-full h-full object-cover">
-                <button (click)="toggleCompare(item)" class="absolute inset-0 bg-black/40 opacity-0 group-hover/thumb:opacity-100 flex items-center justify-center text-white transition-opacity cursor-pointer">
-                  <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
-                </button>
-              </div>
-            }
-          </div>
-
-          <div class="flex items-center gap-2">
-            <button (click)="clearAllCompare()" class="px-3 py-2 text-xs font-bold text-slate-400 hover:text-red-500 transition-colors cursor-pointer">
-              {{ 'COMPARE.CLEAR' | translate }}
-            </button>
-            <button (click)="openCompareModal()" 
-                    [disabled]="selectedPropertiesForCompare().length < 2"
-                    [class.opacity-50]="selectedPropertiesForCompare().length < 2"
-                    class="bg-[#0a8f96] hover:bg-[#076b70] text-white px-5 py-2.5 rounded-xl text-xs font-black shadow-lg shadow-[#0a8f96]/20 transition-all hover:scale-[1.02] active:scale-95 cursor-pointer disabled:cursor-not-allowed">
-              {{ 'COMPARE.BTN_COMPARE' | translate }}
-            </button>
-          </div>
-        </div>
-      }
-
-      <!-- Full-Screen Glassmorphic Comparison Matrix Modal -->
-      @if (showCompareModal()) {
-        <div class="fixed inset-0 z-[300] flex items-center justify-center p-4 sm:p-6 md:p-10 select-none animate-fade-in" dir="rtl">
-          <!-- Backdrop -->
-          <div class="absolute inset-0 bg-slate-950/40 backdrop-blur-md" (click)="showCompareModal.set(false)"></div>
-          
-          <!-- Modal Body -->
-          <div class="relative w-full max-w-5xl h-[85vh] bg-white/95 backdrop-blur-xl border border-white/60 shadow-[0_30px_70px_rgba(0,0,0,0.2)] rounded-[32px] overflow-hidden flex flex-col animate-slide-up">
-            
-            <!-- Modal Header -->
-            <div class="px-8 py-5 border-b border-slate-100 flex items-center justify-between">
-              <div class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-xl bg-[#0a8f96]/10 flex items-center justify-center text-lg">⚖️</div>
-                <div>
-                  <h2 class="text-lg font-black text-slate-900 leading-none mb-1">{{ 'COMPARE.MATRIX_TITLE' | translate }}</h2>
-                  <p class="text-[10px] text-slate-400 font-bold">{{ 'COMPARE.MATRIX_SUBTITLE' | translate }}</p>
-                </div>
-              </div>
-              <button (click)="showCompareModal.set(false)" class="p-2 hover:bg-slate-50 rounded-xl text-slate-400 hover:text-slate-600 transition-colors cursor-pointer">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-              </button>
-            </div>
-
-            <!-- Modal Content (Scrollable Matrix) -->
-            <div class="flex-1 overflow-y-auto p-6 sm:p-8 custom-scrollbar bg-slate-50/30">
-              @if (loadingCompareDetails()) {
-                <!-- Skeleton Loader for Matrix -->
-                <div class="space-y-4 animate-pulse">
-                  <div class="grid grid-cols-[140px_1fr_1fr] md:grid-cols-[180px_1fr_1fr_1fr] gap-4">
-                    <div class="h-10 bg-slate-100 rounded-xl"></div>
-                    <div class="h-40 bg-slate-100 rounded-2xl"></div>
-                    <div class="h-40 bg-slate-100 rounded-2xl"></div>
-                    <div class="h-40 bg-slate-100 rounded-2xl hidden md:block"></div>
-                  </div>
-                  @for (row of [1,2,3,4,5,6]; track row) {
-                    <div class="grid grid-cols-[140px_1fr_1fr] md:grid-cols-[180px_1fr_1fr_1fr] gap-4 border-t border-slate-50 pt-4">
-                      <div class="h-6 bg-slate-100 rounded-lg w-20"></div>
-                      <div class="h-6 bg-slate-50 rounded-lg"></div>
-                      <div class="h-6 bg-slate-50 rounded-lg"></div>
-                      <div class="h-6 bg-slate-50 rounded-lg hidden md:block"></div>
-                    </div>
-                  }
-                </div>
-              } @else {
-                <!-- Comparison Matrix Grid Table -->
-                <div class="overflow-x-auto min-w-full">
-                  <div class="grid gap-y-0 gap-x-6 min-w-[700px] divide-y divide-slate-100"
-                       [style.grid-template-columns]="'140px repeat(' + comparedPropertiesDetails().length + ', 1fr)'">
-                    
-                    <!-- Row 1: Property Images & Titles -->
-                    <div class="contents">
-                      <div class="py-4 text-xs font-black text-slate-400 flex items-center">{{ 'COMPARE.PROPERTY' | translate }}</div>
-                      @for (p of comparedPropertiesDetails(); track p.id) {
-                        <div class="py-4 relative flex flex-col group/col">
-                          <!-- Delete Column button -->
-                          <button (click)="removeComparedProperty(p.id)" class="absolute top-2 left-2 z-10 w-7 h-7 bg-white/95 rounded-full border border-slate-100 shadow-sm flex items-center justify-center text-slate-400 hover:text-red-500 hover:scale-110 active:scale-95 transition-all cursor-pointer" [title]="'COMPARE.REMOVE' | translate">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
-                          </button>
-                          
-                          <!-- Property Visual Thumbnail -->
-                          <div class="w-full h-32 rounded-2xl overflow-hidden border border-slate-100 mb-3 relative bg-slate-50">
-                            <img [src]="getCompareImage(p)" class="w-full h-full object-cover">
-                            <span class="absolute bottom-2 right-2 bg-white/90 backdrop-blur-md text-[9px] font-black px-2 py-0.5 rounded text-[#0a8f96] border border-[#0a8f96]/10">
-                              {{ 'PROPERTY.TYPES.' + p.propertyType | translate }}
-                            </span>
-                          </div>
-                          
-                          <a [routerLink]="['/properties', p.id]" (click)="showCompareModal.set(false)" class="text-sm font-black text-slate-900 hover:text-[#0a8f96] transition-colors leading-tight line-clamp-2">{{ p.title }}</a>
-                        </div>
-                      }
-                    </div>
-
-                    <!-- Row 2: Price -->
-                    <div class="contents">
-                      <div class="py-4 text-xs font-black text-slate-400 flex items-center">{{ 'COMPARE.PRICE' | translate }}</div>
-                      @for (p of comparedPropertiesDetails(); track p.id) {
-                        <div class="py-4 text-lg font-black text-[#0a8f96] tracking-tight flex items-center">
-                          {{ p.price | currencyEgp }}
-                        </div>
-                      }
-                    </div>
-
-                    <!-- Row 3: City & District -->
-                    <div class="contents">
-                      <div class="py-4 text-xs font-black text-slate-400 flex items-center">{{ 'COMPARE.LOCATION' | translate }}</div>
-                      @for (p of comparedPropertiesDetails(); track p.id) {
-                        <div class="py-4 text-xs font-bold text-slate-600 flex items-center gap-1.5">
-                          <svg class="w-3.5 h-3.5 text-slate-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                          <span>{{ getDistrictLabel(p.district) }}، {{ getCityLabel(p.city) }}</span>
-                        </div>
-                      }
-                    </div>
-
-                    <!-- Row 4: Area -->
-                    <div class="contents">
-                      <div class="py-4 text-xs font-black text-slate-400 flex items-center">{{ 'COMPARE.AREA' | translate }}</div>
-                      @for (p of comparedPropertiesDetails(); track p.id) {
-                        <div class="py-4 text-sm font-black text-slate-900 flex items-center">
-                          {{ p.area | number }} <span class="text-[10px] font-normal text-slate-400 mr-1">{{ 'PROPERTY.AREA_UNIT' | translate }}</span>
-                        </div>
-                      }
-                    </div>
-
-                    <!-- Row 5: Bedrooms & Bathrooms -->
-                    <div class="contents">
-                      <div class="py-4 text-xs font-black text-slate-400 flex items-center">{{ 'COMPARE.ROOMS_BATHS' | translate }}</div>
-                      @for (p of comparedPropertiesDetails(); track p.id) {
-                        <div class="py-4 text-xs font-bold text-slate-700 flex items-center gap-4">
-                          <div class="flex items-center gap-1">
-                            <span class="text-slate-400">🛏️</span>
-                            <span>{{ p.bedrooms }} {{ 'COMPARE.ROOMS' | translate }}</span>
-                          </div>
-                          <div class="flex items-center gap-1">
-                            <span class="text-slate-400">🛁</span>
-                            <span>{{ p.bathrooms }} {{ 'COMPARE.BATHS' | translate }}</span>
-                          </div>
-                        </div>
-                      }
-                    </div>
-
-                    <!-- Row 6: Listing Type & Status -->
-                    <div class="contents">
-                      <div class="py-4 text-xs font-black text-slate-400 flex items-center">{{ 'COMPARE.TYPE_STATUS' | translate }}</div>
-                      @for (p of comparedPropertiesDetails(); track p.id) {
-                        <div class="py-4 flex items-center gap-2">
-                          <span class="bg-[#0a8f96]/5 text-[#0a8f96] text-[10px] font-black tracking-wider px-2.5 py-1 rounded-md border border-[#0a8f96]/10">
-                            {{ 'PROPERTY.LISTING_TYPES.' + p.listingType | translate }}
-                          </span>
-                          <span class="bg-slate-100 text-slate-500 text-[9px] font-black tracking-wider px-2 py-0.5 rounded border border-slate-100">
-                            {{ 'PROPERTY.STATUSES.' + p.status | translate }}
-                          </span>
-                        </div>
-                      }
-                    </div>
-
-                    <!-- Row 7: Furnishing & View -->
-                    <div class="contents">
-                      <div class="py-4 text-xs font-black text-slate-400 flex items-center">{{ 'COMPARE.FURNISHING_VIEW' | translate }}</div>
-                      @for (p of comparedPropertiesDetails(); track p.id) {
-                        <div class="py-4 text-xs font-bold text-slate-700 flex items-center gap-3">
-                          <span class="bg-amber-500/5 text-amber-600 text-[10px] font-black px-2.5 py-1 rounded-md border border-amber-500/10">
-                            {{ getFurnishingLabel(p.amenity?.furnishingStatus) }}
-                          </span>
-                          <span class="bg-blue-500/5 text-blue-600 text-[10px] font-black px-2.5 py-1 rounded-md border border-blue-500/10">
-                            👀 {{ getViewTypeLabel(p.amenity?.viewType) }}
-                          </span>
-                        </div>
-                      }
-                    </div>
-
-                    <!-- Row 8: Parking -->
-                    <div class="contents">
-                      <div class="py-4 text-xs font-black text-slate-400 flex items-center">{{ 'COMPARE.PARKING' | translate }}</div>
-                      @for (p of comparedPropertiesDetails(); track p.id) {
-                        <div class="py-4 flex items-center">
-                          @if (p.amenity?.hasParking) {
-                            <span class="text-emerald-500 font-bold flex items-center gap-1.5 text-xs"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> {{ 'COMPARE.AVAILABLE' | translate }}</span>
-                          } @else {
-                            <span class="text-slate-300 font-bold flex items-center gap-1.5 text-xs"><span class="w-2 h-2 rounded-full bg-slate-300"></span> {{ 'COMPARE.UNAVAILABLE' | translate }}</span>
-                          }
-                        </div>
-                      }
-                    </div>
-
-                    <!-- Row 9: Swimming Pool -->
-                    <div class="contents">
-                      <div class="py-4 text-xs font-black text-slate-400 flex items-center">{{ 'COMPARE.POOL' | translate }}</div>
-                      @for (p of comparedPropertiesDetails(); track p.id) {
-                        <div class="py-4 flex items-center">
-                          @if (p.amenity?.hasPool) {
-                            <span class="text-emerald-500 font-bold flex items-center gap-1.5 text-xs"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> {{ 'COMPARE.AVAILABLE' | translate }}</span>
-                          } @else {
-                            <span class="text-slate-300 font-bold flex items-center gap-1.5 text-xs"><span class="w-2 h-2 rounded-full bg-slate-300"></span> {{ 'COMPARE.UNAVAILABLE' | translate }}</span>
-                          }
-                        </div>
-                      }
-                    </div>
-
-                    <!-- Row 10: Gym -->
-                    <div class="contents">
-                      <div class="py-4 text-xs font-black text-slate-400 flex items-center">{{ 'COMPARE.GYM' | translate }}</div>
-                      @for (p of comparedPropertiesDetails(); track p.id) {
-                        <div class="py-4 flex items-center">
-                          @if (p.amenity?.hasGym) {
-                            <span class="text-emerald-500 font-bold flex items-center gap-1.5 text-xs"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> {{ 'COMPARE.AVAILABLE' | translate }}</span>
-                          } @else {
-                            <span class="text-slate-300 font-bold flex items-center gap-1.5 text-xs"><span class="w-2 h-2 rounded-full bg-slate-300"></span> {{ 'COMPARE.UNAVAILABLE' | translate }}</span>
-                          }
-                        </div>
-                      }
-                    </div>
-
-                    <!-- Row 11: Elevator -->
-                    <div class="contents">
-                      <div class="py-4 text-xs font-black text-slate-400 flex items-center">{{ 'COMPARE.ELEVATOR' | translate }}</div>
-                      @for (p of comparedPropertiesDetails(); track p.id) {
-                        <div class="py-4 flex items-center">
-                          @if (p.amenity?.hasElevator) {
-                            <span class="text-emerald-500 font-bold flex items-center gap-1.5 text-xs"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> {{ 'COMPARE.AVAILABLE' | translate }}</span>
-                          } @else {
-                            <span class="text-slate-300 font-bold flex items-center gap-1.5 text-xs"><span class="w-2 h-2 rounded-full bg-slate-300"></span> {{ 'COMPARE.UNAVAILABLE' | translate }}</span>
-                          }
-                        </div>
-                      }
-                    </div>
-
-                    <!-- Row 12: Balcony -->
-                    <div class="contents">
-                      <div class="py-4 text-xs font-black text-slate-400 flex items-center">{{ 'COMPARE.BALCONY' | translate }}</div>
-                      @for (p of comparedPropertiesDetails(); track p.id) {
-                        <div class="py-4 flex items-center">
-                          @if (p.amenity?.hasBalcony) {
-                            <span class="text-emerald-500 font-bold flex items-center gap-1.5 text-xs"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> {{ 'COMPARE.AVAILABLE' | translate }}</span>
-                          } @else {
-                            <span class="text-slate-300 font-bold flex items-center gap-1.5 text-xs"><span class="w-2 h-2 rounded-full bg-slate-300"></span> {{ 'COMPARE.UNAVAILABLE' | translate }}</span>
-                          }
-                        </div>
-                      }
-                    </div>
-
-                    <!-- Row 13: Garden -->
-                    <div class="contents">
-                      <div class="py-4 text-xs font-black text-slate-400 flex items-center">{{ 'COMPARE.GARDEN' | translate }}</div>
-                      @for (p of comparedPropertiesDetails(); track p.id) {
-                        <div class="py-4 flex items-center">
-                          @if (p.amenity?.hasGarden) {
-                            <span class="text-emerald-500 font-bold flex items-center gap-1.5 text-xs"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> {{ 'COMPARE.AVAILABLE' | translate }}</span>
-                          } @else {
-                            <span class="text-slate-300 font-bold flex items-center gap-1.5 text-xs"><span class="w-2 h-2 rounded-full bg-slate-300"></span> {{ 'COMPARE.UNAVAILABLE' | translate }}</span>
-                          }
-                        </div>
-                      }
-                    </div>
-
-                    <!-- Row 14: Central AC -->
-                    <div class="contents">
-                      <div class="py-4 text-xs font-black text-slate-400 flex items-center">{{ 'COMPARE.AC' | translate }}</div>
-                      @for (p of comparedPropertiesDetails(); track p.id) {
-                        <div class="py-4 flex items-center">
-                          @if (p.amenity?.hasCentralAC) {
-                            <span class="text-emerald-500 font-bold flex items-center gap-1.5 text-xs"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> {{ 'COMPARE.AVAILABLE' | translate }}</span>
-                          } @else {
-                            <span class="text-slate-300 font-bold flex items-center gap-1.5 text-xs"><span class="w-2 h-2 rounded-full bg-slate-300"></span> {{ 'COMPARE.UNAVAILABLE' | translate }}</span>
-                          }
-                        </div>
-                      }
-                    </div>
-
-                  </div>
-                </div>
-              }
-            </div>
-
-            <!-- Modal Footer -->
-            <div class="px-8 py-5 border-t border-slate-100 flex justify-end gap-3 select-none bg-slate-50/50">
-              <button (click)="showCompareModal.set(false)" class="px-6 py-3 rounded-2xl text-xs font-black text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition-all cursor-pointer">
-                {{ 'COMPARE.CLOSE' | translate }}
-              </button>
-            </div>
-
-          </div>
-        </div>
-      }
+      <app-property-compare [selectedProperties]="selectedPropertiesForCompare()" (compareChange)="selectedPropertiesForCompare.set($event)" />
 
     </div>
-  `,
+  `
 })
 export class PropertyListComponent implements OnInit, AfterViewInit {
   public translate = inject(TranslateService);
@@ -723,9 +423,6 @@ export class PropertyListComponent implements OnInit, AfterViewInit {
   
   // Comparison Matrix State
   selectedPropertiesForCompare = signal<PropertyListItem[]>([]);
-  showCompareModal = signal(false);
-  loadingCompareDetails = signal(false);
-  comparedPropertiesDetails = signal<Property[]>([]);
 
   loading = signal(true);
   currentPage = signal(1);
@@ -739,7 +436,11 @@ export class PropertyListComponent implements OnInit, AfterViewInit {
   showDistrictDropdown = signal(false);
   showTypeDropdown = signal(false);
 
-  // Localization Mappings (Key -> Arabic Backend Value)
+  // Backend Filter Mapping (English key -> Arabic value expected by API).
+  // These are DATA constants used for backend communication, not user-facing text.
+  // They mirror the CITIES/DISTRICTS entries in public/i18n/ar.json and must be
+  // kept in sync when adding new locations. User-facing display uses
+  // 'CITIES.' + key | translate etc. directly (see getCityLabel/getDistrictLabel).
   private cityMap: Record<string, string> = {
     'Cairo': 'القاهرة', 'Alexandria': 'الإسكندرية', 'Giza': 'الجيزة', 'Mansoura': 'المنصورة',
     'Tanta': 'طنطا', 'Mahalla': 'المحلة الكبرى', 'PortSaid': 'بور سعيد', 'Suez': 'السويس',
@@ -1202,6 +903,10 @@ export class PropertyListComponent implements OnInit, AfterViewInit {
     return this.selectedPropertiesForCompare().some(item => item.id === id);
   }
 
+
+
+
+
   toggleCompare(item: PropertyListItem) {
     this.selectedPropertiesForCompare.update(current => {
       const exists = current.some(i => i.id === item.id);
@@ -1216,72 +921,4 @@ export class PropertyListComponent implements OnInit, AfterViewInit {
     });
   }
 
-  clearAllCompare() {
-    this.selectedPropertiesForCompare.set([]);
-  }
-
-  async openCompareModal() {
-    if (this.selectedPropertiesForCompare().length < 2) {
-      this.toast.info(this.translate.instant('COMPARE.TOAST_MIN'));
-      return;
-    }
-    this.showCompareModal.set(true);
-    this.loadingCompareDetails.set(true);
-    this.comparedPropertiesDetails.set([]);
-    try {
-      const fetchPromises = this.selectedPropertiesForCompare().map(p => this.propertyService.getById(p.id));
-      const details = await Promise.all(fetchPromises);
-      this.comparedPropertiesDetails.set(details);
-    } catch (err) {
-      this.toast.error(this.translate.instant('COMPARE.TOAST_ERROR'));
-      this.showCompareModal.set(false);
-    } finally {
-      this.loadingCompareDetails.set(false);
-    }
-  }
-
-  removeComparedProperty(id: string) {
-    this.selectedPropertiesForCompare.update(current => current.filter(i => i.id !== id));
-    this.comparedPropertiesDetails.update(current => current.filter(i => i.id !== id));
-    if (this.selectedPropertiesForCompare().length < 2) {
-      this.showCompareModal.set(false);
-    }
-  }
-
-  getFurnishingLabel(status?: string): string {
-    if (!status) return this.translate.instant('COMPARE.NOT_SPECIFIED');
-    const dict: Record<string, string> = {
-      'Furnished': 'COMPARE.FURNISHING_FULLY',
-      'SemiFurnished': 'COMPARE.FURNISHING_SEMI',
-      'Unfurnished': 'COMPARE.FURNISHING_UN',
-      'FullyFurnished': 'COMPARE.FURNISHING_FULLY',
-      'UnfurnishedMuted': 'COMPARE.FURNISHING_UN'
-    };
-    const key = dict[status];
-    return key ? this.translate.instant(key) : status;
-  }
-
-  getViewTypeLabel(view?: string): string {
-    if (!view) return this.translate.instant('COMPARE.NOT_SPECIFIED');
-    const dict: Record<string, string> = {
-      'Street': 'COMPARE.VIEW_STREET',
-      'Garden': 'COMPARE.VIEW_GARDEN',
-      'Pool': 'COMPARE.VIEW_POOL',
-      'Sea': 'COMPARE.VIEW_SEA',
-      'Nile': 'COMPARE.VIEW_NILE',
-      'Back': 'COMPARE.VIEW_BACK',
-      'MainRoad': 'COMPARE.VIEW_ROAD'
-    };
-    const key = dict[view];
-    return key ? this.translate.instant(key) : view;
-  }
-
-  getCompareImage(p: Property): string {
-    if (p.images && p.images.length > 0) {
-      const primary = p.images.find(img => img.isPrimary);
-      if (primary) return primary.url;
-      return p.images[0].url;
-    }
-    return '/assets/logo.svg';
-  }
 }

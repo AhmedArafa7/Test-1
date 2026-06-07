@@ -4,7 +4,6 @@ import { Injectable } from '@angular/core';
 export class LocalImageService {
   private dbName = 'BaytologyLocalDB';
   private storeName = 'propertyImages';
-  private queueStore = 'uploadQueue';
   private thumbPrefix = 'bayt_thumb_';
 
   constructor() {
@@ -17,9 +16,6 @@ export class LocalImageService {
       const db = request.result;
       if (!db.objectStoreNames.contains(this.storeName)) {
         db.createObjectStore(this.storeName);
-      }
-      if (!db.objectStoreNames.contains(this.queueStore)) {
-        db.createObjectStore(this.queueStore, { autoIncrement: true });
       }
     };
   }
@@ -71,62 +67,6 @@ export class LocalImageService {
     } catch {
       return null;
     }
-  }
-  /** Add to background upload queue */
-  async addToUploadQueue(propertyId: string, data: string): Promise<void> {
-    return new Promise((resolve, reject) => {
-      const request = indexedDB.open(this.dbName, 1);
-      request.onsuccess = () => {
-        const db = request.result;
-        const transaction = db.transaction(this.queueStore, 'readwrite');
-        const store = transaction.objectStore(this.queueStore);
-        store.add({ propertyId, data, status: 'pending', timestamp: Date.now() });
-        transaction.oncomplete = () => resolve();
-        transaction.onerror = () => reject(transaction.error);
-      };
-    });
-  }
-
-  /** Get all pending uploads with their IDs */
-  async getPendingUploads(): Promise<any[]> {
-    return new Promise((resolve) => {
-      const request = indexedDB.open(this.dbName, 1);
-      request.onsuccess = () => {
-        const db = request.result;
-        if (!db.objectStoreNames.contains(this.queueStore)) { resolve([]); return; }
-        const transaction = db.transaction(this.queueStore, 'readonly');
-        const store = transaction.objectStore(this.queueStore);
-        
-        const results: any[] = [];
-        const cursorRequest = store.openCursor();
-        
-        cursorRequest.onsuccess = (event: any) => {
-          const cursor = event.target.result;
-          if (cursor) {
-            results.push({ id: cursor.key, ...cursor.value });
-            cursor.continue();
-          } else {
-            resolve(results);
-          }
-        };
-        cursorRequest.onerror = () => resolve([]);
-      };
-      request.onerror = () => resolve([]);
-    });
-  }
-
-  /** Remove from queue after success */
-  async removeFromQueue(id: number): Promise<void> {
-    return new Promise((resolve) => {
-      const request = indexedDB.open(this.dbName, 1);
-      request.onsuccess = () => {
-        const db = request.result;
-        const transaction = db.transaction(this.queueStore, 'readwrite');
-        const store = transaction.objectStore(this.queueStore);
-        store.delete(id);
-        transaction.oncomplete = () => resolve();
-      };
-    });
   }
 }
 

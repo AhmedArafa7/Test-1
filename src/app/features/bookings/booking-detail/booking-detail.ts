@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, inject } from '@angular/core';
+import { Component, OnInit, signal, inject, computed } from '@angular/core';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Location, CommonModule } from '@angular/common';
 import { LocalizedDatePipe } from '../../../shared/pipes/localized-date.pipe';
@@ -170,7 +170,7 @@ import { ProfileService } from '../../profile/services/profile.service';
                   
                   <div class="w-full sm:w-auto border-t sm:border-t-0 sm:border-r border-gray-100 pt-6 sm:pt-0 sm:pr-8 flex flex-col items-start">
                     <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">{{ 'BOOKINGS.DETAIL.TIME_LABEL' | translate }}</p>
-                    <p class="text-xl font-black text-gray-900 flex items-center gap-2" dir="ltr">
+                    <p class="text-xl font-black text-gray-900 flex items-center gap-2" >
                       <span>{{ b.startDate | localizedDate:'hh:mm a' }}</span>
                       <span class="text-gray-300 text-sm font-medium">{{ 'BOOKINGS.DETAIL.TIME_TO_SEPARATOR' | translate }}</span>
                       <span>{{ b.endDate | localizedDate:'hh:mm a' }}</span>
@@ -266,17 +266,38 @@ import { ProfileService } from '../../profile/services/profile.service';
 
                     <!-- Comment -->
                     <div>
-                      <textarea [(ngModel)]="reviewComment" 
-                                class="w-full bg-gray-50 border-2 border-transparent rounded-[32px] px-8 py-6 text-sm font-bold focus:bg-white focus:border-[#0a8f96] outline-none transition-all resize-none h-40"
-                                [placeholder]="'BOOKINGS.DETAIL.REVIEW_PLACEHOLDER' | translate"></textarea>
+                      <textarea [ngModel]="reviewComment()" (ngModelChange)="reviewComment.set($event); reviewCommentTouched.set(true)" (blur)="reviewCommentTouched.set(true)"
+                                [class]="reviewCommentFieldClass()"
+                                [placeholder]="'BOOKINGS.DETAIL.REVIEW_PLACEHOLDER' | translate"
+                                maxlength="500"></textarea>
+                      <div class="mt-2 flex items-center justify-between gap-2 text-[11px] font-bold tracking-wide">
+                        <div [class]="reviewCommentHintClass()">
+                          @if (reviewCommentTouched() && reviewCommentError()) {
+                            <svg class="icon" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                            <span>{{ 'BOOKINGS.DETAIL.REVIEW_MIN' | translate }}</span>
+                          } @else {
+                            <span>{{ 'BOOKINGS.DETAIL.REVIEW_HINT' | translate }}</span>
+                          }
+                        </div>
+                        <span class="text-gray-400 tabular-nums" dir="ltr">{{ reviewComment().length }} / 500</span>
+                      </div>
                     </div>
 
-                    <button (click)="submitReview()" 
-                            [disabled]="submittingReview() || reviewRating() === 0"
-                            class="w-full bg-gray-900 text-white font-black py-5 rounded-[22px] shadow-xl shadow-gray-900/10 transition-all flex items-center justify-center gap-3 active:scale-95 disabled:opacity-50 disabled:active:scale-100">
-                      @if (submittingReview()) { <div class="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> }
-                      {{ submittingReview() ? ('BOOKINGS.DETAIL.SUBMITTING' | translate) : ('BOOKINGS.DETAIL.SUBMIT_REVIEW' | translate) }}
-                    </button>
+                    <div class="space-y-2">
+                      <button (click)="submitReview()"
+                              [disabled]="submittingReview() || !isReviewValid()"
+                              [title]="!isReviewValid() ? ('BOOKINGS.DETAIL.REVIEW_SAVE_DISABLED_HINT' | translate) : ''"
+                              [class]="(submittingReview() || !isReviewValid()) ? 'w-full bg-gray-200 text-gray-400 font-black py-5 rounded-[22px] flex items-center justify-center gap-3 cursor-not-allowed' : 'w-full bg-gray-900 hover:bg-gray-800 text-white font-black py-5 rounded-[22px] shadow-xl shadow-gray-900/10 transition-all flex items-center justify-center gap-3 active:scale-95'">
+                        @if (submittingReview()) { <div class="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> }
+                        {{ submittingReview() ? ('BOOKINGS.DETAIL.SUBMITTING' | translate) : ('BOOKINGS.DETAIL.SUBMIT_REVIEW' | translate) }}
+                      </button>
+                      @if (!isReviewValid() && (reviewRating() > 0 || reviewCommentTouched())) {
+                        <p class="field-hint is-error justify-center">
+                          <svg class="icon" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                          <span>{{ 'BOOKINGS.DETAIL.REVIEW_SAVE_DISABLED_HINT' | translate }}</span>
+                        </p>
+                      }
+                    </div>
                   </div>
                 </div>
               }
@@ -299,7 +320,7 @@ import { ProfileService } from '../../profile/services/profile.service';
                   </div>
                   <div class="flex justify-between items-center">
                     <span class="text-[11px] font-black text-gray-400 uppercase tracking-widest">{{ 'BOOKINGS.DETAIL.COMMISSION' | translate:{ rate: (b.commissionRate * 100) | number:'1.0-2' } }}</span>
-                    <span class="text-lg font-black text-[#0a8f96]" dir="ltr">+{{ (b.amount * b.commissionRate) | currencyEgp:2 }}</span>
+                    <span class="text-lg font-black text-[#0a8f96]" dir="rtl">+{{ (b.amount * b.commissionRate) | currencyEgp:2 }}</span>
                   </div>
                   @if (b.paymentId) {
                     <div class="flex justify-between items-center pt-4 border-t border-gray-50">
@@ -346,8 +367,31 @@ export class BookingDetailComponent implements OnInit {
   propertyImageUrl = signal<string>('');
   
   reviewRating = signal(0);
-  reviewComment = '';
+  reviewComment = signal('');
+  reviewCommentTouched = signal(false);
   submittingReview = signal(false);
+
+  readonly reviewCommentError = computed<string | null>(() => {
+    // Comment is optional, but if user typed something, require min 3 chars
+    const v = this.reviewComment().trim();
+    if (v && v.length < 3) return 'minLength';
+    return null;
+  });
+  readonly isReviewValid = computed<boolean>(() => {
+    if (this.reviewRating() === 0) return false;
+    if (this.reviewCommentError() !== null) return false;
+    return true;
+  });
+  readonly reviewCommentFieldClass = computed<string>(() => {
+    const base = 'w-full bg-gray-50 border-2 border-transparent rounded-[32px] px-8 py-6 text-sm font-bold focus:bg-white focus:border-[#0a8f96] outline-none transition-all resize-none h-40';
+    if (this.reviewCommentTouched() && this.reviewCommentError()) return base + ' !border-red-300 !bg-red-50/30 focus:!border-red-400';
+    if (this.reviewCommentTouched() && !this.reviewCommentError() && this.reviewComment()) return base + ' !border-emerald-300';
+    return base;
+  });
+  readonly reviewCommentHintClass = computed<string>(() => {
+    if (this.reviewCommentTouched() && this.reviewCommentError()) return 'field-hint is-error';
+    return 'field-hint is-neutral';
+  });
   refunding = signal(false);
   agent = signal<AgentDetail | null>(null);
 
@@ -497,7 +541,8 @@ export class BookingDetailComponent implements OnInit {
 
   async submitReview() {
     const b = this.booking();
-    if (!b || this.reviewRating() === 0) return;
+    this.reviewCommentTouched.set(true);
+    if (!b || !this.isReviewValid()) return;
 
     this.submittingReview.set(true);
     try {
@@ -505,11 +550,12 @@ export class BookingDetailComponent implements OnInit {
         agentUserId: b.agentUserId,
         propertyId: b.propertyId,
         rating: this.reviewRating(),
-        comment: this.reviewComment
+        comment: this.reviewComment()
       });
       this.toast.success(this.translate.instant('BOOKINGS.DETAIL.MESSAGES.REVIEW_SUCCESS'));
       this.reviewRating.set(0);
-      this.reviewComment = '';
+      this.reviewComment.set('');
+      this.reviewCommentTouched.set(false);
     } catch (e: any) {
       console.error('Review submission failed:', e);
       let errorMessage = this.translate.instant('BOOKINGS.DETAIL.MESSAGES.REVIEW_ERROR');

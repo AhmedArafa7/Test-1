@@ -49,27 +49,63 @@ import { firstValueFrom } from 'rxjs';
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                       <div>
                         <label class="block text-xs font-bold text-gray-800 mb-3 tracking-wide">{{ 'PROFILE.EDIT.FIRST_NAME' | translate }} <span class="text-red-500">*</span></label>
-                        <input [ngModel]="firstName()" (ngModelChange)="firstName.set($event)" name="firstName" class="w-full bg-gray-50 border border-gray-200 rounded-2xl px-5 py-4 text-sm font-medium focus:bg-white focus:border-[#0a8f96] focus:ring-4 focus:ring-[#0a8f96]/5 outline-none transition-all" [placeholder]="'PROFILE.EDIT.FIRST_NAME' | translate" required>
+                        <input [ngModel]="firstName()" (ngModelChange)="firstName.set($event); firstNameTouched.set(true)" (blur)="markFirstNameTouched()" name="firstName" [class]="getFieldClasses(firstNameTouched(), firstNameError())" [placeholder]="'PROFILE.EDIT.FIRST_NAME' | translate">
+                        <div class="mt-2 flex items-center gap-1.5 text-[11px] font-bold tracking-wide">
+                          @if (firstNameTouched() && firstNameError()) {
+                            <svg class="w-3.5 h-3.5 text-red-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                            <span class="text-red-600">{{ getErrorMessage(firstNameError()) }}</span>
+                          } @else if (firstNameTouched() && !firstNameError()) {
+                            <svg class="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                            <span class="text-emerald-600">{{ 'PROFILE.EDIT.FIRST_NAME_HINT' | translate }}</span>
+                          } @else {
+                            <span class="text-gray-400">{{ 'PROFILE.EDIT.FIRST_NAME_HINT' | translate }}</span>
+                          }
+                        </div>
                       </div>
                       <div>
                         <label class="block text-xs font-bold text-gray-800 mb-3 tracking-wide">{{ 'PROFILE.EDIT.LAST_NAME' | translate }} <span class="text-red-500">*</span></label>
-                        <input [ngModel]="lastName()" (ngModelChange)="lastName.set($event)" name="lastName" class="w-full bg-gray-50 border border-gray-200 rounded-2xl px-5 py-4 text-sm font-medium focus:bg-white focus:border-[#0a8f96] focus:ring-4 focus:ring-[#0a8f96]/5 outline-none transition-all" [placeholder]="'PROFILE.EDIT.LAST_NAME' | translate" required>
+                        <input [ngModel]="lastName()" (ngModelChange)="lastName.set($event); lastNameTouched.set(true)" (blur)="markLastNameTouched()" name="lastName" [class]="getFieldClasses(lastNameTouched(), lastNameError())" [placeholder]="'PROFILE.EDIT.LAST_NAME' | translate">
+                        <div class="mt-2 flex items-center gap-1.5 text-[11px] font-bold tracking-wide">
+                          @if (lastNameTouched() && lastNameError()) {
+                            <svg class="w-3.5 h-3.5 text-red-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                            <span class="text-red-600">{{ 'PROFILE.EDIT.LAST_NAME_MIN' | translate }}</span>
+                          } @else if (lastNameTouched() && !lastNameError()) {
+                            <svg class="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                            <span class="text-emerald-600">{{ 'PROFILE.EDIT.LAST_NAME_HINT' | translate }}</span>
+                          } @else {
+                            <span class="text-gray-400">{{ 'PROFILE.EDIT.LAST_NAME_HINT' | translate }}</span>
+                          }
+                        </div>
                       </div>
                     </div>
-                    
+                     
                     <div>
                       <label class="block text-xs font-bold text-gray-800 mb-3 tracking-wide">{{ 'PROFILE.EDIT.JOB_TITLE' | translate }}</label>
                       <input [ngModel]="jobTitle()" (ngModelChange)="jobTitle.set($event)" name="jobTitle" class="w-full bg-gray-50 border border-gray-200 rounded-2xl px-5 py-4 text-sm font-medium focus:bg-white focus:border-[#0a8f96] focus:ring-4 focus:ring-[#0a8f96]/5 outline-none transition-all" [placeholder]="'PROFILE.EDIT.JOB_TITLE' | translate">
+                      <div class="mt-2 flex items-center gap-1.5 text-[11px] font-bold tracking-wide text-gray-400">
+                        <span>{{ 'PROFILE.EDIT.JOB_TITLE_HINT' | translate }}</span>
+                      </div>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                       <div>
                         <label class="block text-xs font-bold text-gray-800 mb-3 tracking-wide">{{ 'PROFILE.EDIT.PHONE_NUMBER' | translate }} </label>
-                        <input [ngModel]="phoneNumber()" (ngModelChange)="phoneNumber.set($event)" name="phoneNumber" type="tel" dir="ltr" class="w-full bg-gray-50 border border-gray-200 rounded-2xl px-5 py-4 text-sm font-medium focus:bg-white focus:border-[#0a8f96] focus:ring-4 focus:ring-[#0a8f96]/5 outline-none transition-all ltr:text-left rtl:text-right" [placeholder]="'PROFILE.EDIT.PHONE_PLACEHOLDER' | translate" required>
+                        <input [ngModel]="phoneNumber()" (ngModelChange)="phoneNumber.set($event); phoneTouched.set(true)" (blur)="markPhoneTouched()" name="phoneNumber" type="tel" dir="ltr" [class]="getFieldClasses(phoneTouched(), phoneError()) + ' ltr:text-left rtl:text-right'" [placeholder]="'PROFILE.EDIT.PHONE_PLACEHOLDER' | translate">
+                        <div class="mt-2 flex items-center gap-1.5 text-[11px] font-bold tracking-wide">
+                          @if (phoneTouched() && phoneError()) {
+                            <svg class="w-3.5 h-3.5 text-red-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                            <span class="text-red-600">{{ getPhoneErrorMessage() }}</span>
+                          } @else if (phoneTouched() && !phoneError() && phoneNumber().trim()) {
+                            <svg class="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                            <span class="text-emerald-600">{{ 'PROFILE.EDIT.PHONE_HINT' | translate }}</span>
+                          } @else {
+                            <span class="text-gray-400">{{ 'PROFILE.EDIT.PHONE_HINT' | translate }}</span>
+                          }
+                        </div>
                       </div>
                       <div>
                         <label class="block text-xs font-bold text-gray-800 mb-3 tracking-wide">{{ 'PROFILE.EDIT.CONTACT_METHOD' | translate }}</label>
-                        <select [ngModel]="preferredContactMethod()" (ngModelChange)="preferredContactMethod.set($event)" name="contactMethod" class="w-full bg-gray-50 border border-gray-200 rounded-2xl px-5 py-4 text-sm font-medium focus:bg-white focus:border-[#0a8f96] outline-none transition-all appearance-none cursor-pointer">
+                        <select [ngModel]="preferredContactMethod()" (ngModelChange)="preferredContactMethod.set($event)" name="contactMethod" [class]="getSelectClasses(true, !!preferredContactMethod())">
                           <option [ngValue]="ContactMethod.Email">{{ 'PROFILE.EDIT.ROLES.EMAIL' | translate }}</option>
                           <option [ngValue]="ContactMethod.Phone">{{ 'PROFILE.EDIT.ROLES.PHONE' | translate }}</option>
                           <option [ngValue]="ContactMethod.WhatsApp">{{ 'PROFILE.EDIT.ROLES.WHATSAPP' | translate }}</option>
@@ -94,18 +130,32 @@ import { firstValueFrom } from 'rxjs';
                         <div>
                           <label class="block text-xs font-bold text-gray-800 mb-3 tracking-wide">{{ 'PROFILE.EDIT.AGENCY_NAME' | translate }}</label>
                           <input [ngModel]="agencyName()" (ngModelChange)="agencyName.set($event)" name="agencyName" maxlength="300" class="w-full bg-gray-50 border border-gray-200 rounded-2xl px-5 py-4 text-sm font-medium focus:bg-white focus:border-[#0a8f96] focus:ring-4 focus:ring-[#0a8f96]/5 outline-none transition-all" [placeholder]="'PROFILE.EDIT.AGENCY_NAME' | translate">
+                          <div class="mt-2 flex items-center gap-1.5 text-[11px] font-bold tracking-wide text-gray-400">
+                            <span>{{ 'PROFILE.EDIT.AGENCY_HINT' | translate }}</span>
+                          </div>
                         </div>
                         <div>
                           <label class="block text-xs font-bold text-gray-800 mb-3 tracking-wide">{{ 'PROFILE.EDIT.LICENSE_NUMBER' | translate }}</label>
                           <input [ngModel]="licenseNumber()" (ngModelChange)="licenseNumber.set($event)" name="licenseNumber" maxlength="100" class="w-full bg-gray-50 border border-gray-200 rounded-2xl px-5 py-4 text-sm font-medium focus:bg-white focus:border-[#0a8f96] focus:ring-4 focus:ring-[#0a8f96]/5 outline-none transition-all" [placeholder]="'PROFILE.EDIT.LICENSE_NUMBER' | translate">
+                          <div class="mt-2 flex items-center gap-1.5 text-[11px] font-bold tracking-wide text-gray-400">
+                            <span>{{ 'PROFILE.EDIT.LICENSE_HINT' | translate }}</span>
+                          </div>
                         </div>
                       </div>
 
                       <div>
                         <label class="block text-xs font-bold text-gray-800 mb-3 tracking-wide">{{ 'PROFILE.EDIT.COMMISSION_RATE' | translate }}</label>
                         <div class="relative">
-                          <input type="number" [ngModel]="commissionRatePercent()" (ngModelChange)="commissionRatePercent.set(+$event)" name="commissionRatePercent" min="0.1" max="99.9" step="0.1" dir="ltr" class="w-full bg-gray-50 border border-gray-200 rounded-2xl px-5 py-4 ltr:pl-14 rtl:pr-14 text-sm font-medium focus:bg-white focus:border-[#0a8f96] focus:ring-4 focus:ring-[#0a8f96]/5 outline-none transition-all tabular-nums" required>
-                          <span class="absolute ltr:left-5 rtl:right-5 top-1/2 -translate-y-1/2 text-sm font-black text-gray-400">%</span>
+                          <input type="number" [ngModel]="commissionRatePercent()" (ngModelChange)="commissionRatePercent.set(+$event); commissionTouched.set(true)" (blur)="markCommissionTouched()" name="commissionRatePercent" min="0.1" max="99.9" step="0.1" dir="ltr" [class]="getFieldClasses(commissionTouched(), commissionError()) + ' ltr:pl-14 rtl:pr-14 tabular-nums'">
+                          <span class="absolute ltr:left-5 rtl:right-5 top-1/2 -translate-y-1/2 text-sm font-black" [class.text-red-400]="commissionTouched() && commissionError()" [class.text-gray-400]="!(commissionTouched() && commissionError())">%</span>
+                        </div>
+                        <div class="mt-2 flex items-center gap-1.5 text-[11px] font-bold tracking-wide">
+                          @if (commissionTouched() && commissionError()) {
+                            <svg class="w-3.5 h-3.5 text-red-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                            <span class="text-red-600">{{ getCommissionErrorMessage() }}</span>
+                          } @else {
+                            <span class="text-gray-400">{{ 'PROFILE.EDIT.COMMISSION_HINT' | translate }}</span>
+                          }
                         </div>
                       </div>
                     </div>
@@ -124,8 +174,9 @@ import { firstValueFrom } from 'rxjs';
                   <div>
                     <label class="block text-xs font-bold text-gray-800 mb-3 tracking-wide">{{ 'PROFILE.EDIT.BIO_LABEL' | translate }}</label>
                     <textarea [ngModel]="bio()" (ngModelChange)="bio.set($event)" name="bio" maxlength="500" class="w-full bg-gray-50 border border-gray-200 rounded-2xl px-6 py-5 text-sm font-medium focus:bg-white focus:border-[#0a8f96] focus:ring-4 focus:ring-[#0a8f96]/5 outline-none transition-all min-h-[200px] resize-none leading-relaxed" [placeholder]="'PROFILE.EDIT.BIO_PLACEHOLDER' | translate"></textarea>
-                    <div class="ltr:text-right rtl:text-left mt-3 text-[10px] text-gray-400 font-black tracking-widest uppercase" dir="ltr">
-                      {{ bio().length }} / 500
+                    <div class="mt-2 flex items-center justify-between gap-3 text-[11px] font-bold tracking-wide">
+                      <span class="text-gray-400">{{ 'PROFILE.EDIT.BIO_HINT' | translate }}</span>
+                      <span class="text-gray-400 tabular-nums" [class.text-amber-500]="bio().length > 450" [class.text-red-500]="bio().length >= 500" dir="ltr">{{ bio().length }} / 500</span>
                     </div>
                   </div>
                 </div>
@@ -223,11 +274,19 @@ import { firstValueFrom } from 'rxjs';
 
                 <!-- Actions -->
                 <div class="flex flex-col sm:flex-row items-center justify-start gap-4 mt-16 pt-10 border-t border-gray-100">
-                  <button type="submit" [disabled]="loading()" class="w-full sm:w-auto bg-[#0a8f96] hover:bg-[#076b70] text-white text-sm font-black py-4 px-12 rounded-2xl shadow-lg shadow-[#0a8f96]/20 transition-all flex items-center justify-center gap-3 active:scale-95">
-                    @if (loading()) { <div class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> }
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
-                    {{ 'PROFILE.EDIT.SAVE_CHANGES' | translate }}
-                  </button>
+                  <div class="w-full sm:w-auto flex flex-col gap-2">
+                    <button type="submit" [disabled]="loading() || !isFormValid()" (click)="markAllTouched()" [title]="!isFormValid() ? ('PROFILE.EDIT.SAVE_DISABLED_HINT' | translate) : ''" [class]="(!isFormValid() || loading()) ? 'w-full sm:w-auto bg-gray-200 text-gray-400 text-sm font-black py-4 px-12 rounded-2xl cursor-not-allowed flex items-center justify-center gap-3' : 'w-full sm:w-auto bg-[#0a8f96] hover:bg-[#076b70] text-white text-sm font-black py-4 px-12 rounded-2xl shadow-lg shadow-[#0a8f96]/20 transition-all flex items-center justify-center gap-3 active:scale-95'">
+                      @if (loading()) { <div class="w-4 h-4 border-2 border-gray-400/30 border-t-gray-400 rounded-full animate-spin"></div> }
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                      {{ 'PROFILE.EDIT.SAVE_CHANGES' | translate }}
+                    </button>
+                    @if (!isFormValid() && (firstNameTouched() || lastNameTouched() || phoneTouched() || commissionTouched())) {
+                      <p class="text-[11px] font-bold text-amber-600 flex items-center gap-1.5">
+                        <svg class="w-3.5 h-3.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                        {{ 'PROFILE.EDIT.SAVE_DISABLED_HINT' | translate }}
+                      </p>
+                    }
+                  </div>
                   <a routerLink="/profile" class="w-full sm:w-auto text-gray-500 hover:text-gray-900 text-sm font-black py-4 px-10 transition-colors text-center uppercase tracking-widest">
                     {{ 'PROFILE.EDIT.CANCEL' | translate }}
                   </a>
@@ -423,6 +482,48 @@ export class EditProfileComponent implements OnInit {
   soundEnabled = signal(true);
   soundType = signal<'premium' | 'pop' | 'classic' | 'custom' | 'none'>('premium');
 
+  // Validation: touched state per field
+  firstNameTouched = signal(false);
+  lastNameTouched = signal(false);
+  phoneTouched = signal(false);
+  commissionTouched = signal(false);
+
+  // Validation: error code per field ('required' | 'minLength' | 'invalid' | null)
+  readonly firstNameError = computed<string | null>(() => {
+    const v = this.firstName().trim();
+    if (!v) return 'required';
+    if (v.length < 2) return 'minLength';
+    return null;
+  });
+  readonly lastNameError = computed<string | null>(() => {
+    const v = this.lastName().trim();
+    if (!v) return 'required';
+    if (v.length < 2) return 'minLength';
+    return null;
+  });
+  readonly phoneError = computed<string | null>(() => {
+    const v = this.phoneNumber().trim();
+    if (!v) return null; // optional
+    if (!/^01[0-9]{9}$/.test(v)) return 'invalid';
+    return null;
+  });
+  readonly commissionError = computed<string | null>(() => {
+    if (!this.canEditAgentDetailsPublic()) return null;
+    const percent = Number(this.commissionRatePercent());
+    if (!Number.isFinite(percent) || percent <= 0 || percent >= 100) return 'invalid';
+    return null;
+  });
+
+  readonly isFormValid = computed<boolean>(() => {
+    if (this.firstNameError() !== null) return false;
+    if (this.lastNameError() !== null) return false;
+    if (this.phoneError() !== null) return false;
+    if (this.commissionError() !== null) return false;
+    return true;
+  });
+
+  readonly showAgentFields = computed(() => this.canEditAgentDetailsPublic());
+
   private profileService = inject(ProfileService);
   public auth = inject(AuthService);
   private router = inject(Router);
@@ -461,7 +562,62 @@ export class EditProfileComponent implements OnInit {
   }
 
   private canEditAgentDetails(): boolean {
+    return this.canEditAgentDetailsPublic();
+  }
+
+  canEditAgentDetailsPublic(): boolean {
     return this.auth.isAgent() || this.auth.isAdmin();
+  }
+
+  // Mark field as touched (for live validation display)
+  markFirstNameTouched() { this.firstNameTouched.set(true); }
+  markLastNameTouched() { this.lastNameTouched.set(true); }
+  markPhoneTouched() { this.phoneTouched.set(true); }
+  markCommissionTouched() { this.commissionTouched.set(true); }
+  markAllTouched() {
+    this.firstNameTouched.set(true);
+    this.lastNameTouched.set(true);
+    this.phoneTouched.set(true);
+    this.commissionTouched.set(true);
+  }
+
+  // Get border classes for an input based on its validation state
+  getFieldClasses(touched: boolean, error: string | null): string {
+    const base = 'w-full bg-gray-50 border rounded-2xl px-5 py-4 text-sm font-medium focus:bg-white focus:border-[#0a8f96] focus:ring-4 focus:ring-[#0a8f96]/5 outline-none transition-all';
+    if (touched && error) {
+      return `${base} border-red-300 bg-red-50/30 focus:border-red-400 focus:ring-red-400/10`;
+    }
+    if (touched && !error && this.hasNonEmptyValue(touched)) {
+      return `${base} border-emerald-300 bg-emerald-50/20`;
+    }
+    return `${base} border-gray-200`;
+  }
+
+  private hasNonEmptyValue(touched: boolean): boolean {
+    return touched;
+  }
+
+  getSelectClasses(touched: boolean, hasValue: boolean): string {
+    const base = 'w-full bg-gray-50 border rounded-2xl px-5 py-4 text-sm font-medium focus:bg-white focus:border-[#0a8f96] outline-none transition-all appearance-none cursor-pointer';
+    if (touched && hasValue) return `${base} border-emerald-300 bg-emerald-50/20`;
+    return `${base} border-gray-200`;
+  }
+
+  getErrorMessage(error: string | null): string {
+    if (!error) return '';
+    if (error === 'required') return this.translate.instant('PROFILE.EDIT.REQUIRED');
+    if (error === 'minLength') return this.translate.instant('PROFILE.EDIT.FIRST_NAME_MIN');
+    if (error === 'invalid' && this.translate.currentLang === 'ar') return this.translate.instant('PROFILE.EDIT.PHONE_INVALID');
+    if (error === 'invalid') return this.translate.instant('PROFILE.EDIT.COMMISSION_ERROR');
+    return '';
+  }
+
+  getPhoneErrorMessage(): string {
+    return this.translate.instant('PROFILE.EDIT.PHONE_INVALID');
+  }
+
+  getCommissionErrorMessage(): string {
+    return this.translate.instant('PROFILE.EDIT.COMMISSION_ERROR');
   }
 
   private async loadAgentDetails() {
@@ -581,22 +737,17 @@ export class EditProfileComponent implements OnInit {
   }
 
   async save() {
-    if (!this.firstName() || this.firstName().length < 2) {
-      this.toast.error(this.translate.instant('PROFILE.EDIT.FIRST_NAME_MIN'));
-      return;
-    }
-    if (!this.lastName() || this.lastName().length < 2) {
-      this.toast.error(this.translate.instant('PROFILE.EDIT.LAST_NAME_MIN'));
+    // Mark all fields as touched so any remaining errors become visible
+    this.markAllTouched();
+
+    if (!this.isFormValid()) {
+      // Inline errors are already shown via the template; no toast needed
       return;
     }
 
     let commissionRate: number | null = null;
     if (this.canEditAgentDetails()) {
       const percent = Number(this.commissionRatePercent());
-      if (!Number.isFinite(percent) || percent <= 0 || percent >= 100) {
-        this.toast.error(this.translate.instant('PROFILE.EDIT.COMMISSION_ERROR'));
-        return;
-      }
       commissionRate = percent / 100;
     }
 
@@ -612,6 +763,11 @@ export class EditProfileComponent implements OnInit {
           this.toast.error(this.translate.instant('PROFILE.EDIT.UPLOAD_ERROR'));
           return;
         }
+      }
+
+      if (finalAvatarUrl && finalAvatarUrl.length > 500) {
+        this.toast.error(this.translate.instant('PROFILE.EDIT.AVATAR_URL_TOO_LONG'));
+        return;
       }
 
       const fullName = [this.firstName(), this.lastName()].filter(Boolean).join(' ');

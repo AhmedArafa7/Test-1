@@ -66,7 +66,7 @@ export class ChatRoomComponent implements OnInit, OnDestroy {
     });
   });
   
-  searchQuery = '';
+  searchQuery = signal('');
   filterType = signal<'all' | 'unread' | 'clients'>('all');
   showProfileMenu = signal(false);
   showChatMenu = signal(false);
@@ -290,8 +290,9 @@ export class ChatRoomComponent implements OnInit, OnDestroy {
     }
     
     // 2. Filter by Search Query
-    if (this.searchQuery.trim()) {
-      const q = this.searchQuery.toLowerCase();
+    const sq = this.searchQuery();
+    if (sq.trim()) {
+      const q = sq.toLowerCase();
       list = list.filter(c => 
         (c.agentDisplayName?.toLowerCase().includes(q) || 
          c.buyerDisplayName?.toLowerCase().includes(q) ||

@@ -57,7 +57,7 @@ export const routes: Routes = [
     children: [
       { path: '', loadComponent: () => import('./features/admin/dashboard/dashboard').then(m => m.DashboardComponent) },
       { path: 'users', loadComponent: () => import('./features/admin/users/users').then(m => m.UsersComponent) },
-      { path: 'agents', loadComponent: () => import('./features/admin/agents/agents').then(m => m.AgentsComponent) },
+      { path: 'agents', loadComponent: () => import('./features/admin/agents/agents').then(m => m.AgentsComponent), data: { title: 'NAV.AGENTS' } },
       { path: 'payments', loadComponent: () => import('./features/admin/payments/payments').then(m => m.PaymentsComponent) },
       { path: 'refunds', loadComponent: () => import('./features/admin/refunds/refunds').then(m => m.RefundsComponent) },
       { path: 'ai/search', loadComponent: () => import('./features/admin/ai-monitoring/ai-monitoring').then(m => m.AiMonitoringComponent) },

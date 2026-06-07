@@ -1,6 +1,7 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, inject, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
+import { AuthService } from '../../core/auth/auth.service';
 
 @Component({
   selector: 'app-faq',
@@ -10,7 +11,7 @@ import { TranslateModule } from '@ngx-translate/core';
     <div class="min-h-screen bg-gradient-to-b from-[#f8f9fa] to-white font-sans py-20 px-6" dir="rtl">
       <div class="max-w-4xl mx-auto">
         <!-- Header -->
-        <div class="text-center mb-16">
+        <div class="text-center mb-12">
           <div class="mb-4">
             <span class="bg-gradient-to-r from-[#0a8f96]/10 to-[#0a8f96]/5 text-[#0a8f96] text-[10px] font-black tracking-[0.3em] uppercase px-6 py-2.5 rounded-full border border-[#0a8f96]/10">
               {{ 'FAQ.BADGE' | translate }}
@@ -22,9 +23,33 @@ import { TranslateModule } from '@ngx-translate/core';
           <p class="text-gray-500 text-sm font-medium">{{ 'FAQ.DESCRIPTION' | translate }}</p>
         </div>
 
+        <!-- Role-based Tabs -->
+        <div class="flex justify-center mb-12">
+          <div class="bg-gray-100/80 backdrop-blur-md p-1.5 rounded-[24px] flex gap-1 border border-gray-200/50 shadow-inner">
+            <button (click)="setTab('buyer')" 
+                    [class]="activeTab() === 'buyer' ? 'bg-[#0a8f96] text-white shadow-md scale-[1.02]' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-200/50'"
+                    class="px-6 sm:px-8 py-3 rounded-[18px] text-sm font-black transition-all duration-300 flex items-center gap-2 active:scale-95">
+              <span class="text-base">👤</span>
+              <span>{{ 'FAQ.TABS.BUYER' | translate }}</span>
+            </button>
+            <button (click)="setTab('agent')" 
+                    [class]="activeTab() === 'agent' ? 'bg-[#0a8f96] text-white shadow-md scale-[1.02]' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-200/50'"
+                    class="px-6 sm:px-8 py-3 rounded-[18px] text-sm font-black transition-all duration-300 flex items-center gap-2 active:scale-95">
+              <span class="text-base">💼</span>
+              <span>{{ 'FAQ.TABS.AGENT' | translate }}</span>
+            </button>
+            <button (click)="setTab('admin')" 
+                    [class]="activeTab() === 'admin' ? 'bg-[#0a8f96] text-white shadow-md scale-[1.02]' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-200/50'"
+                    class="px-6 sm:px-8 py-3 rounded-[18px] text-sm font-black transition-all duration-300 flex items-center gap-2 active:scale-95">
+              <span class="text-base">🛡️</span>
+              <span>{{ 'FAQ.TABS.ADMIN' | translate }}</span>
+            </button>
+          </div>
+        </div>
+
         <!-- FAQ Items -->
         <div class="space-y-4">
-          @for (item of faqs; track $index) {
+          @for (item of getActiveFaqs(); track $index) {
             <div class="bg-white rounded-[32px] overflow-hidden border border-gray-100 shadow-sm transition-all hover:shadow-md">
               <button (click)="toggle($index)"
                       class="w-full px-8 py-7 flex items-center justify-between text-right group">
@@ -65,18 +90,56 @@ import { TranslateModule } from '@ngx-translate/core';
     </div>
   `,
 })
-export class FaqComponent {
+export class FaqComponent implements OnInit {
+  auth = inject(AuthService);
+  activeTab = signal<'buyer' | 'agent' | 'admin'>('buyer');
   openIndex = signal<number | null>(0);
 
-  faqs = [
-    { q: 'FAQ.Q1', a: 'FAQ.A1' },
-    { q: 'FAQ.Q2', a: 'FAQ.A2' },
-    { q: 'FAQ.Q3', a: 'FAQ.A3' },
-    { q: 'FAQ.Q4', a: 'FAQ.A4' },
-    { q: 'FAQ.Q5', a: 'FAQ.A5' }
-  ];
+  faqs = {
+    buyer: [
+      { q: 'FAQ.BUYER.Q1', a: 'FAQ.BUYER.A1' },
+      { q: 'FAQ.BUYER.Q2', a: 'FAQ.BUYER.A2' },
+      { q: 'FAQ.BUYER.Q3', a: 'FAQ.BUYER.A3' },
+      { q: 'FAQ.BUYER.Q4', a: 'FAQ.BUYER.A4' },
+      { q: 'FAQ.BUYER.Q5', a: 'FAQ.BUYER.A5' }
+    ],
+    agent: [
+      { q: 'FAQ.AGENT.Q1', a: 'FAQ.AGENT.A1' },
+      { q: 'FAQ.AGENT.Q2', a: 'FAQ.AGENT.A2' },
+      { q: 'FAQ.AGENT.Q3', a: 'FAQ.AGENT.A3' },
+      { q: 'FAQ.AGENT.Q4', a: 'FAQ.AGENT.A4' },
+      { q: 'FAQ.AGENT.Q5', a: 'FAQ.AGENT.A5' }
+    ],
+    admin: [
+      { q: 'FAQ.ADMIN.Q1', a: 'FAQ.ADMIN.A1' },
+      { q: 'FAQ.ADMIN.Q2', a: 'FAQ.ADMIN.A2' },
+      { q: 'FAQ.ADMIN.Q3', a: 'FAQ.ADMIN.A3' },
+      { q: 'FAQ.ADMIN.Q4', a: 'FAQ.ADMIN.A4' },
+      { q: 'FAQ.ADMIN.Q5', a: 'FAQ.ADMIN.A5' }
+    ]
+  };
+
+  ngOnInit() {
+    if (this.auth.isAdmin()) {
+      this.activeTab.set('admin');
+    } else if (this.auth.isAgent()) {
+      this.activeTab.set('agent');
+    } else {
+      this.activeTab.set('buyer');
+    }
+  }
+
+  getActiveFaqs() {
+    return this.faqs[this.activeTab()];
+  }
+
+  setTab(tab: 'buyer' | 'agent' | 'admin') {
+    this.activeTab.set(tab);
+    this.openIndex.set(0);
+  }
 
   toggle(index: number) {
     this.openIndex.set(this.openIndex() === index ? null : index);
   }
 }
+

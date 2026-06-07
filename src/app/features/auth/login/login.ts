@@ -1,5 +1,5 @@
-import { Component, OnInit, signal } from '@angular/core';
-import { TranslateModule } from '@ngx-translate/core';
+import { Component, OnInit, signal, computed } from '@angular/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 
@@ -47,7 +47,7 @@ declare global {
           
           <!-- Card Header Logo & Title -->
           <div class="flex flex-col items-center select-none h-60 overflow-hidden">
-            <img src="./Baytology_image.png" alt="Baytology" class="h-80 w-100 object-contain overflow-hidden transition-transform duration-500 hover:scale-105">
+            <img src="/Baytology_image.png" alt="Baytology" class="h-80 w-100 object-contain overflow-hidden transition-transform duration-500 hover:scale-105">
             <div class="text-center">
               <h1 class="text-2xl font-black text-slate-900 tracking-tight">{{ 'AUTH.LOGIN.TITLE' | translate }}</h1>
             </div>
@@ -57,11 +57,22 @@ declare global {
              <div class="space-y-2 text-right">
               <label class="block text-[11px] font-black text-slate-400 uppercase tracking-wider">{{ 'AUTH.LOGIN.EMAIL_LABEL' | translate }}</label>
               <input type="email"
-                     [(ngModel)]="email"
+                     [ngModel]="email()" (ngModelChange)="email.set($event); emailTouched.set(true)"
+                     (blur)="emailTouched.set(true)"
                      name="email"
                      placeholder="admin@baytology.local"
-                     required
-                     class="input-field text-right" />
+                     [class]="emailFieldClass()" />
+              <div [class]="emailHintClass()">
+                @if (emailTouched() && emailError()) {
+                  <svg class="icon" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                  <span>{{ 'AUTH.LOGIN.EMAIL_INVALID' | translate }}</span>
+                } @else if (emailTouched() && !emailError() && email()) {
+                  <svg class="icon" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                  <span>{{ 'AUTH.LOGIN.EMAIL_HINT' | translate }}</span>
+                } @else {
+                  <span>{{ 'AUTH.LOGIN.EMAIL_HINT' | translate }}</span>
+                }
+              </div>
              </div>
 
              <div class="space-y-2 text-right">
@@ -70,14 +81,14 @@ declare global {
                  <a routerLink="/auth/forgot-password" class="text-xs font-bold text-[#0c7379] hover:text-[#0b656b] transition-colors">{{ 'AUTH.LOGIN.FORGOT_PASSWORD' | translate }}</a>
                </div>
                <div class="relative">
-                 <input [type]="showPassword ? 'text' : 'password'"
-                        [(ngModel)]="password"
+                 <input [type]="showPassword() ? 'text' : 'password'"
+                        [ngModel]="password()" (ngModelChange)="password.set($event); passwordTouched.set(true)"
+                        (blur)="passwordTouched.set(true)"
                         name="password"
                         placeholder="••••••••••"
-                        required
-                        class="input-field rtl:pl-12 ltr:pr-12 text-right" />
-                 <button type="button" (click)="showPassword = !showPassword" class="absolute ltr:right-4 rtl:left-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer">
-                   @if (showPassword) {
+                        [class]="passwordFieldClass() + ' rtl:pl-12 ltr:pr-12 text-right'" />
+                 <button type="button" (click)="showPassword.set(!showPassword())" class="absolute ltr:right-4 rtl:left-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer">
+                   @if (showPassword()) {
                      <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
                        <path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88"/>
                      </svg>
@@ -89,28 +100,46 @@ declare global {
                    }
                  </button>
                </div>
+               <div [class]="passwordHintClass()">
+                 @if (passwordTouched() && passwordError()) {
+                   <svg class="icon" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                   <span>{{ 'AUTH.LOGIN.PASSWORD_MIN' | translate }}</span>
+                 } @else {
+                   <span>{{ 'AUTH.LOGIN.PASSWORD_HINT' | translate }}</span>
+                 }
+               </div>
              </div>
 
              <!-- Remember Me Checkbox -->
              <div class="flex items-center justify-start gap-2.5 py-1 select-none text-right">
                <input type="checkbox"
                       id="rememberMe"
-                      [(ngModel)]="rememberMe"
+                      [ngModel]="rememberMe()" (ngModelChange)="rememberMe.set($event)"
                       name="rememberMe"
                       class="w-4 h-4 rounded border-slate-300 text-[#0c7379] focus:ring-2 focus:ring-[#0c7379]/20 transition-all cursor-pointer accent-[#0c7379]" />
                 <label for="rememberMe" class="text-xs font-bold text-slate-500 hover:text-slate-700 transition-colors cursor-pointer">{{ 'AUTH.LOGIN.REMEMBER_ME' | translate }}</label>
              </div>
 
-            <button type="submit"
-                    [disabled]="loading()"
-                    class="btn-luxury w-full py-4 mt-2 cursor-pointer text-sm font-black tracking-wide">
-              @if (loading()) {
-                <div class="w-5.5 h-5.5 border-2 border-white/40 border-t-white rounded-full animate-spin"></div>
-              } @else {
-                <span>{{ 'AUTH.LOGIN.LOGIN_BTN' | translate }}</span>
-                <svg class="w-5 h-5 transition-transform ltr:group-hover:translate-x-1 rtl:group-hover:-translate-x-1 ltr:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+            <div class="space-y-2">
+              <button type="submit"
+                      [disabled]="loading() || !isFormValid()"
+                      (click)="markAllTouched()"
+                      [title]="!isFormValid() ? ('AUTH.LOGIN.SAVE_DISABLED_HINT' | translate) : ''"
+                      [class]="(loading() || !isFormValid()) ? 'btn-luxury w-full py-4 mt-2 cursor-not-allowed text-sm font-black tracking-wide opacity-60' : 'btn-luxury w-full py-4 mt-2 cursor-pointer text-sm font-black tracking-wide'">
+                @if (loading()) {
+                  <div class="w-5.5 h-5.5 border-2 border-white/40 border-t-white rounded-full animate-spin"></div>
+                } @else {
+                  <span>{{ 'AUTH.LOGIN.LOGIN_BTN' | translate }}</span>
+                  <svg class="w-5 h-5 transition-transform ltr:group-hover:translate-x-1 rtl:group-hover:-translate-x-1 ltr:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+                }
+              </button>
+              @if (!isFormValid() && (emailTouched() || passwordTouched())) {
+                <p class="field-hint is-error justify-center">
+                  <svg class="icon" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                  <span>{{ 'AUTH.LOGIN.SAVE_DISABLED_HINT' | translate }}</span>
+                </p>
               }
-            </button>
+            </div>
           </form>
 
           <div class="flex items-center gap-3 py-4 select-none">
@@ -141,12 +170,64 @@ declare global {
   `,
 })
 export class LoginComponent implements OnInit {
-  email = '';
-  password = '';
-  showPassword = false;
-  rememberMe = true;
+  email = signal('');
+  password = signal('');
+  showPassword = signal(false);
+  rememberMe = signal(true);
   bgLoaded = signal(false);
   loading = signal(false);
+
+  // Validation: touched state
+  emailTouched = signal(false);
+  passwordTouched = signal(false);
+
+  // Validation: error code per field
+  readonly emailError = computed<string | null>(() => {
+    const v = this.email().trim();
+    if (!v) return 'required';
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) return 'invalid';
+    return null;
+  });
+  readonly passwordError = computed<string | null>(() => {
+    const v = this.password();
+    if (!v) return 'required';
+    if (v.length < 6) return 'minLength';
+    return null;
+  });
+
+  readonly isFormValid = computed<boolean>(() => {
+    if (this.emailError() !== null) return false;
+    if (this.passwordError() !== null) return false;
+    return true;
+  });
+
+  readonly emailFieldClass = computed<string>(() => {
+    const base = 'input-field text-right';
+    if (this.emailTouched() && this.emailError()) return `${base} is-invalid`;
+    if (this.emailTouched() && !this.emailError() && this.email()) return `${base} is-valid`;
+    return base;
+  });
+  readonly emailHintClass = computed<string>(() => {
+    if (this.emailTouched() && this.emailError()) return 'field-hint is-error';
+    if (this.emailTouched() && !this.emailError() && this.email()) return 'field-hint is-success';
+    return 'field-hint is-neutral';
+  });
+  readonly passwordFieldClass = computed<string>(() => {
+    const base = 'input-field';
+    if (this.passwordTouched() && this.passwordError()) return `${base} is-invalid`;
+    if (this.passwordTouched() && !this.passwordError() && this.password()) return `${base} is-valid`;
+    return base;
+  });
+  readonly passwordHintClass = computed<string>(() => {
+    if (this.passwordTouched() && this.passwordError()) return 'field-hint is-error';
+    if (this.passwordTouched() && !this.passwordError() && this.password()) return 'field-hint is-success';
+    return 'field-hint is-neutral';
+  });
+
+  markAllTouched() {
+    this.emailTouched.set(true);
+    this.passwordTouched.set(true);
+  }
 
   constructor(
     private auth: AuthService,
@@ -161,19 +242,21 @@ export class LoginComponent implements OnInit {
     // Pre-fill email if passed from register page
     const emailParam = this.route.snapshot.queryParamMap.get('email');
     if (emailParam) {
-      this.email = emailParam;
+      this.email.set(emailParam);
     }
   }
 
   async login() {
+    this.markAllTouched();
+    if (!this.isFormValid()) return;
     this.loading.set(true);
     try {
-      await this.auth.login({ email: this.email, password: this.password }, this.rememberMe);
-      this.toast.success('AUTH.LOGIN.SUCCESS');
+      await this.auth.login({ email: this.email(), password: this.password() }, this.rememberMe());
+      this.toast.success('AUTH.SUCCESS');
       this.router.navigate(['/']);
     } catch (e: any) {
       let errorMessage = 'AUTH.LOGIN.ERROR';
-      
+
       if (e?.error?.detail) {
         errorMessage = e.error.detail;
       } else if (e?.error?.errors) {

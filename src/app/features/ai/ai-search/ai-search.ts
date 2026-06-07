@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 
-import { SearchEngine, SearchInputType, SearchRequestDetail } from '../../../core/models';
+import { SearchEngine, SearchInputType, SearchRequestDetail, SearchResult, ImageSearchResponse, MatchedProperty } from '../../../core/models';
 import { ToastService } from '../../../core/services/toast.service';
 import { CurrencyEgpPipe } from '../../../shared/pipes/currency-egp.pipe';
 import { AiService } from '../services/ai.service';
@@ -517,6 +517,11 @@ export class AiSearchComponent {
     }
 
     try {
+      if (this.inputType === SearchInputType.Image && this.imageFile) {
+        await this.runImageSearch(this.imageFile);
+        return;
+      }
+
       let audioFileUrl: string | undefined;
       let imageFileUrl: string | undefined;
 
@@ -525,14 +530,8 @@ export class AiSearchComponent {
         audioFileUrl = await firstValueFrom(this.cloudinaryService.uploadAudio(audioFile));
       }
 
-      if (this.inputType === SearchInputType.Image) {
-        if (this.imageFile) {
-          await new Promise(resolve => setTimeout(resolve, 50)); 
-          const compressedBase64 = await compressImage(this.imageFile);
-          imageFileUrl = await firstValueFrom(this.cloudinaryService.uploadImage(compressedBase64));
-        } else {
-          imageFileUrl = this.imageFileUrl.trim() || undefined;
-        }
+      if (this.inputType === SearchInputType.Image && this.imageFileUrl.trim()) {
+        imageFileUrl = this.imageFileUrl.trim() || undefined;
       }
 
       this.searchProgress.set(15);
@@ -607,5 +606,84 @@ export class AiSearchComponent {
       reader.onerror = reject;
       reader.readAsDataURL(blob);
     });
+  }
+
+  private dataUrlToFile(dataUrl: string, filename: string): File {
+    const arr = dataUrl.split(',');
+    const mimeMatch = arr[0].match(/:(.*?);/);
+    const mime = mimeMatch?.[1] || 'image/jpeg';
+    const bstr = atob(arr[1]);
+    const u8arr = new Uint8Array(bstr.length);
+    for (let i = 0; i < bstr.length; i++) {
+      u8arr[i] = bstr.charCodeAt(i);
+    }
+    return new File([u8arr], filename, { type: mime });
+  }
+
+  private mapImageSearchToResult(res: ImageSearchResponse): SearchRequestDetail {
+    const results: SearchResult[] = (res.properties || []).map((p, idx) => ({
+      propertyId: String(p.id ?? p.propertyId ?? p.property_id ?? ''),
+      rank: idx + 1,
+      relevanceScore: typeof p.visual_similarity_score === 'number'
+        ? p.visual_similarity_score
+        : 0,
+      scoreSource: p.visual_similarity_engine || 'visual',
+      snapshotTitle: p.title,
+      snapshotPrice: p.price,
+      snapshotCity: p.city,
+      snapshotStatus: p.status,
+    })).filter(r => r.propertyId);
+
+    return {
+      id: `image-search-${Date.now()}`,
+      userId: '',
+      inputType: 'Image',
+      searchEngine: res.engine || 'visual',
+      status: 'Completed',
+      resultCount: results.length,
+      createdAt: new Date().toISOString(),
+      resolvedAt: new Date().toISOString(),
+      results,
+    };
+  }
+
+  private buildImageResultsMap(properties: MatchedProperty[]): Map<string, string> {
+    const map = new Map<string, string>();
+    for (const p of properties) {
+      const id = String(p.id ?? p.propertyId ?? p.property_id ?? '');
+      if (!id) continue;
+      const imgUrl = p.image_url
+        ? getPropertyImageUrl(p.image_url, p.title)
+        : buildPropertyPlaceholder(p.title);
+      map.set(id, imgUrl);
+    }
+    return map;
+  }
+
+  private async runImageSearch(file: File) {
+    const maxSizeMb = 15;
+    if (file.size > maxSizeMb * 1024 * 1024) {
+      this.toast.error(this.translate.instant('PROPERTY_FORM.MESSAGES.FILE_TOO_LARGE', { max: maxSizeMb }));
+      throw new Error('FILE_TOO_LARGE');
+    }
+
+    this.searchProgress.set(20);
+    this.searchStepMessage.set(this.searchSteps[1]);
+
+    const compressedDataUrl = await compressImage(file, 1024, 0.75);
+    const compressedFile = this.dataUrlToFile(
+      compressedDataUrl,
+      file.name.replace(/\.[^/.]+$/, '') + '.jpg'
+    );
+
+    this.searchProgress.set(50);
+    this.searchStepMessage.set(this.searchSteps[2]);
+
+    const res = await this.aiService.imageSearch(compressedFile, 10);
+    const mapped = this.mapImageSearchToResult(res);
+    this.resultsImagesMap.set(this.buildImageResultsMap(res.properties || []));
+    this.searchProgress.set(100);
+    this.searchStepMessage.set('AI_SEARCH.SEARCH_SUCCESS');
+    this.result.set(mapped);
   }
 }

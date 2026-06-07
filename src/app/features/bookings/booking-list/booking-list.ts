@@ -134,30 +134,7 @@ import { EmptyStateComponent } from '../../../shared/components/empty-state/empt
               </div>
             </div>
 
-            <!-- Calendar Sync Card -->
-            <!-- <div class="bg-white rounded-[24px] border border-slate-100 shadow-[0_4px_24px_rgba(0,0,0,0.015)] p-6 md:p-8 flex flex-col items-center text-center">
-              <div class="w-16 h-16 bg-[#076b70]/5 text-[#076b70] rounded-2xl flex items-center justify-center mb-4">
-                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                </svg>
-              </div>
-              
-              <h4 class="text-lg font-black text-slate-800 mb-2">مزامنة التقويم</h4>
-              <p class="text-slate-400 font-bold text-xs md:text-sm max-w-xs leading-relaxed mb-6">
-                تأكد من تحديث التوافر عبر جميع المنصات لتجنب الحجوزات المزدوجة.
-              </p>
-              
-              <button (click)="syncCalendar()" 
-                      [disabled]="syncing()"
-                      class="w-full py-3.5 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 font-black rounded-xl text-xs shadow-sm hover:shadow active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-2">
-                @if (syncing()) {
-                  <div class="w-4 h-4 border-2 border-[#076b70]/30 border-t-[#076b70] rounded-full animate-spin"></div>
-                  جاري المزامنة...
-                } @else {
-                  مزامنة الآن
-                }
-              </button>
-            </div> -->
+            <!-- Calendar Sync Card (disabled: feature not yet enabled) -->
           </div>
 
           <!-- Right Column: Booking Requests List -->
