@@ -68,7 +68,7 @@ import { firstValueFrom } from 'rxjs';
                         <div class="mt-2 flex items-center gap-1.5 text-[11px] font-bold tracking-wide">
                           @if (lastNameTouched() && lastNameError()) {
                             <svg class="w-3.5 h-3.5 text-red-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
-                            <span class="text-red-600">{{ 'PROFILE.EDIT.LAST_NAME_MIN' | translate }}</span>
+                            <span class="text-red-600">{{ getErrorMessage(lastNameError()) }}</span>
                           } @else if (lastNameTouched() && !lastNameError()) {
                             <svg class="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
                             <span class="text-emerald-600">{{ 'PROFILE.EDIT.LAST_NAME_HINT' | translate }}</span>
@@ -173,10 +173,10 @@ import { firstValueFrom } from 'rxjs';
                   
                   <div>
                     <label class="block text-xs font-bold text-gray-800 mb-3 tracking-wide">{{ 'PROFILE.EDIT.BIO_LABEL' | translate }}</label>
-                    <textarea [ngModel]="bio()" (ngModelChange)="bio.set($event)" name="bio" maxlength="500" class="w-full bg-gray-50 border border-gray-200 rounded-2xl px-6 py-5 text-sm font-medium focus:bg-white focus:border-[#0a8f96] focus:ring-4 focus:ring-[#0a8f96]/5 outline-none transition-all min-h-[200px] resize-none leading-relaxed" [placeholder]="'PROFILE.EDIT.BIO_PLACEHOLDER' | translate"></textarea>
+                    <textarea [ngModel]="bio()" (ngModelChange)="bio.set($event)" name="bio" maxlength="2000" class="w-full bg-gray-50 border border-gray-200 rounded-2xl px-6 py-5 text-sm font-medium focus:bg-white focus:border-[#0a8f96] focus:ring-4 focus:ring-[#0a8f96]/5 outline-none transition-all min-h-[200px] resize-none leading-relaxed" [placeholder]="'PROFILE.EDIT.BIO_PLACEHOLDER' | translate"></textarea>
                     <div class="mt-2 flex items-center justify-between gap-3 text-[11px] font-bold tracking-wide">
                       <span class="text-gray-400">{{ 'PROFILE.EDIT.BIO_HINT' | translate }}</span>
-                      <span class="text-gray-400 tabular-nums" [class.text-amber-500]="bio().length > 450" [class.text-red-500]="bio().length >= 500" dir="ltr">{{ bio().length }} / 500</span>
+                      <span class="text-gray-400 tabular-nums" [class.text-amber-500]="bio().length > 1900" [class.text-red-500]="bio().length >= 2000" dir="ltr">{{ bio().length }} / 2000</span>
                     </div>
                   </div>
                 </div>
@@ -474,6 +474,25 @@ export class EditProfileComponent implements OnInit {
   licenseNumber = signal('');
   commissionRatePercent = signal(2.5);
 
+  bioError = computed<string | null>(() => {
+    if (this.bio().length > 2000) return 'maxLength';
+    return null;
+  });
+
+  avatarUrlError = computed<string | null>(() => {
+    const url = this.avatarUrl();
+    if (!url) return null;
+    if (url.startsWith('data:image')) return null;
+    if (url.length > 500) return 'maxLength';
+    try {
+      const u = new URL(url);
+      if (u.protocol !== 'http:' && u.protocol !== 'https:') return 'invalid';
+    } catch {
+      return 'invalid';
+    }
+    return null;
+  });
+
   // Performance Signals
   rating = signal(0);
   reviewCount = signal(0);
@@ -493,18 +512,22 @@ export class EditProfileComponent implements OnInit {
     const v = this.firstName().trim();
     if (!v) return 'required';
     if (v.length < 2) return 'minLength';
+    const fullName = [v, this.lastName().trim()].filter(Boolean).join(' ');
+    if (fullName.length > 100) return 'maxLength';
     return null;
   });
   readonly lastNameError = computed<string | null>(() => {
     const v = this.lastName().trim();
     if (!v) return 'required';
     if (v.length < 2) return 'minLength';
+    const fullName = [this.firstName().trim(), v].filter(Boolean).join(' ');
+    if (fullName.length > 100) return 'maxLength';
     return null;
   });
   readonly phoneError = computed<string | null>(() => {
     const v = this.phoneNumber().trim();
     if (!v) return null; // optional
-    if (!/^01[0-9]{9}$/.test(v)) return 'invalid';
+    if (!/^\+[1-9]\d{1,14}$/.test(v)) return 'invalid';
     return null;
   });
   readonly commissionError = computed<string | null>(() => {
@@ -519,6 +542,8 @@ export class EditProfileComponent implements OnInit {
     if (this.lastNameError() !== null) return false;
     if (this.phoneError() !== null) return false;
     if (this.commissionError() !== null) return false;
+    if (this.bioError() !== null) return false;
+    if (this.avatarUrlError() !== null) return false;
     return true;
   });
 
@@ -607,13 +632,14 @@ export class EditProfileComponent implements OnInit {
     if (!error) return '';
     if (error === 'required') return this.translate.instant('PROFILE.EDIT.REQUIRED');
     if (error === 'minLength') return this.translate.instant('PROFILE.EDIT.FIRST_NAME_MIN');
+    if (error === 'maxLength') return this.translate.instant('VALIDATION.UserProfile_DisplayNameTooLong');
     if (error === 'invalid' && this.translate.currentLang === 'ar') return this.translate.instant('PROFILE.EDIT.PHONE_INVALID');
     if (error === 'invalid') return this.translate.instant('PROFILE.EDIT.COMMISSION_ERROR');
     return '';
   }
 
   getPhoneErrorMessage(): string {
-    return this.translate.instant('PROFILE.EDIT.PHONE_INVALID');
+    return this.translate.instant('VALIDATION.UserProfile_PhoneNumberInvalidFormat');
   }
 
   getCommissionErrorMessage(): string {
@@ -766,7 +792,17 @@ export class EditProfileComponent implements OnInit {
       }
 
       if (finalAvatarUrl && finalAvatarUrl.length > 500) {
-        this.toast.error(this.translate.instant('PROFILE.EDIT.AVATAR_URL_TOO_LONG'));
+        this.toast.error(this.translate.instant('VALIDATION.UserProfile_AvatarUrlTooLong'));
+        return;
+      }
+
+      if (this.avatarUrlError() === 'invalid') {
+        this.toast.error(this.translate.instant('VALIDATION.UserProfile_AvatarUrlInvalid'));
+        return;
+      }
+
+      if (this.bio() && this.bio().length > 2000) {
+        this.toast.error(this.translate.instant('VALIDATION.UserProfile_BioTooLong'));
         return;
       }
 
@@ -799,16 +835,29 @@ export class EditProfileComponent implements OnInit {
       this.toast.success(this.translate.instant('PROFILE.EDIT.SUCCESS'));
       this.router.navigate(['/profile']);
     } catch (e: any) {
-      let errorMessage = this.translate.instant('PROFILE.EDIT.ERROR');
-      
+      let translationKey = '';
       if (e?.error?.detail) {
-        errorMessage = e.error.detail;
+        translationKey = e.error.detail;
       } else if (e?.error?.errors) {
         const firstErrorKey = Object.keys(e.error.errors)[0];
         const firstErrorMessages = e.error.errors[firstErrorKey];
-        errorMessage = Array.isArray(firstErrorMessages) ? firstErrorMessages[0] : firstErrorMessages;
+        translationKey = Array.isArray(firstErrorMessages) ? firstErrorMessages[0] : firstErrorMessages;
+      } else if (e?.error?.code) {
+        translationKey = e.error.code;
       } else if (e?.error?.title) {
-        errorMessage = e.error.title;
+        translationKey = e.error.title;
+      }
+
+      let errorMessage = '';
+      if (translationKey) {
+        const translated = this.translate.instant('VALIDATION.' + translationKey);
+        if (translated !== 'VALIDATION.' + translationKey) {
+          errorMessage = translated;
+        } else {
+          errorMessage = translationKey;
+        }
+      } else {
+        errorMessage = this.translate.instant('PROFILE.EDIT.ERROR');
       }
       this.toast.error(errorMessage);
     } finally {

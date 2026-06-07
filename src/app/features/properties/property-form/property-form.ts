@@ -297,7 +297,7 @@ import { firstValueFrom } from 'rxjs';
                         @for (img of existingImages(); track img.id) {
                           <div class="relative group aspect-square rounded-2xl overflow-hidden shadow-sm border border-slate-100 bg-slate-50">
                             <img [src]="img.url" class="w-full h-full object-cover">
-                            <button type="button" (click)="removeExistingImage(img)" 
+                            <button type="button" (click)="removeExistingImage(img)" [disabled]="isLastRemainingImage()" 
                                     class="absolute top-2 ltr:right-2 rtl:left-2 w-8 h-8 bg-red-500/90 hover:bg-red-600 text-white rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-md cursor-pointer">
                               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
@@ -326,7 +326,7 @@ import { firstValueFrom } from 'rxjs';
                       @for (img of localImages(); track img; let i = $index) {
                         <div class="relative group aspect-square rounded-2xl overflow-hidden shadow-sm">
                           <img [src]="img" class="w-full h-full object-cover">
-                          <button type="button" (click)="removeLocalImage(i)" class="absolute top-2 ltr:right-2 rtl:left-2 w-8 h-8 bg-red-500/80 backdrop-blur-md text-white rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button type="button" (click)="removeLocalImage(i)" [disabled]="isLastRemainingImage()" class="absolute top-2 ltr:right-2 rtl:left-2 w-8 h-8 bg-red-500/80 backdrop-blur-md text-white rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                           </button>
                         </div>
@@ -831,18 +831,26 @@ export class PropertyFormComponent implements OnInit {
 
   // Per-step validity for the Next button + visual indicators
   isStep1Valid(): boolean {
-    return !!(this.form.title && this.form.title.trim().length >= 3) &&
-           !!(this.form.price && this.form.price > 0) &&
-           !!(this.form.area && this.form.area > 0);
+    return !!(this.form.title && this.form.title.trim().length >= 3 && this.form.title.trim().length <= 500) &&
+           !!(this.form.price && this.form.price >= 1000 && this.form.price <= 999999999) &&
+           !!(this.form.area && this.form.area >= 10 && this.form.area <= 100000) &&
+           (this.form.bedrooms === undefined || this.form.bedrooms === null || (this.form.bedrooms >= 0 && this.form.bedrooms <= 100)) &&
+           (this.form.bathrooms === undefined || this.form.bathrooms === null || (this.form.bathrooms >= 0 && this.form.bathrooms <= 100)) &&
+           (this.form.floor === undefined || this.form.floor === null || (this.form.floor >= 0 && this.form.floor <= 999)) &&
+           (this.form.totalFloors === undefined || this.form.totalFloors === null || (this.form.totalFloors >= 1 && this.form.totalFloors <= 999)) &&
+           (!this.form.description || this.form.description.length <= 5000);
   }
   isStep2Valid(): boolean {
     const totalImages = (this.isEdit() ? this.existingImageUrls().length : 0) + this.localImages().length;
     return totalImages > 0;
   }
   isStep4Valid(): boolean {
-    return !!(this.form.city && this.form.city.trim().length >= 2) &&
-           !!(this.form.district && this.form.district.trim().length >= 2) &&
-           !!(this.form.addressLine && this.form.addressLine.trim().length >= 5);
+    return !!(this.form.city && this.form.city.trim().length >= 2 && this.form.city.trim().length <= 100) &&
+           !!(this.form.district && this.form.district.trim().length >= 2 && this.form.district.trim().length <= 100) &&
+           !!(this.form.addressLine && this.form.addressLine.trim().length >= 5 && this.form.addressLine.trim().length <= 500) &&
+           (!this.form.zipCode || this.form.zipCode.length <= 20) &&
+           (this.form.latitude === undefined || this.form.latitude === null || (this.form.latitude >= -90 && this.form.latitude <= 90)) &&
+           (this.form.longitude === undefined || this.form.longitude === null || (this.form.longitude >= -180 && this.form.longitude <= 180));
   }
   isCurrentStepValid(): boolean {
     const step = this.currentStep();
@@ -872,29 +880,81 @@ export class PropertyFormComponent implements OnInit {
     if (id === 'title') {
       if (!this.form.title || !this.form.title.trim()) return 'required';
       if (this.form.title.trim().length < 3) return 'minLength';
+      if (this.form.title.trim().length > 500) return 'maxLength';
       return null;
     }
     if (id === 'price') {
-      if (!this.form.price || this.form.price <= 0) return 'required';
+      if (this.form.price === undefined || this.form.price === null) return 'required';
+      if (this.form.price < 1000) return 'minPrice';
+      if (this.form.price > 999999999) return 'maxPrice';
       return null;
     }
     if (id === 'area') {
-      if (!this.form.area || this.form.area <= 0) return 'required';
+      if (this.form.area === undefined || this.form.area === null) return 'required';
+      if (this.form.area < 10) return 'minArea';
+      if (this.form.area > 100000) return 'maxArea';
       return null;
     }
     if (id === 'city') {
       if (!this.form.city || !this.form.city.trim()) return 'required';
       if (this.form.city.trim().length < 2) return 'minLength';
+      if (this.form.city.trim().length > 100) return 'maxLength';
       return null;
     }
     if (id === 'district') {
       if (!this.form.district || !this.form.district.trim()) return 'required';
       if (this.form.district.trim().length < 2) return 'minLength';
+      if (this.form.district.trim().length > 100) return 'maxLength';
       return null;
     }
     if (id === 'addressLine') {
       if (!this.form.addressLine || !this.form.addressLine.trim()) return 'required';
       if (this.form.addressLine.trim().length < 5) return 'minLength';
+      if (this.form.addressLine.trim().length > 500) return 'maxLength';
+      return null;
+    }
+    if (id === 'bedrooms') {
+      if (this.form.bedrooms !== undefined && this.form.bedrooms !== null) {
+        if (this.form.bedrooms < 0 || this.form.bedrooms > 100) return 'invalid';
+      }
+      return null;
+    }
+    if (id === 'bathrooms') {
+      if (this.form.bathrooms !== undefined && this.form.bathrooms !== null) {
+        if (this.form.bathrooms < 0 || this.form.bathrooms > 100) return 'invalid';
+      }
+      return null;
+    }
+    if (id === 'floor') {
+      if (this.form.floor !== undefined && this.form.floor !== null) {
+        if (this.form.floor < 0 || this.form.floor > 999) return 'invalid';
+      }
+      return null;
+    }
+    if (id === 'totalFloors') {
+      if (this.form.totalFloors !== undefined && this.form.totalFloors !== null) {
+        if (this.form.totalFloors < 1 || this.form.totalFloors > 999) return 'invalid';
+      }
+      return null;
+    }
+    if (id === 'description') {
+      if (this.form.description && this.form.description.length > 5000) return 'maxLength';
+      return null;
+    }
+    if (id === 'zipCode') {
+      if (this.form.zipCode && this.form.zipCode.length > 20) return 'maxLength';
+      return null;
+    }
+    if (id === 'latitude') {
+      if (this.form.latitude !== undefined && this.form.latitude !== null) {
+        if (this.form.latitude < -90 || this.form.latitude > 90) return 'invalid';
+      }
+      return null;
+    }
+    if (id === 'longitude') {
+      if (this.form.longitude !== undefined && this.form.longitude !== null) {
+        if (this.form.longitude < -180 || this.form.longitude > 180) return 'invalid';
+      }
       return null;
     }
     return null;
@@ -928,17 +988,7 @@ export class PropertyFormComponent implements OnInit {
     const files = event.target.files as FileList;
     if (!files || files.length === 0) return;
 
-    if (this.currentStep() >= 2) {
-      const missing = this.getMissingRequiredFieldsInPreviousSteps().filter(m => m.step === 1);
-      if (missing.length > 0) {
-        this.toast.error(this.translate.instant('PROPERTY_FORM.STEP1_INCOMPLETE_TITLE'));
-        this.toast.info(this.translate.instant('PROPERTY_FORM.STEP1_INCOMPLETE_DESC'));
-        const fileInput = event.target as HTMLInputElement;
-        if (fileInput) fileInput.value = '';
-        this.focusMissingField({ id: missing[0].id, step: 1 });
-        return;
-      }
-    }
+
 
     this.loading = true;
     this.toast.info(this.translate.instant('PROPERTY_FORM.MESSAGES.COMPRESSING'));
@@ -1003,16 +1053,35 @@ export class PropertyFormComponent implements OnInit {
       variant: 'danger',
     });
     if (!ok) return;
-    this.deletedImageIds.update(ids => [...ids, image.id]);
-    this.existingImages.update(imgs => imgs.filter(x => x.id !== image.id));
-    this.existingImageUrls.update(urls => urls.filter(u => u !== image.url));
-    this.toast.success(this.translate.instant('PROPERTY_FORM.MESSAGES.DELETE_IMAGE_LOCAL_SUCCESS'));
+
+    if (this.isEdit()) {
+      try {
+        await this.propertyService.deleteImage(this.propertyId, image.id);
+        this.toast.success(this.translate.instant('PROPERTY_FORM.MESSAGES.DELETE_IMAGE_LOCAL_SUCCESS'));
+        // Refresh property images
+        const updatedProperty = await this.propertyService.getById(this.propertyId);
+        if (updatedProperty && updatedProperty.images) {
+          this.existingImages.set(updatedProperty.images);
+          this.existingImageUrls.set(updatedProperty.images.map(img => img.url));
+        }
+      } catch (e: any) {
+        const status = e?.status;
+        if (status === 409 || e?.error?.detail === 'Property_CannotDeleteLastImage') {
+          this.toast.error(this.translate.instant('PROPERTY_FORM.MESSAGES.IMAGE_DELETE_FAILED_LAST'));
+        } else {
+          this.toast.error(this.translate.instant('PROPERTY_FORM.MESSAGES.DELETE_ERROR'));
+        }
+      }
+    } else {
+      this.existingImages.update(imgs => imgs.filter(x => x.id !== image.id));
+      this.existingImageUrls.update(urls => urls.filter(u => u !== image.url));
+      this.toast.success(this.translate.instant('PROPERTY_FORM.MESSAGES.DELETE_IMAGE_LOCAL_SUCCESS'));
+    }
   }
 
   isLastRemainingImage(): boolean {
-    if (!this.isEdit()) return false;
     const remaining = this.existingImageUrls().length + this.localImages().length;
-    return remaining === 0;
+    return remaining <= 1;
   }
 
   isValidImageUrl(url: string): boolean {
@@ -1079,28 +1148,63 @@ export class PropertyFormComponent implements OnInit {
       scrollToError('title', 1);
       return;
     }
-    if (this.form.price <= 0) {
-      this.toast.error(this.translate.instant('PROPERTY_FORM.VALIDATION.PRICE_POSITIVE'));
+    if (this.form.title.length > 500) {
+      this.toast.error(this.translate.instant('VALIDATION.Property_TitleTooLong'));
+      scrollToError('title', 1);
+      return;
+    }
+    if (this.form.price === undefined || this.form.price === null || this.form.price < 1000) {
+      this.toast.error(this.translate.instant('VALIDATION.Property_PriceTooLow'));
       scrollToError('price', 1);
       return;
     }
-    if (this.form.area <= 0) {
-      this.toast.error(this.translate.instant('PROPERTY_FORM.VALIDATION.AREA_POSITIVE'));
+    if (this.form.price > 999999999) {
+      this.toast.error(this.translate.instant('VALIDATION.Property_PriceTooHigh'));
+      scrollToError('price', 1);
+      return;
+    }
+    if (this.form.area === undefined || this.form.area === null || this.form.area < 10) {
+      this.toast.error(this.translate.instant('VALIDATION.Property_AreaTooSmall'));
       scrollToError('area', 1);
       return;
     }
-    if (this.form.bedrooms < 0) {
-      this.toast.error(this.translate.instant('PROPERTY_FORM.VALIDATION.BEDROOMS_POSITIVE'));
+    if (this.form.area > 100000) {
+      this.toast.error(this.translate.instant('VALIDATION.Property_AreaTooLarge'));
+      scrollToError('area', 1);
+      return;
+    }
+    if (this.form.bedrooms !== undefined && this.form.bedrooms !== null && (this.form.bedrooms < 0 || this.form.bedrooms > 100)) {
+      this.toast.error(this.translate.instant('VALIDATION.Property_BedroomsTooMany'));
       scrollToError('bedrooms', 1);
       return;
     }
-    if (this.form.bathrooms < 0) {
-      this.toast.error(this.translate.instant('PROPERTY_FORM.VALIDATION.BEDROOMS_POSITIVE'));
+    if (this.form.bathrooms !== undefined && this.form.bathrooms !== null && (this.form.bathrooms < 0 || this.form.bathrooms > 100)) {
+      this.toast.error(this.translate.instant('VALIDATION.Property_BathroomsTooMany'));
       scrollToError('bathrooms', 1);
+      return;
+    }
+    if (this.form.floor !== undefined && this.form.floor !== null && (this.form.floor < 0 || this.form.floor > 999)) {
+      this.toast.error(this.translate.instant('VALIDATION.Property_FloorTooHigh'));
+      scrollToError('floor', 1);
+      return;
+    }
+    if (this.form.totalFloors !== undefined && this.form.totalFloors !== null && (this.form.totalFloors < 1 || this.form.totalFloors > 999)) {
+      this.toast.error(this.translate.instant('VALIDATION.Property_TotalFloorsTooHigh'));
+      scrollToError('totalFloors', 1);
+      return;
+    }
+    if (this.form.description && this.form.description.length > 5000) {
+      this.toast.error(this.translate.instant('VALIDATION.Property_DescriptionTooLong'));
+      scrollToError('description', 1);
       return;
     }
     if (!this.form.city || this.form.city.length < 2) {
       this.toast.error(this.translate.instant('PROPERTY_FORM.VALIDATION.CITY_REQUIRED'));
+      scrollToError('city', 4);
+      return;
+    }
+    if (this.form.city.length > 100) {
+      this.toast.error(this.translate.instant('VALIDATION.Property_CityTooLong'));
       scrollToError('city', 4);
       return;
     }
@@ -1109,9 +1213,34 @@ export class PropertyFormComponent implements OnInit {
       scrollToError('district', 4);
       return;
     }
+    if (this.form.district.length > 100) {
+      this.toast.error(this.translate.instant('VALIDATION.Property_DistrictTooLong'));
+      scrollToError('district', 4);
+      return;
+    }
     if (!this.form.addressLine || this.form.addressLine.length < 5) {
       this.toast.error(this.translate.instant('PROPERTY_FORM.VALIDATION.ADDRESS_REQUIRED'));
       scrollToError('addressLine', 4);
+      return;
+    }
+    if (this.form.addressLine.length > 500) {
+      this.toast.error(this.translate.instant('VALIDATION.Property_AddressLineTooLong'));
+      scrollToError('addressLine', 4);
+      return;
+    }
+    if (this.form.zipCode && this.form.zipCode.length > 20) {
+      this.toast.error(this.translate.instant('VALIDATION.Property_ZipCodeTooLong'));
+      scrollToError('zipCode', 4);
+      return;
+    }
+    if (this.form.latitude !== undefined && this.form.latitude !== null && (this.form.latitude < -90 || this.form.latitude > 90)) {
+      this.toast.error(this.translate.instant('VALIDATION.Property_LatitudeOutOfRange'));
+      scrollToError('latitude', 4);
+      return;
+    }
+    if (this.form.longitude !== undefined && this.form.longitude !== null && (this.form.longitude < -180 || this.form.longitude > 180)) {
+      this.toast.error(this.translate.instant('VALIDATION.Property_LongitudeOutOfRange'));
+      scrollToError('longitude', 4);
       return;
     }
 
@@ -1284,16 +1413,29 @@ export class PropertyFormComponent implements OnInit {
       this.router.navigate(['/properties', resultId]);
     } catch (e: any) { 
       console.error('Submission failed details:', e);
-      let errorMessage = this.translate.instant('PROPERTY_FORM.MESSAGES.SAVE_ERROR');
-      
+      let translationKey = '';
       if (e?.error?.detail) {
-        errorMessage = e.error.detail;
+        translationKey = e.error.detail;
       } else if (e?.error?.errors) {
         const firstErrorKey = Object.keys(e.error.errors)[0];
         const firstErrorMessages = e.error.errors[firstErrorKey];
-        errorMessage = Array.isArray(firstErrorMessages) ? firstErrorMessages[0] : firstErrorMessages;
+        translationKey = Array.isArray(firstErrorMessages) ? firstErrorMessages[0] : firstErrorMessages;
+      } else if (e?.error?.code) {
+        translationKey = e.error.code;
       } else if (e?.error?.title) {
-        errorMessage = e.error.title;
+        translationKey = e.error.title;
+      }
+
+      let errorMessage = '';
+      if (translationKey) {
+        const translated = this.translate.instant('VALIDATION.' + translationKey);
+        if (translated !== 'VALIDATION.' + translationKey) {
+          errorMessage = translated;
+        } else {
+          errorMessage = translationKey;
+        }
+      } else {
+        errorMessage = this.translate.instant('PROPERTY_FORM.MESSAGES.SAVE_ERROR');
       }
 
       this.toast.error(errorMessage); 

@@ -1,3 +1,4 @@
+import { firstValueFrom } from 'rxjs';
 import { Component, OnInit, signal, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -5,7 +6,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
 import { AuthService } from '../../../core/auth/auth.service';
-import { CreateBookingRequest, Property, BookingDetail, UpdateBookingStatusRequest, BookingStatus } from '../../../core/models';
+import { CreateBookingRequest, Property, BookingDetail, UpdateBookingStatusRequest, BookingStatus, AvailabilityRuleDto } from '../../../core/models';
 import { ToastService } from '../../../core/services/toast.service';
 import { buildPropertyPlaceholder, getPropertyImageUrl } from '../../../core/utils/media';
 import { environment } from '../../../../environments/environment';
@@ -14,6 +15,7 @@ import { CurrencyEgpPipe } from '../../../shared/pipes/currency-egp.pipe';
 import { ProfileService } from '../../profile/services/profile.service';
 import { PropertyService } from '../../properties/services/property.service';
 import { BookingService } from '../services/booking.service';
+import { AvailabilityService } from '../../availability/availability.service';
 
 interface Slot {
   id: string;
@@ -80,7 +82,7 @@ interface Slot {
                     <div [class]="startDateHintClass()">
                       @if (startDateTouched() && startDateError()) {
                         <svg class="icon" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
-                        <span>{{ 'BOOKINGS.MESSAGES.REQUIRED_DATES' | translate }}</span>
+                        <span>{{ startDateError() === 'tooFar' ? ('VALIDATION.Booking_EndDateTooFar' | translate) : ('BOOKINGS.MESSAGES.REQUIRED_DATES' | translate) }}</span>
                       } @else {
                         <span>{{ 'BOOKINGS.START_DATE_HINT' | translate }}</span>
                       }
@@ -134,8 +136,14 @@ interface Slot {
                 </div>
 
                 <div class="mb-12">
-                  <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">{{ 'BOOKINGS.NOTES' | translate }}</label>
-                  <textarea [ngModel]="notes()" (ngModelChange)="notes.set($event)" name="notes" rows="4" class="w-full bg-gray-50 border border-transparent rounded-2xl px-6 py-4 text-sm font-bold focus:bg-white focus:border-[#0a8f96] outline-none transition-all resize-none" [placeholder]="'BOOKINGS.NOTES_PLACEHOLDER' | translate"></textarea>
+                  <div class="flex items-center justify-between mb-3">
+                    <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest">{{ 'BOOKINGS.NOTES' | translate }}</label>
+                    <span class="text-[10px] font-bold text-gray-400" [class.text-red-500]="notes().length > 1000">{{ notes().length }} / 1000</span>
+                  </div>
+                  <textarea [ngModel]="notes()" (ngModelChange)="notes.set($event)" name="notes" rows="4" maxlength="1000" class="w-full bg-gray-50 border border-transparent rounded-2xl px-6 py-4 text-sm font-bold focus:bg-white focus:border-[#0a8f96] outline-none transition-all resize-none" [placeholder]="'BOOKINGS.NOTES_PLACEHOLDER' | translate"></textarea>
+                  @if (notes().length > 1000) {
+                    <p class="text-xs font-bold text-red-600 mt-2">{{ 'VALIDATION.Booking_NotesTooLong' | translate }}</p>
+                  }
                 </div>
 
                 <!-- Personal Info -->
@@ -292,6 +300,10 @@ export class CreateBookingComponent implements OnInit {
   // Validation
   readonly startDateError = computed<string | null>(() => {
     if (!this.form().startDate) return 'required';
+    const date = new Date(this.form().startDate);
+    const maxDate = new Date();
+    maxDate.setFullYear(maxDate.getFullYear() + 1);
+    if (date.getTime() > maxDate.getTime()) return 'tooFar';
     return null;
   });
   readonly slotError = computed<string | null>(() => {
@@ -385,11 +397,11 @@ export class CreateBookingComponent implements OnInit {
   private slots = signal<Slot[]>([]);
   selectedSlot = signal<Slot | null>(null);
 
-  onStartDateChange(value: string) {
+  async onStartDateChange(value: string) {
     this.form.update(f => ({ ...f, startDate: value }));
     this.startDateTouched.set(true);
     this.selectedSlot.set(null);
-    this.slots.set(this.generateSlots());
+    await this.generateSlotsFromAvailability(this.form().propertyId, value);
   }
 
   updateField(field: keyof CreateBookingRequest, value: any) {
@@ -403,6 +415,57 @@ export class CreateBookingComponent implements OnInit {
       const end = `${(h + 1).toString().padStart(2, '0')}:00`;
       out.push({ id: `s${h}`, start, end, hour: h });
     }
+    return out;
+  }
+
+  private async generateSlotsFromAvailability(propertyId: string, date: string): Promise<void> {
+    try {
+      const rules = await firstValueFrom(this.availabilityService.getPropertyAvailability(propertyId));
+      if (rules && rules.length > 0) {
+        const dayOfWeek = new Date(date).getDay();
+        const slots = this.generateSlotsFromRules(rules, dayOfWeek, date);
+        if (slots.length > 0) {
+          this.slots.set(slots);
+          return;
+        }
+      }
+    } catch {
+      // Fall through to default slots
+    }
+    this.slots.set(this.generateSlots());
+  }
+
+  private generateSlotsFromRules(rules: AvailabilityRuleDto[], dayOfWeek: number, date: string): Slot[] {
+    const out: Slot[] = [];
+    let slotId = 0;
+
+    for (const rule of rules) {
+      if (rule.recurrenceType === 'None' && rule.specificDate !== date) continue;
+      if (rule.recurrenceType === 'Weekly' && rule.dayOfWeek !== dayOfWeek) continue;
+
+      const startParts = rule.startTime.split(':').map(Number);
+      const endParts = rule.endTime.split(':').map(Number);
+      let startMinutes = startParts[0] * 60 + (startParts[1] || 0);
+      const endMinutes = endParts[0] * 60 + (endParts[1] || 0);
+
+      let durationMinutes = 60;
+      if (rule.slotDuration) {
+        const match = rule.slotDuration.match(/^(\d+)/);
+        if (match) durationMinutes = parseInt(match[1], 10);
+      }
+
+      while (startMinutes + durationMinutes <= endMinutes) {
+        const startH = Math.floor(startMinutes / 60);
+        const startM = startMinutes % 60;
+        const endH = Math.floor((startMinutes + durationMinutes) / 60);
+        const endM = (startMinutes + durationMinutes) % 60;
+        const start = `${startH.toString().padStart(2, '0')}:${startM.toString().padStart(2, '0')}`;
+        const end = `${endH.toString().padStart(2, '0')}:${endM.toString().padStart(2, '0')}`;
+        out.push({ id: `av${slotId++}`, start, end, hour: startH });
+        startMinutes += durationMinutes;
+      }
+    }
+
     return out;
   }
 
@@ -506,6 +569,8 @@ export class CreateBookingComponent implements OnInit {
     return translated !== translationKey ? translated : value;
   }
 
+  private availabilityService = inject(AvailabilityService);
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -559,7 +624,9 @@ export class CreateBookingComponent implements OnInit {
 
     this.form.update(f => ({ ...f, propertyId }));
 
-    this.slots.set(this.generateSlots());
+    if (this.form().startDate) {
+      await this.generateSlotsFromAvailability(propertyId, this.form().startDate);
+    }
 
     try {
       const property = await this.propertyService.getById(propertyId);
@@ -605,6 +672,11 @@ export class CreateBookingComponent implements OnInit {
       return;
     }
 
+    if (this.notes() && this.notes().length > 1000) {
+      this.toast.error(this.translate.instant('VALIDATION.Booking_NotesTooLong'));
+      return;
+    }
+
     const slot = this.selectedSlot()!;
     const [startH, startM] = slot.start.split(':').map(Number);
     const [endH, endM] = slot.end.split(':').map(Number);
@@ -638,16 +710,30 @@ export class CreateBookingComponent implements OnInit {
         this.router.navigate(['/bookings', response.bookingId]);
       }
     } catch (e: any) {
-      let errorMessage = this.translate.instant('BOOKINGS.MESSAGES.CREATE_ERROR');
-
+      console.error('Booking creation error:', e);
+      let translationKey = '';
       if (e?.error?.detail) {
-        errorMessage = e.error.detail;
+        translationKey = e.error.detail;
       } else if (e?.error?.errors) {
         const firstErrorKey = Object.keys(e.error.errors)[0];
         const firstErrorMessages = e.error.errors[firstErrorKey];
-        errorMessage = Array.isArray(firstErrorMessages) ? firstErrorMessages[0] : firstErrorMessages;
+        translationKey = Array.isArray(firstErrorMessages) ? firstErrorMessages[0] : firstErrorMessages;
+      } else if (e?.error?.code) {
+        translationKey = e.error.code;
       } else if (e?.error?.title) {
-        errorMessage = e.error.title;
+        translationKey = e.error.title;
+      }
+
+      let errorMessage = '';
+      if (translationKey) {
+        const translated = this.translate.instant('VALIDATION.' + translationKey);
+        if (translated !== 'VALIDATION.' + translationKey) {
+          errorMessage = translated;
+        } else {
+          errorMessage = translationKey;
+        }
+      } else {
+        errorMessage = this.translate.instant('BOOKINGS.MESSAGES.CREATE_ERROR');
       }
 
       this.toast.error(errorMessage);

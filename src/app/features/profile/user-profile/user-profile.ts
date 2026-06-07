@@ -292,6 +292,20 @@ export class UserProfileComponent implements OnInit {
       return;
     }
 
+    const newPw = this.pwForm.newPassword;
+    if (newPw.length < 8) {
+      this.toast.error(this.translate.instant('AUTH.REGISTER.PASSWORD_MIN'));
+      return;
+    }
+    const number = /\d/.test(newPw);
+    const uppercase = /[A-Z]/.test(newPw);
+    const lowercase = /[a-z]/.test(newPw);
+    const special = /[!@#$%^&*(),.?":{}|<>]/.test(newPw);
+    if (!number || !uppercase || !lowercase || !special) {
+      this.toast.error(this.translate.instant('VALIDATION.Register_PasswordComplex'));
+      return;
+    }
+
     this.changingPassword.set(true);
     try {
       await this.auth.changePassword({
@@ -302,7 +316,31 @@ export class UserProfileComponent implements OnInit {
       this.showChangePassword.set(false);
       this.pwForm = { currentPassword: '', newPassword: '', confirmPassword: '' };
     } catch (error: any) {
-      this.toast.error(error?.error?.detail || this.translate.instant('PROFILE.PW_ERROR'));
+      let translationKey = '';
+      if (error?.error?.detail) {
+        translationKey = error.error.detail;
+      } else if (error?.error?.errors) {
+        const firstErrorKey = Object.keys(error.error.errors)[0];
+        const firstErrorMessages = error.error.errors[firstErrorKey];
+        translationKey = Array.isArray(firstErrorMessages) ? firstErrorMessages[0] : firstErrorMessages;
+      } else if (error?.error?.code) {
+        translationKey = error.error.code;
+      } else if (error?.error?.title) {
+        translationKey = error.error.title;
+      }
+
+      let errorMessage = '';
+      if (translationKey) {
+        const translated = this.translate.instant('VALIDATION.' + translationKey);
+        if (translated !== 'VALIDATION.' + translationKey) {
+          errorMessage = translated;
+        } else {
+          errorMessage = translationKey;
+        }
+      } else {
+        errorMessage = this.translate.instant('PROFILE.PW_ERROR');
+      }
+      this.toast.error(errorMessage);
     } finally {
       this.changingPassword.set(false);
     }

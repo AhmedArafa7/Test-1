@@ -110,7 +110,7 @@ import { ToastService } from '../../../core/services/toast.service';
                 <div [class]="firstNameHintClass()">
                   @if (firstNameTouched() && firstNameError()) {
                     <svg class="icon" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
-                    <span>{{ firstNameError() === 'required' ? ('AUTH.REGISTER.REQUIRED' | translate) : ('AUTH.REGISTER.FIRST_NAME_MIN' | translate) }}</span>
+                    <span>{{ firstNameError() === 'required' ? ('AUTH.REGISTER.REQUIRED' | translate) : firstNameError() === 'maxLength' ? ('VALIDATION.UserProfile_DisplayNameTooLong' | translate) : ('AUTH.REGISTER.FIRST_NAME_MIN' | translate) }}</span>
                   } @else {
                     <span>{{ 'AUTH.REGISTER.FIRST_NAME_HINT' | translate }}</span>
                   }
@@ -124,7 +124,7 @@ import { ToastService } from '../../../core/services/toast.service';
                 <div [class]="lastNameHintClass()">
                   @if (lastNameTouched() && lastNameError()) {
                     <svg class="icon" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
-                    <span>{{ lastNameError() === 'required' ? ('AUTH.REGISTER.REQUIRED' | translate) : ('AUTH.REGISTER.LAST_NAME_MIN' | translate) }}</span>
+                    <span>{{ lastNameError() === 'required' ? ('AUTH.REGISTER.REQUIRED' | translate) : lastNameError() === 'maxLength' ? ('VALIDATION.UserProfile_DisplayNameTooLong' | translate) : ('AUTH.REGISTER.LAST_NAME_MIN' | translate) }}</span>
                   } @else {
                     <span>{{ 'AUTH.REGISTER.LAST_NAME_HINT' | translate }}</span>
                   }
@@ -140,7 +140,7 @@ import { ToastService } from '../../../core/services/toast.service';
               <div [class]="emailHintClass()">
                 @if (emailTouched() && emailError()) {
                   <svg class="icon" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
-                  <span>{{ 'AUTH.LOGIN.EMAIL_INVALID' | translate }}</span>
+                  <span>{{ emailError() === 'maxLength' ? ('VALIDATION.Register_EmailTooLong' | translate) : ('AUTH.LOGIN.EMAIL_INVALID' | translate) }}</span>
                 } @else {
                   <span>{{ 'AUTH.LOGIN.EMAIL_HINT' | translate }}</span>
                 }
@@ -169,10 +169,10 @@ import { ToastService } from '../../../core/services/toast.service';
                 </button>
               </div>
 
-              @if (passwordTouched() && passwordError() === 'minLength') {
+              @if (passwordTouched() && passwordError()) {
                 <div class="field-hint is-error">
                   <svg class="icon" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
-                  <span>{{ 'AUTH.REGISTER.PASSWORD_MIN' | translate }}</span>
+                  <span>{{ passwordError() === 'required' ? ('AUTH.REGISTER.REQUIRED' | translate) : passwordError() === 'minLength' ? ('AUTH.REGISTER.PASSWORD_MIN' | translate) : ('VALIDATION.Register_PasswordComplex' | translate) }}</span>
                 </div>
               } @else if (password().length > 0) {
                 <!-- Password Strength Indicator -->
@@ -199,10 +199,12 @@ import { ToastService } from '../../../core/services/toast.service';
                       <span>{{ 'AUTH.REGISTER.RULE_MIN_LENGTH' | translate }}</span>
                     </div>
                     <div class="flex items-center gap-1.5 transition-colors" [class.text-emerald-500]="hasUppercase()" [class.text-slate-400]="!hasUppercase()">
-                      <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/>
-                      </svg>
-                      <span>{{ 'AUTH.REGISTER.RULE_UPPERCASE' | translate }}</span>
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                      <span class="text-[10px] font-bold">{{ 'AUTH.REGISTER.RULE_UPPERCASE' | translate }}</span>
+                    </div>
+                    <div class="flex items-center gap-1.5 transition-colors" [class.text-emerald-500]="hasLowercase()" [class.text-slate-400]="!hasLowercase()">
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                      <span class="text-[10px] font-bold">{{ 'AUTH.REGISTER.RULE_LOWERCASE' | translate }}</span>
                     </div>
                     <div class="flex items-center gap-1.5 transition-colors" [class.text-emerald-500]="hasNumber()" [class.text-slate-400]="!hasNumber()">
                       <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
@@ -271,17 +273,22 @@ export class RegisterComponent {
     const v = this.firstName().trim();
     if (!v) return 'required';
     if (v.length < 2) return 'minLength';
+    const fullName = [v, this.lastName().trim()].filter(Boolean).join(' ');
+    if (fullName.length > 100) return 'maxLength';
     return null;
   });
   readonly lastNameError = computed<string | null>(() => {
     const v = this.lastName().trim();
     if (!v) return 'required';
     if (v.length < 2) return 'minLength';
+    const fullName = [this.firstName().trim(), v].filter(Boolean).join(' ');
+    if (fullName.length > 100) return 'maxLength';
     return null;
   });
   readonly emailError = computed<string | null>(() => {
     const v = this.email().trim();
     if (!v) return 'required';
+    if (v.length > 254) return 'maxLength';
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) return 'invalid';
     return null;
   });
@@ -289,6 +296,11 @@ export class RegisterComponent {
     const v = this.password();
     if (!v) return 'required';
     if (v.length < 8) return 'minLength';
+    const number = /\d/.test(v);
+    const uppercase = /[A-Z]/.test(v);
+    const lowercase = /[a-z]/.test(v);
+    const special = /[!@#$%^&*(),.?":{}|<>]/.test(v);
+    if (!number || !uppercase || !lowercase || !special) return 'complex';
     return null;
   });
 
@@ -350,6 +362,7 @@ export class RegisterComponent {
   passwordStrengthColor = signal('bg-rose-500');
   passwordStrengthPercentage = signal(0);
 
+  hasLowercase = signal(false);
   hasMinLength = signal(false);
   hasNumber = signal(false);
   hasUppercase = signal(false);
@@ -360,6 +373,7 @@ export class RegisterComponent {
       this.passwordStrengthLabel.set('');
       this.passwordStrengthColor.set('bg-rose-500');
       this.passwordStrengthPercentage.set(0);
+      this.hasLowercase.set(false);
       this.hasMinLength.set(false);
       this.hasNumber.set(false);
       this.hasUppercase.set(false);
@@ -370,8 +384,10 @@ export class RegisterComponent {
     const minLength = val.length >= 8;
     const number = /\d/.test(val);
     const uppercase = /[A-Z]/.test(val);
+    const lowercase = /[a-z]/.test(val);
     const special = /[!@#$%^&*(),.?":{}|<>]/.test(val);
 
+    this.hasLowercase.set(lowercase);
     this.hasMinLength.set(minLength);
     this.hasNumber.set(number);
     this.hasUppercase.set(uppercase);
@@ -381,14 +397,15 @@ export class RegisterComponent {
     if (minLength) score++;
     if (number) score++;
     if (uppercase) score++;
+    if (lowercase) score++;
     if (special) score++;
 
-    this.passwordStrengthPercentage.set(score * 25);
+    this.passwordStrengthPercentage.set(score * 20);
 
-    if (score <= 1) {
+    if (score <= 2) {
       this.passwordStrengthLabel.set(this.translate.instant('AUTH.REGISTER.STRENGTH_WEAK'));
       this.passwordStrengthColor.set('bg-rose-500');
-    } else if (score <= 3) {
+    } else if (score <= 4) {
       this.passwordStrengthLabel.set(this.translate.instant('AUTH.REGISTER.STRENGTH_MEDIUM'));
       this.passwordStrengthColor.set('bg-amber-500');
     } else {
@@ -415,18 +432,29 @@ export class RegisterComponent {
       this.router.navigate(['/auth/login'], { queryParams: { email: this.email() } });
     } catch (e: any) {
       console.error('Registration error full details:', e);
-      let errorMessage = 'AUTH.REGISTER.ERROR';
-
+      let translationKey = '';
       if (e?.error?.detail) {
-        errorMessage = e.error.detail;
+        translationKey = e.error.detail;
       } else if (e?.error?.errors) {
         const firstErrorKey = Object.keys(e.error.errors)[0];
         const firstErrorMessages = e.error.errors[firstErrorKey];
-        if (Array.isArray(firstErrorMessages) && firstErrorMessages.length > 0) {
-          errorMessage = firstErrorMessages[0];
-        } else if (typeof firstErrorMessages === 'string') {
-          errorMessage = firstErrorMessages;
+        translationKey = Array.isArray(firstErrorMessages) ? firstErrorMessages[0] : firstErrorMessages;
+      } else if (e?.error?.code) {
+        translationKey = e.error.code;
+      } else if (e?.error?.title) {
+        translationKey = e.error.title;
+      }
+
+      let errorMessage = '';
+      if (translationKey) {
+        const translated = this.translate.instant('VALIDATION.' + translationKey);
+        if (translated !== 'VALIDATION.' + translationKey) {
+          errorMessage = translated;
+        } else {
+          errorMessage = translationKey;
         }
+      } else {
+        errorMessage = this.translate.instant('AUTH.REGISTER.ERROR');
       }
 
       if (e?.error?.instance) {

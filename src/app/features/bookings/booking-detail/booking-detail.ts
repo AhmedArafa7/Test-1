@@ -422,7 +422,31 @@ export class BookingDetailComponent implements OnInit {
       });
       this.toast.success(this.translate.instant('BOOKINGS.DETAIL.MESSAGES.REFUND_SUCCESS', { id: res.refundId.substring(0, 8) }));
     } catch (e: any) {
-      this.toast.error(e?.error?.detail || this.translate.instant('BOOKINGS.DETAIL.MESSAGES.REFUND_ERROR'));
+      let translationKey = '';
+      if (e?.error?.detail) {
+        translationKey = e.error.detail;
+      } else if (e?.error?.errors) {
+        const firstErrorKey = Object.keys(e.error.errors)[0];
+        const firstErrorMessages = e.error.errors[firstErrorKey];
+        translationKey = Array.isArray(firstErrorMessages) ? firstErrorMessages[0] : firstErrorMessages;
+      } else if (e?.error?.code) {
+        translationKey = e.error.code;
+      } else if (e?.error?.title) {
+        translationKey = e.error.title;
+      }
+
+      let errorMessage = '';
+      if (translationKey) {
+        const translated = this.translate.instant('VALIDATION.' + translationKey);
+        if (translated !== 'VALIDATION.' + translationKey) {
+          errorMessage = translated;
+        } else {
+          errorMessage = translationKey;
+        }
+      } else {
+        errorMessage = this.translate.instant('BOOKINGS.DETAIL.MESSAGES.REFUND_ERROR');
+      }
+      this.toast.error(errorMessage);
     } finally {
       this.refunding.set(false);
     }

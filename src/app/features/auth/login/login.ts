@@ -42,7 +42,7 @@ declare global {
            [class]="bgLoaded() ? 'opacity-100' : 'opacity-0'">
       <div class="absolute inset-0 bg-slate-950/35 backdrop-blur-[1px]"></div>
 
-      <main dir="rtl" class="relative z-10 w-full px-4 animate-scale-in" style="max-width: 440px;">
+      <main  class="relative z-10 w-full px-4 animate-scale-in" style="max-width: 440px;">
         <div class="bg-white/85 backdrop-blur-xl border border-white/50 shadow-[0_25px_60px_rgba(0,0,0,0.12)] rounded-4xl px-8 my-3 sm:px-5 sm:py-8 relative overflow-hidden transition-all duration-300">
           
           <!-- Card Header Logo & Title -->
@@ -54,7 +54,7 @@ declare global {
           </div>
 
           <form (ngSubmit)="login()" class="space-y-5">
-             <div class="space-y-2 text-right">
+             <div class="space-y-2 ">
               <label class="block text-[11px] font-black text-slate-400 uppercase tracking-wider">{{ 'AUTH.LOGIN.EMAIL_LABEL' | translate }}</label>
               <input type="email"
                      [ngModel]="email()" (ngModelChange)="email.set($event); emailTouched.set(true)"
@@ -75,7 +75,7 @@ declare global {
               </div>
              </div>
 
-             <div class="space-y-2 text-right">
+             <div class="space-y-2 ">
                <div class="flex items-center justify-between">
                  <label class="text-[11px] font-black text-slate-400 uppercase tracking-wider">{{ 'AUTH.LOGIN.PASSWORD_LABEL' | translate }}</label>
                  <a routerLink="/auth/forgot-password" class="text-xs font-bold text-[#0c7379] hover:text-[#0b656b] transition-colors">{{ 'AUTH.LOGIN.FORGOT_PASSWORD' | translate }}</a>
@@ -86,7 +86,7 @@ declare global {
                         (blur)="passwordTouched.set(true)"
                         name="password"
                         placeholder="••••••••••"
-                        [class]="passwordFieldClass() + ' rtl:pl-12 ltr:pr-12 text-right'" />
+                        [class]="passwordFieldClass() + ' rtl:pl-12 ltr:pr-12 '" />
                  <button type="button" (click)="showPassword.set(!showPassword())" class="absolute ltr:right-4 rtl:left-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer">
                    @if (showPassword()) {
                      <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
@@ -111,7 +111,7 @@ declare global {
              </div>
 
              <!-- Remember Me Checkbox -->
-             <div class="flex items-center justify-start gap-2.5 py-1 select-none text-right">
+             <div class="flex items-center justify-start gap-2.5 py-1 select-none ">
                <input type="checkbox"
                       id="rememberMe"
                       [ngModel]="rememberMe()" (ngModelChange)="rememberMe.set($event)"
@@ -202,7 +202,7 @@ export class LoginComponent implements OnInit {
   });
 
   readonly emailFieldClass = computed<string>(() => {
-    const base = 'input-field text-right';
+    const base = 'input-field ';
     if (this.emailTouched() && this.emailError()) return `${base} is-invalid`;
     if (this.emailTouched() && !this.emailError() && this.email()) return `${base} is-valid`;
     return base;
@@ -233,7 +233,8 @@ export class LoginComponent implements OnInit {
     private auth: AuthService,
     private router: Router,
     private route: ActivatedRoute,
-    private toast: ToastService
+    private toast: ToastService,
+    private translate: TranslateService
   ) {}
 
   ngOnInit(): void {
@@ -252,7 +253,10 @@ export class LoginComponent implements OnInit {
     this.loading.set(true);
     try {
       await this.auth.login({ email: this.email(), password: this.password() }, this.rememberMe());
-      this.toast.success('AUTH.SUCCESS');
+      const user = this.auth.currentUser();
+      const name = user?.displayName?.trim() || user?.email || '';
+      const msg = this.translate.instant('AUTH.LOGIN.WELCOME_BACK', { name });
+      this.toast.success(msg);
       this.router.navigate(['/']);
     } catch (e: any) {
       let errorMessage = 'AUTH.LOGIN.ERROR';
@@ -304,11 +308,10 @@ export class LoginComponent implements OnInit {
     this.loading.set(true);
     try {
       const response = await this.auth.externalLogin({ provider, idToken });
-      if (response.isNewUser) {
-        this.toast.success('AUTH.LOGIN.EXTERNAL_SUCCESS_NEW');
-      } else {
-        this.toast.success('AUTH.LOGIN.EXTERNAL_SUCCESS_OLD');
-      }
+      const user = this.auth.currentUser();
+      const name = user?.displayName?.trim() || user?.email || '';
+      const msg = this.translate.instant('AUTH.LOGIN.WELCOME_BACK', { name });
+      this.toast.success(msg);
       await this.router.navigate(['/']);
     } catch (error: any) {
       this.toast.error('AUTH.LOGIN.EXTERNAL_FAIL');

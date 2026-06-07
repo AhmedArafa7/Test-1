@@ -7,3 +7,4 @@ export * from './conversation.models';
 export * from './ai.models';
 export * from './profile.models';
 export * from './admin.models';
+export * from './availability.models';

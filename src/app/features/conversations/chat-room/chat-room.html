@@ -34,7 +34,7 @@
           </div>
           <div>
             <div class="flex items-center gap-2">
-              <h2 class="text-base font-extrabold text-slate-900 leading-tight ltr:text-left rtl:text-right">
+              <h2 class="text-base font-extrabold text-slate-900 leading-tight  ">
                 {{ recipientName() | translate }}
               </h2>
               @if (isMuted()) {
@@ -62,9 +62,9 @@
                      [ngModel]="msgSearchQuery()"
                      (ngModelChange)="msgSearchQuery.set($event)"
                       [placeholder]="'MESSAGES.SEARCH_MSG' | translate"
-                     class="bg-transparent border-none outline-none text-[11px] text-slate-800 w-32 py-0.5 px-1 ltr:text-left rtl:text-right font-medium">
+                     class="bg-transparent border-none outline-none text-[11px] text-slate-800 w-32 py-0.5 px-1   font-medium">
               @if (msgSearchQuery()) {
-                <button (click)="msgSearchQuery.set('')" class="text-slate-400 hover:text-slate-600 cursor-pointer">
+                <button (click)="msgSearchQuery.set('')" class="text-slate-400 hover:text-slate-600 cursor-pointer rotate-180">
                   <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
                   </svg>
@@ -89,12 +89,12 @@
             </button>
             @if (showChatMenu()) {
               <div class="absolute top-11 ltr:right-0 rtl:left-0 w-48 bg-white shadow-xl rounded-2xl py-2.5 z-50 text-[13px] font-bold border border-slate-100 animate-in fade-in duration-100">
-                <button (click)="showContactInfo()" class="w-full text-start px-5 py-2 hover:bg-slate-50 transition-colors text-slate-700 ltr:text-left rtl:text-right">{{ 'MESSAGES.CONTACT_INFO' | translate }}</button>
-                <button (click)="toggleMute()" class="w-full text-start px-5 py-2 hover:bg-slate-50 transition-colors text-slate-700 ltr:text-left rtl:text-right">
+                <button (click)="showContactInfo()" class="w-full text-start px-5 py-2 hover:bg-slate-50 transition-colors text-slate-700  ">{{ 'MESSAGES.CONTACT_INFO' | translate }}</button>
+                <button (click)="toggleMute()" class="w-full text-start px-5 py-2 hover:bg-slate-50 transition-colors text-slate-700  ">
                   {{ (isMuted() ? 'MESSAGES.UNMUTE_NOTIF' : 'MESSAGES.MUTE_NOTIF') | translate }}
                 </button>
                 <div class="h-px bg-slate-100 my-1.5"></div>
-                <button (click)="closeChat()" class="w-full text-start px-5 py-2 hover:bg-red-50 transition-colors text-red-600 ltr:text-left rtl:text-right">{{ 'MESSAGES.CLOSE_CHAT' | translate }}</button>
+                <button (click)="closeChat()" class="w-full text-start px-5 py-2 hover:bg-red-50 transition-colors text-red-600  ">{{ 'MESSAGES.CLOSE_CHAT' | translate }}</button>
               </div>
             }
           </div>
@@ -142,8 +142,8 @@
                     
                     <!-- Spec & Price Details -->
                     <div class="p-6">
-                      <h4 class="text-base font-extrabold text-slate-900 mb-1 ltr:text-left rtl:text-right">{{ p.title }}</h4>
-                      <p class="text-xl font-black text-[#0a8f96] mb-5 ltr:text-left rtl:text-right tabular-nums">{{ p.price | currencyEgp }}</p>
+                      <h4 class="text-base font-extrabold text-slate-900 mb-1  ">{{ p.title }}</h4>
+                      <p class="text-xl font-black text-[#0a8f96] mb-5   tabular-nums">{{ p.price | currencyEgp }}</p>
                       
                       <!-- Premium Specs Grid -->
                       <div class="grid grid-cols-3 gap-3 mb-6">
@@ -302,8 +302,8 @@
                        (error)="onImageError($event, p.id)">
                 </div>
                 <div class="p-3">
-                  <h4 class="text-[12px] font-extrabold text-slate-900 truncate mb-1 ltr:text-left rtl:text-right">{{ p.title || ('MESSAGES.UNTITLED' | translate) }}</h4>
-                  <p class="text-xs text-[#0a8f96] font-black ltr:text-left rtl:text-right tabular-nums">
+                  <h4 class="text-[12px] font-extrabold text-slate-900 truncate mb-1  ">{{ p.title || ('MESSAGES.UNTITLED' | translate) }}</h4>
+                  <p class="text-xs text-[#0a8f96] font-black   tabular-nums">
                     {{ p.price ? (p.price | currencyEgp) : ('MESSAGES.PRICE_ON_CALL' | translate) }}
                   </p>
                 </div>
@@ -390,7 +390,7 @@
               <!-- Main Input textarea -->
               <textarea [(ngModel)]="newMessage" 
                         (keydown.enter)="$event.preventDefault(); send()" 
-                        class="flex-1 bg-transparent border-0 focus:ring-0 text-slate-800 py-2 px-3 text-sm font-medium placeholder-slate-400 resize-none outline-none custom-scrollbar ltr:text-left rtl:text-right" 
+                        class="flex-1 bg-transparent border-0 focus:ring-0 text-slate-800 py-2 px-3 text-sm font-medium placeholder-slate-400 resize-none outline-none custom-scrollbar  " 
                         [placeholder]="'MESSAGES.SEND_PLACEHOLDER' | translate" 
                         rows="1" 
                         dir="auto"></textarea>
@@ -443,7 +443,7 @@
           <div class="bg-white rounded-3xl w-full max-w-3xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
             <!-- Header -->
             <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50/50">
-              <h3 class="font-extrabold text-slate-900 text-lg ltr:text-left rtl:text-right">{{ 'MESSAGES.CROP_TITLE' | translate }}</h3>
+              <h3 class="font-extrabold text-slate-900 text-lg  ">{{ 'MESSAGES.CROP_TITLE' | translate }}</h3>
               <button (click)="cancelCrop()" class="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-500 hover:text-red-500 hover:bg-red-50 transition-colors shadow-sm cursor-pointer">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -555,7 +555,7 @@
   <aside class="hidden md:flex flex-col bg-white w-[380px] shrink-0 border-s border-slate-100 overflow-hidden relative z-30">
     <header class="p-6 bg-white shrink-0 relative border-b border-slate-100 flex flex-col gap-4">
       <div class="flex items-start justify-between">
-        <div class="ltr:text-left rtl:text-right">
+        <div class=" ">
           <div class="flex items-center gap-3">
             <h1 class="text-2xl font-black text-slate-900 tracking-tight">{{ 'MESSAGES.MESSAGES_COUNT' | translate }}</h1>
             @if (unreadMessagesCount() > 0) {
@@ -670,7 +670,7 @@
         <input type="text" 
                [ngModel]="searchQuery()" 
                (ngModelChange)="searchQuery.set($event)"
-               class="bg-transparent border-0 focus:ring-0 text-[13px] text-slate-800 w-full placeholder-slate-400 py-1 outline-none font-medium ltr:text-left rtl:text-right" 
+               class="bg-transparent border-0 focus:ring-0 text-[13px] text-slate-800 w-full placeholder-slate-400 py-1 outline-none font-medium  " 
                [placeholder]="'MESSAGES.SEARCH_PLACEHOLDER' | translate">
         @if (searchQuery()) {
           <button (click)="searchQuery.set('')" class="text-slate-400 hover:text-slate-900 cursor-pointer">
@@ -703,7 +703,7 @@
           <div class="flex-1 min-w-0">
             <div class="flex justify-between items-center mb-1">
               <div class="flex items-center gap-1.5 min-w-0">
-                <h3 class="text-sm font-extrabold text-slate-950 truncate ltr:text-left rtl:text-right">
+                <h3 class="text-sm font-extrabold text-slate-950 truncate  ">
                   {{ getOtherName(conv) }}
                 </h3>
                 @if (mutedConversations().includes(conv.id)) {
@@ -724,7 +724,7 @@
                   </svg>
                   <p class="text-xs text-[#0d7a80] font-extrabold truncate">{{ 'MESSAGES.PROP_SENT' | translate }}</p>
                 } @else {
-                  <p class="text-xs text-slate-500 font-bold truncate ltr:text-left rtl:text-right" 
+                  <p class="text-xs text-slate-500 font-bold truncate  " 
                      [class.text-slate-900]="(conv.unreadCount ?? 0) > 0" 
                      [class.font-black]="(conv.unreadCount ?? 0) > 0">
                     {{ conv.lastMessageContent || ('MESSAGES.NO_MESSAGES' | translate) }}

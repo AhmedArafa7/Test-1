@@ -46,6 +46,7 @@ export const routes: Routes = [
       { path: 'ai/recommendations', canActivate: [roleGuard('Buyer', 'Agent', 'Admin')], loadComponent: () => import('./features/ai/recommendations/recommendations').then(m => m.RecommendationsComponent), data: { title: 'NAV.RECOMMENDATIONS' } },
       { path: 'notifications', loadComponent: () => import('./features/notifications/notification-list/notification-list').then(m => m.NotificationListComponent), data: { title: 'NOTIFICATIONS.TITLE' } },
       { path: 'settings', loadComponent: () => import('./features/settings/settings').then(m => m.SettingsComponent), data: { title: 'NAV.SETTINGS' } },
+      { path: 'availability', canActivate: [roleGuard('Agent')], loadComponent: () => import('./features/availability/availability.component').then(m => m.AvailabilityComponent), data: { title: 'AVAILABILITY.TITLE' } },
     ]
   },
 
