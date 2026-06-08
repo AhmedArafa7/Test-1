@@ -45,6 +45,9 @@ import { ChatSignalRService } from '../../../core/services/chat-signalr.service'
                   <a routerLink="/properties/new" routerLinkActive="!text-[#0a8f96] !bg-[#0a8f96]/5" 
                      [routerLinkActiveOptions]="{exact: true}"
                      class="px-5 py-2.5 rounded-full text-sm font-bold text-gray-500 hover:text-gray-900 transition-all">{{ 'NAV.ADD_PROPERTY' | translate }}</a>
+                  <a routerLink="/trash" routerLinkActive="!text-[#0a8f96] !bg-[#0a8f96]/5"
+                     [routerLinkActiveOptions]="{exact: true}"
+                     class="px-5 py-2.5 rounded-full text-sm font-bold text-gray-500 hover:text-gray-900 transition-all">{{ 'NAV.TRASH' | translate }}</a>
                 }
                 
                 @if (auth.isBuyer() || auth.isAgent()) {
@@ -129,6 +132,10 @@ import { ChatSignalRService } from '../../../core/services/chat-signalr.service'
                           <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
                           <span class="flex-1 text-start">{{ 'NAV.MY_PROPERTIES' | translate }}</span>
                         </a>
+                        <a routerLink="/trash" (click)="closeProfileMenu()" class="flex items-center gap-3 px-4 py-2.5 text-[13px] font-bold text-gray-600 hover:bg-gray-50 hover:text-[#0a8f96] rounded-xl transition-all">
+                          <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                          <span class="flex-1 text-start">{{ 'NAV.TRASH' | translate }}</span>
+                        </a>
                       }
 
                       @if (auth.isBuyer()) {
@@ -191,6 +198,9 @@ import { ChatSignalRService } from '../../../core/services/chat-signalr.service'
                     </span>
                   }
                 </a>
+              }
+              @if (auth.isAgent()) {
+                <a routerLink="/trash" (click)="mobileOpen = false" class="block p-4 rounded-2xl hover:bg-gray-50 text-gray-700 font-bold">{{ 'NAV.TRASH' | translate }}</a>
               }
               <a routerLink="/profile" (click)="mobileOpen = false" class="block p-4 rounded-2xl hover:bg-gray-50 text-gray-700 font-bold">{{ 'NAV.PROFILE' | translate }}</a>
               <button (click)="logout(); mobileOpen = false" class="w-full p-4 rounded-2xl bg-gradient-to-br from-red-100 to-red-50 text-red-500 font-black text-start">{{ 'NAV.LOGOUT' | translate }}</button>

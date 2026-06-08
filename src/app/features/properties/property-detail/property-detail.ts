@@ -9,6 +9,7 @@ import { AuthService } from '../../../core/auth/auth.service';
 import { Property, PropertyListItem } from '../../../core/models';
 import { ToastService } from '../../../core/services/toast.service';
 import { ConfirmService } from '../../../core/services/confirm.service';
+import { TrashService } from '../../../core/services/trash.service';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner';
 import { FormsModule } from '@angular/forms';
 import { ConversationService } from '../../conversations/services/conversation.service';
@@ -624,6 +625,8 @@ export class PropertyDetailComponent implements OnInit {
     }
   };
 
+  private trashService = inject(TrashService);
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -952,16 +955,11 @@ export class PropertyDetailComponent implements OnInit {
       cancelText: this.translate.instant('COMMON.CANCEL'),
       variant: 'danger',
     });
-    if (ok) {
-      try {
-        await this.propertyService.delete(property.id);
-        this.toast.success(this.translate.instant('PROPERTY_LIST.MESSAGES.DELETE_SUCCESS'));
-        this.router.navigate(['/properties']);
-      } catch (error: any) {
-        const message = error?.error?.detail || this.translate.instant('PROPERTY_DETAIL.MESSAGES.DELETE_ERROR');
-        this.toast.error(message);
-      }
-    }
+    if (!ok) return;
+
+    this.trashService.addProperty(property.id, property.title, property.images?.[0]?.url);
+    this.toast.success(this.translate.instant('PROPERTY_DETAIL.MESSAGES.MOVED_TO_TRASH'));
+    this.router.navigate(['/properties']);
   }
 
   async submitReview() {

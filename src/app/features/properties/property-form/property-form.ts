@@ -10,6 +10,7 @@ import { ToastService } from '../../../core/services/toast.service';
 import { ConfirmService } from '../../../core/services/confirm.service';
 import { LocalImageService } from '../../../core/services/local-image.service';
 import { CloudinaryService } from '../../../core/services/cloudinary.service';
+import { TrashService } from '../../../core/services/trash.service';
 import { compressImage } from '../../../core/utils/media';
 import { firstValueFrom } from 'rxjs';
 
@@ -682,6 +683,7 @@ export class PropertyFormComponent implements OnInit {
   imageUrlsText = '';
   private translate = inject(TranslateService);
   private cdr = inject(ChangeDetectorRef);
+  private trashService = inject(TrashService);
 
   hasDraftAvailable = signal(false);
   initialDescriptionHtml = '';
@@ -1054,29 +1056,10 @@ export class PropertyFormComponent implements OnInit {
     });
     if (!ok) return;
 
-    if (this.isEdit()) {
-      try {
-        await this.propertyService.deleteImage(this.propertyId, image.id);
-        this.toast.success(this.translate.instant('PROPERTY_FORM.MESSAGES.DELETE_IMAGE_LOCAL_SUCCESS'));
-        // Refresh property images
-        const updatedProperty = await this.propertyService.getById(this.propertyId);
-        if (updatedProperty && updatedProperty.images) {
-          this.existingImages.set(updatedProperty.images);
-          this.existingImageUrls.set(updatedProperty.images.map(img => img.url));
-        }
-      } catch (e: any) {
-        const status = e?.status;
-        if (status === 409 || e?.error?.detail === 'Property_CannotDeleteLastImage') {
-          this.toast.error(this.translate.instant('PROPERTY_FORM.MESSAGES.IMAGE_DELETE_FAILED_LAST'));
-        } else {
-          this.toast.error(this.translate.instant('PROPERTY_FORM.MESSAGES.DELETE_ERROR'));
-        }
-      }
-    } else {
-      this.existingImages.update(imgs => imgs.filter(x => x.id !== image.id));
-      this.existingImageUrls.update(urls => urls.filter(u => u !== image.url));
-      this.toast.success(this.translate.instant('PROPERTY_FORM.MESSAGES.DELETE_IMAGE_LOCAL_SUCCESS'));
-    }
+    this.trashService.addImage(image.id, image.url, this.propertyId, this.form.title || this.translate.instant('PROPERTY_FORM.UNTITLED'));
+    this.existingImages.update(imgs => imgs.filter(x => x.id !== image.id));
+    this.existingImageUrls.update(urls => urls.filter(u => u !== image.url));
+    this.toast.success(this.translate.instant('PROPERTY_FORM.MESSAGES.DELETE_IMAGE_MOVED_TO_TRASH'));
   }
 
   isLastRemainingImage(): boolean {

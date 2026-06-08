@@ -89,6 +89,7 @@
       "USER": "User"
     },
     "MY_PROPERTIES": "My Properties",
+    "TRASH": "Trash",
     "SIGNED_IN_AS": "Signed in as"
   },
   "ROLES": {
@@ -613,7 +614,8 @@
       "FAV_BUYER_ONLY": "Saving properties is only available for buyer accounts.",
       "FAV_REMOVED": "Property removed from favorites.",
       "FAV_ADDED": "Property saved successfully!",
-      "FAV_EXIST": "This property is already in your list."
+      "FAV_EXIST": "This property is already in your list.",
+      "MOVED_TO_TRASH": "Property moved to trash"
     },
     "MIN_PRICE": "Min Price",
     "MAX_PRICE": "Max Price",
@@ -787,6 +789,7 @@
       "CONVERSATION_FAILED": "Could not start conversation",
       "BOOKING_LOGIN_REQUIRED": "You must be logged in to book a viewing",
       "DELETE_ERROR": "An error occurred while deleting the property",
+      "MOVED_TO_TRASH": "Property moved to trash",
       "REVIEW_THANKS": "Thank you for your rating!",
       "REVIEW_FAILED": "Could not submit review"
     },
@@ -974,8 +977,10 @@
       "GEO_MIN_LENGTH": "Please type a location name of at least 3 characters.",
       "GEO_UPDATED": "Location identified and map updated successfully!",
       "GEO_NOT_FOUND": "Could not locate this place. Please type a known city or district.",
-      "GEO_SERVICE_ERROR": "Error connecting to the geographic service."
+      "GEO_SERVICE_ERROR": "Error connecting to the geographic service.",
+      "DELETE_IMAGE_MOVED_TO_TRASH": "Image moved to trash"
     },
+    "UNTITLED": "Untitled",
     "PLACEHOLDER_PRICE": "e.g. 2500000",
     "PLACEHOLDER_AREA": "e.g. 150",
     "PLACEHOLDER_BEDROOMS": "e.g. 3",
@@ -3439,5 +3444,27 @@
     "SAT": "Sat",
     "FOR_PROPERTY": "For specific property",
     "MIN": "min"
+  },
+  "TRASH": {
+    "TITLE": "Trash",
+    "SUBTITLE": "Temporarily deleted images and properties",
+    "TAB_IMAGES": "Images",
+    "TAB_PROPERTIES": "Properties",
+    "NO_IMAGES": "No deleted images",
+    "NO_PROPERTIES": "No deleted properties",
+    "RESTORE": "Restore",
+    "RESTORE_ALL": "Restore All",
+    "RESTORE_ALL_SUCCESS": "All items restored",
+    "RESTORE_IMAGE_SUCCESS": "Image restored to property",
+    "RESTORE_PROPERTY_SUCCESS": "Property restored",
+    "RESTORE_ERROR": "Failed to restore item",
+    "DELETE_IMAGE_FOREVER_CONFIRM": "Are you sure you want to permanently delete this image? This action cannot be undone.",
+    "DELETE_PROPERTY_FOREVER_CONFIRM": "Are you sure you want to permanently delete this property? The delete request will be sent to the server.",
+    "DELETE_IMAGE_FOREVER_SUCCESS": "Image permanently deleted",
+    "DELETE_PROPERTY_FOREVER_SUCCESS": "Property permanently deleted",
+    "DELETE_ERROR": "Failed to delete from server",
+    "DELETED_AT": "Deleted",
+    "EXPIRES_IN": "Expires in",
+    "DAYS": "days"
   }
 }

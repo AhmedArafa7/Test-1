@@ -83,6 +83,7 @@
     "SETTINGS": "الإعدادات",
     "LOGOUT": "تسجيل الخروج",
     "MY_PROPERTIES": "عقاراتي",
+    "TRASH": "سلة المهملات",
     "SIGNED_IN_AS": "مسجل كـ",
     "ROLES": {
       "ADMIN": "مدير",
@@ -611,7 +612,8 @@
       "FAV_BUYER_ONLY": "حفظ العقارات متاح لحسابات المشترين فقط.",
       "FAV_REMOVED": "تمت إزالة العقار من المفضلة.",
       "FAV_ADDED": "تم حفظ العقار بنجاح!",
-      "FAV_EXIST": "هذا العقار موجود بالفعل في قائمتك."
+      "FAV_EXIST": "هذا العقار موجود بالفعل في قائمتك.",
+      "MOVED_TO_TRASH": "تم نقل العقار إلى سلة المهملات"
     },
     "MIN_PRICE": "الحد الأدنى للسعر",
     "MAX_PRICE": "الحد الأقصى للسعر",
@@ -785,6 +787,7 @@
       "CONVERSATION_FAILED": "تعذر بدء المحادثة",
       "BOOKING_LOGIN_REQUIRED": "يجب تسجيل الدخول لتتمكن من حجز موعد معاينة",
       "DELETE_ERROR": "حدث خطأ أثناء حذف العقار",
+      "MOVED_TO_TRASH": "تم نقل العقار إلى سلة المهملات",
       "REVIEW_THANKS": "شكرًا لتقييمك!",
       "REVIEW_FAILED": "تعذر إرسال التقييم"
     },
@@ -972,10 +975,11 @@
       "GEO_MIN_LENGTH": "يرجى كتابة اسم الموقع المكون من 3 أحرف على الأقل.",
       "GEO_UPDATED": "تم تحديد الموقع الجغرافي وتحديث الخريطة بنجاح!",
       "GEO_NOT_FOUND": "لم نتمكن من تحديد هذا الموقع. يرجى كتابة اسم مدينة أو حي معروف.",
-      "GEO_SERVICE_ERROR": "حدث خطأ أثناء الاتصال بخدمة الخرائط الجغرافية."
+      "GEO_SERVICE_ERROR": "حدث خطأ أثناء الاتصال بخدمة الخرائط الجغرافية.",
+      "DELETE_IMAGE_MOVED_TO_TRASH": "تم نقل الصورة إلى سلة المهملات"
     },
+    "UNTITLED": "بدون عنوان",
     "PLACEHOLDER_PRICE": "مثال: 2500000",
-    "PLACEHOLDER_AREA": "مثال: 150",
     "PLACEHOLDER_BEDROOMS": "مثال: 3",
     "PLACEHOLDER_BATHROOMS": "مثال: 2",
     "PLACEHOLDER_FLOOR": "مثال: 3",
@@ -3437,5 +3441,27 @@
     "SAT": "سبت",
     "FOR_PROPERTY": "لعقار محدد",
     "MIN": "دقيقة"
+  },
+  "TRASH": {
+    "TITLE": "سلة المهملات",
+    "SUBTITLE": "الصور والعقارات المحذوفة مؤقتاً",
+    "TAB_IMAGES": "الصور",
+    "TAB_PROPERTIES": "العقارات",
+    "NO_IMAGES": "لا توجد صور محذوفة",
+    "NO_PROPERTIES": "لا توجد عقارات محذوفة",
+    "RESTORE": "استعادة",
+    "RESTORE_ALL": "استعادة الكل",
+    "RESTORE_ALL_SUCCESS": "تمت استعادة جميع العناصر",
+    "RESTORE_IMAGE_SUCCESS": "تمت استعادة الصورة إلى العقار",
+    "RESTORE_PROPERTY_SUCCESS": "تمت استعادة العقار",
+    "RESTORE_ERROR": "فشلت استعادة العنصر",
+    "DELETE_IMAGE_FOREVER_CONFIRM": "هل أنت متأكد من حذف هذه الصورة نهائياً؟ لا يمكن التراجع عن هذا الإجراء.",
+    "DELETE_PROPERTY_FOREVER_CONFIRM": "هل أنت متأكد من حذف هذا العقار نهائياً؟ سيتم إرسال طلب الحذف للخادم.",
+    "DELETE_IMAGE_FOREVER_SUCCESS": "تم حذف الصورة نهائياً",
+    "DELETE_PROPERTY_FOREVER_SUCCESS": "تم حذف العقار نهائياً",
+    "DELETE_ERROR": "فشل الحذف من الخادم",
+    "DELETED_AT": "محذوف في",
+    "EXPIRES_IN": "ينتهي خلال",
+    "DAYS": "يوم"
   }
 }
