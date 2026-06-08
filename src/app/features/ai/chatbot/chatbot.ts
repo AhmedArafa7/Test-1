@@ -967,7 +967,7 @@ export class ChatbotComponent {
   private formatArea(value: unknown): string {
     const area = Number(value);
     if (!Number.isFinite(area) || area <= 0) return '';
-    return `${area.toLocaleString()} m²`;
+    return `${area.toLocaleString()} ${this.translate.instant('COMMON.AREA_UNIT')}`;
   }
 
   private formatScore(value: unknown): string {

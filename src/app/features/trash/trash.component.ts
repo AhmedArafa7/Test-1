@@ -147,8 +147,13 @@ export class TrashComponent implements OnInit {
       }
     } else {
       const data = item.data as TrashPropertyData;
-      this.trashService.restoreItem(item);
-      this.toast.success(this.translate.instant('TRASH.RESTORE_PROPERTY_SUCCESS'));
+      try {
+        await this.propertyService.create(data.createRequest);
+        this.toast.success(this.translate.instant('TRASH.RESTORE_PROPERTY_SUCCESS'));
+        this.trashService.restoreItem(item);
+      } catch {
+        this.toast.error(this.translate.instant('TRASH.RESTORE_ERROR'));
+      }
     }
   }
 
@@ -182,9 +187,26 @@ export class TrashComponent implements OnInit {
 
   async restoreAll() {
     const items = [...this.items()];
+    let restored = 0;
     for (const item of items) {
-      this.trashService.restoreItem(item);
+      try {
+        if (item.type === 'image') {
+          const data = item.data as TrashImageData;
+          await this.propertyService.addImages(data.propertyId, [data.imageUrl]);
+        } else {
+          const data = item.data as TrashPropertyData;
+          await this.propertyService.create(data.createRequest);
+        }
+        this.trashService.restoreItem(item);
+        restored++;
+      } catch {
+        // skip failed items
+      }
     }
-    this.toast.success(this.translate.instant('TRASH.RESTORE_ALL_SUCCESS'));
+    if (restored > 0) {
+      this.toast.success(this.translate.instant('TRASH.RESTORE_ALL_SUCCESS'));
+    } else {
+      this.toast.error(this.translate.instant('TRASH.RESTORE_ERROR'));
+    }
   }
 }

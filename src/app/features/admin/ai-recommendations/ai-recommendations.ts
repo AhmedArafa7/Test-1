@@ -27,7 +27,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
           </button>
           <div class="flex items-center gap-2 px-4 py-2 rounded-2xl bg-indigo-50 border border-indigo-100/50">
             <span class="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span>
-            <span class="text-xs font-black text-indigo-600 uppercase tracking-tighter">Engine Optimized</span>
+            <span class="text-xs font-black text-indigo-600 uppercase tracking-tighter">{{ 'ADMIN.AI_RECOMMENDATIONS.ENGINE_OPTIMIZED' | translate }}</span>
           </div>
         </div>
       </div>

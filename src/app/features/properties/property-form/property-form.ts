@@ -228,7 +228,7 @@ import { firstValueFrom } from 'rxjs';
                           @for (item of missingFields; track item.id) {
                             <button type="button"
                                     (click)="focusMissingField(item)"
-                                    [attr.aria-label]="'Go to ' + (item.labelKey | translate)"
+                                    [attr.aria-label]="'PROPERTY_FORM.GO_TO' | translate:{step: (item.labelKey | translate)}"
                                     class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-amber-300 rounded-lg text-xs font-bold text-amber-800 hover:bg-amber-100 hover:border-amber-400 transition-all active:scale-95 cursor-pointer">
                               <span class="w-4 h-4 rounded-full bg-amber-200 text-amber-700 flex items-center justify-center text-[10px] font-black">{{ item.step }}</span>
                               <span>{{ item.labelKey | translate }}</span>
@@ -340,15 +340,38 @@ import { firstValueFrom } from 'rxjs';
 
                   <!-- Local Preview Grid -->
                   @if (localImages().length > 0) {
-                    <div class="grid grid-cols-2 gap-4">
-                      @for (img of localImages(); track img; let i = $index) {
-                        <div class="relative group aspect-square rounded-2xl overflow-hidden shadow-sm">
-                          <img [src]="img" class="w-full h-full object-cover">
-                          <button type="button" (click)="removeLocalImage(i)" [disabled]="isLastRemainingImage()" class="absolute top-2 ltr:right-2 rtl:left-2 w-8 h-8 bg-red-500/80 backdrop-blur-md text-white rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                          </button>
-                        </div>
-                      }
+                    <div class="space-y-3 mb-6">
+                      <h4 class="text-xs font-black text-slate-800 flex items-center gap-2">
+                        <svg class="w-4 h-4 text-amber-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                        <span>{{ 'PROPERTY_FORM.SELECT_PRIMARY_HINT' | translate }}</span>
+                      </h4>
+                      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        @for (img of localImages(); track img; let i = $index) {
+                          <div class="relative group aspect-square rounded-2xl overflow-hidden shadow-sm">
+                            <img [src]="img" class="w-full h-full object-cover">
+                            @if (i === primaryLocalIndex()) {
+                              <div class="absolute top-2 ltr:left-2 rtl:right-2 bg-amber-400 text-white text-[9px] font-black px-2 py-1 rounded-lg shadow-md flex items-center gap-1 z-10">
+                                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                                {{ 'PROPERTY_FORM.PRIMARY_IMAGE' | translate }}
+                              </div>
+                            }
+                            <div class="absolute bottom-2 inset-x-2 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                              @if (i !== primaryLocalIndex()) {
+                                <button type="button" (click)="setPrimaryLocalImage(i)"
+                                        class="flex-1 h-8 bg-amber-400/90 hover:bg-amber-500 text-white rounded-lg flex items-center justify-center gap-1 text-[10px] font-black shadow-md cursor-pointer transition-all">
+                                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
+                                  </svg>
+                                  {{ 'PROPERTY_FORM.SET_AS_PRIMARY' | translate }}
+                                </button>
+                              }
+                              <button type="button" (click)="removeLocalImage(i)" [disabled]="isLastRemainingImage()" class="h-8 w-8 bg-red-500/90 hover:bg-red-600 text-white rounded-lg flex items-center justify-center shadow-md cursor-pointer transition-all">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                              </button>
+                            </div>
+                          </div>
+                        }
+                      </div>
                     </div>
                   }
 
@@ -529,12 +552,16 @@ import { firstValueFrom } from 'rxjs';
                     <div class="space-y-3">
                       <label class="block text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1 px-1">{{ 'PROPERTY_FORM.LABEL_LAT' | translate }}</label>
                       <input type="number" step="any" [(ngModel)]="form.latitude" name="latitude"
+                             (ngModelChange)="onCoordinatesChange()"
+                             (blur)="onCoordinatesBlur()"
                              class="w-full bg-white border border-gray-100 rounded-2xl px-6 py-4 text-gray-900 placeholder:text-gray-300 focus:border-[#0a8f96] focus:ring-4 focus:ring-[#0a8f96]/5 outline-none transition-all font-bold shadow-sm"
                              placeholder="30.0444">
                     </div>
                     <div class="space-y-3">
                       <label class="block text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1 px-1">{{ 'PROPERTY_FORM.LABEL_LNG' | translate }}</label>
                       <input type="number" step="any" [(ngModel)]="form.longitude" name="longitude"
+                             (ngModelChange)="onCoordinatesChange()"
+                             (blur)="onCoordinatesBlur()"
                              class="w-full bg-white border border-gray-100 rounded-2xl px-6 py-4 text-gray-900 placeholder:text-gray-300 focus:border-[#0a8f96] focus:ring-4 focus:ring-[#0a8f96]/5 outline-none transition-all font-bold shadow-sm"
                              placeholder="31.2357">
                     </div>
@@ -703,6 +730,8 @@ export class PropertyFormComponent implements OnInit {
   private trashService = inject(TrashService);
 
   hasDraftAvailable = signal(false);
+  private geocodeTimeout: any = null;
+  private _isReverseGeocoding = false;
   initialDescriptionHtml = '';
   uploadProgressList = signal<{ id: string, preview: string, index: number, progress: number, status: 'pending' | 'uploading' | 'success' | 'error' }[]>([]);
 
@@ -718,6 +747,7 @@ export class PropertyFormComponent implements OnInit {
   };
 
   localImages = signal<string[]>([]);
+  primaryLocalIndex = signal<number>(0);
 
   currentStep = signal(1);
 
@@ -1056,6 +1086,23 @@ export class PropertyFormComponent implements OnInit {
       next.splice(index, 1);
       return next;
     });
+    if (this.primaryLocalIndex() >= this.localImages().length) {
+      this.primaryLocalIndex.set(Math.max(0, this.localImages().length - 1));
+    } else if (this.primaryLocalIndex() === index) {
+      this.primaryLocalIndex.set(0);
+    } else if (this.primaryLocalIndex() > index) {
+      this.primaryLocalIndex.update(i => i - 1);
+    }
+    this.triggerDraftSave();
+  }
+
+  setPrimaryLocalImage(index: number) {
+    if (index === this.primaryLocalIndex()) return;
+    const images = [...this.localImages()];
+    const img = images.splice(index, 1)[0];
+    images.unshift(img);
+    this.localImages.set(images);
+    this.primaryLocalIndex.set(0);
     this.triggerDraftSave();
   }
 
@@ -1076,36 +1123,74 @@ export class PropertyFormComponent implements OnInit {
     this.trashService.addImage(image.id, image.url, this.propertyId, this.form.title || this.translate.instant('PROPERTY_FORM.UNTITLED'));
     this.existingImages.update(imgs => imgs.filter(x => x.id !== image.id));
     this.existingImageUrls.update(urls => urls.filter(u => u !== image.url));
-    this.toast.success(this.translate.instant('PROPERTY_FORM.MESSAGES.DELETE_IMAGE_MOVED_TO_TRASH'));
+    this.deletedImageIds.update(ids => [...ids, image.id]);
   }
 
   async setPrimaryImage(image: PropertyImage) {
     if (image.isPrimary) return;
-    console.log('setPrimaryImage:', { propertyId: this.propertyId, imageId: image.id });
+
+    const reordered = [...this.existingImages()];
+    const idx = reordered.findIndex(img => img.id === image.id);
+    if (idx <= 0) return;
+
+    reordered.splice(idx, 1);
+    reordered.unshift({ ...image, isPrimary: true });
+    reordered.forEach((img, i) => { img.sortOrder = i; img.isPrimary = i === 0; });
+    this.existingImages.set(reordered);
+    this.existingImageUrls.set(reordered.map(img => img.url));
+
+    let apiOk = false;
     try {
       await this.propertyService.setPrimaryImage(this.propertyId, image.id);
-      this.existingImages.update(imgs =>
-        imgs.map(img => ({ ...img, isPrimary: img.id === image.id }))
-      );
+      apiOk = true;
+    } catch {
+      try {
+        await this.propertyService.update(this.propertyId, {
+          ...this.getFormPayload(),
+          imageUrls: reordered.map(img => img.url),
+          isFeatured: false
+        } as any);
+        apiOk = true;
+      } catch { /* set-primary not supported — local reorder only */ }
+    }
+    if (apiOk) {
       this.toast.success(this.translate.instant('PROPERTY_FORM.MESSAGES.SET_PRIMARY_SUCCESS'));
-    } catch (e: any) {
-      console.error('setPrimaryImage error:', e);
-      const status = e?.status;
-      if (status === 400) {
-        this.toast.error(this.translate.instant('PROPERTY_FORM.MESSAGES.SET_PRIMARY_BAD_REQUEST'));
-      } else if (status === 404) {
-        this.toast.error(this.translate.instant('PROPERTY_FORM.MESSAGES.SET_PRIMARY_NOT_FOUND'));
-      } else if (status === 403) {
-        this.toast.error(this.translate.instant('PROPERTY_FORM.MESSAGES.SET_PRIMARY_FORBIDDEN'));
-      } else {
-        this.toast.error(this.translate.instant('PROPERTY_FORM.MESSAGES.SET_PRIMARY_ERROR'));
-      }
     }
   }
 
+  private getFormPayload() {
+    return {
+      title: this.form.title,
+      description: this.form.description,
+      propertyType: this.form.propertyType,
+      listingType: this.form.listingType,
+      price: Number(this.form.price || 0),
+      area: Number(this.form.area || 0),
+      bedrooms: Number(this.form.bedrooms || 0),
+      bathrooms: Number(this.form.bathrooms || 0),
+      floor: this.form.floor != null && String(this.form.floor).trim() !== '' ? Number(this.form.floor) : null,
+      totalFloors: this.form.totalFloors != null && String(this.form.totalFloors).trim() !== '' ? Number(this.form.totalFloors) : null,
+      addressLine: this.form.addressLine,
+      city: this.cityMap[this.getCityKeyFromValue(this.form.city || '')] || this.form.city,
+      district: this.districtMap[this.getDistrictKeyFromValue(this.form.district || '')] || this.form.district,
+      zipCode: this.form.zipCode,
+      latitude: this.form.latitude,
+      longitude: this.form.longitude,
+      hasParking: !!this.form.hasParking,
+      hasPool: !!this.form.hasPool,
+      hasGym: !!this.form.hasGym,
+      hasElevator: !!this.form.hasElevator,
+      hasSecurity: !!this.form.hasSecurity,
+      hasBalcony: !!this.form.hasBalcony,
+      hasGarden: !!this.form.hasGarden,
+      hasCentralAC: !!this.form.hasCentralAC,
+      furnishingStatus: this.form.furnishingStatus,
+      viewType: this.form.viewType
+    };
+  }
+
   isLastRemainingImage(): boolean {
-    const remaining = this.existingImageUrls().length + this.localImages().length;
-    return remaining <= 1;
+    return false;
   }
 
   isValidImageUrl(url: string): boolean {
@@ -1468,6 +1553,52 @@ export class PropertyFormComponent implements OnInit {
     }
   }
 
+  onCoordinatesChange() {
+    const lat = this.form.latitude;
+    const lng = this.form.longitude;
+    if (lat == null || lng == null) return;
+    if (typeof lat !== 'number' || typeof lng !== 'number') return;
+    if (isNaN(lat) || isNaN(lng)) return;
+    if (lat < -90 || lat > 90 || lng < -180 || lng > 180) return;
+    if (this._isReverseGeocoding) return;
+
+    clearTimeout(this.geocodeTimeout);
+    this.geocodeTimeout = setTimeout(() => this.reverseGeocode(lat, lng), 600);
+  }
+
+  onCoordinatesBlur() {
+    const lat = this.form.latitude;
+    const lng = this.form.longitude;
+    if (lat == null || lng == null) return;
+    if (typeof lat !== 'number' || typeof lng !== 'number') return;
+    if (isNaN(lat) || isNaN(lng)) return;
+    if (lat < -90 || lat > 90 || lng < -180 || lng > 180) return;
+
+    clearTimeout(this.geocodeTimeout);
+    this.reverseGeocode(lat, lng);
+  }
+
+  private async reverseGeocode(lat: number, lng: number) {
+    if (this._isReverseGeocoding) return;
+    this._isReverseGeocoding = true;
+    try {
+      const lang = this.translate.currentLang || 'ar';
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1&accept-language=${lang}`
+      );
+      const data = await response.json();
+      if (data && data.address) {
+        this.fillAddressFromGeocode(data.address);
+        this.cdr.detectChanges();
+        this.triggerDraftSave();
+      }
+    } catch (err) {
+      console.error('Reverse geocoding failed:', err);
+    } finally {
+      this._isReverseGeocoding = false;
+    }
+  }
+
   getCurrentLocation() {
     if (!navigator.geolocation) {
       this.toast.error(this.translate.instant('PROPERTY_FORM.MESSAGES.GEO_NOT_SUPPORTED'));
@@ -1475,6 +1606,7 @@ export class PropertyFormComponent implements OnInit {
     }
 
     this.locating = true;
+    this._isReverseGeocoding = true;
     navigator.geolocation.getCurrentPosition(
       async (position) => {
         const lat = parseFloat(position.coords.latitude.toFixed(7));
@@ -1497,12 +1629,14 @@ export class PropertyFormComponent implements OnInit {
         }
 
         this.locating = false;
+        this._isReverseGeocoding = false;
         this.triggerDraftSave();
         this.toast.success(this.translate.instant('PROPERTY_FORM.MESSAGES.GEO_SUCCESS'));
         this.cdr.detectChanges();
       },
       (error) => {
         this.locating = false;
+        this._isReverseGeocoding = false;
         this.cdr.detectChanges();
         switch (error.code) {
           case error.PERMISSION_DENIED:
@@ -1547,6 +1681,7 @@ export class PropertyFormComponent implements OnInit {
     }
 
     this.locating = true;
+    this._isReverseGeocoding = true;
     try {
       const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1&addressdetails=1`);
       const data = await response.json();
@@ -1570,6 +1705,7 @@ export class PropertyFormComponent implements OnInit {
       console.error(err);
     } finally {
       this.locating = false;
+      this._isReverseGeocoding = false;
     }
   }
 
@@ -1604,7 +1740,7 @@ export class PropertyFormComponent implements OnInit {
     }
 
     // 2. District extraction and matching
-    const rawDistrict = address.suburb || address.neighbourhood || address.city_district || address.quarter || '';
+    const rawDistrict = address.suburb || address.neighbourhood || address.city_district || address.quarter || address.state_district || address.county || '';
     if (rawDistrict) {
       const cleanDistrict = rawDistrict.toLowerCase().trim();
       const foundKey = Object.keys(this.districtMap).find(key => {
@@ -1625,12 +1761,12 @@ export class PropertyFormComponent implements OnInit {
       this.form.district = this.translate.instant('DISTRICTS.Zayed') || 'الشيخ زايد';
     } else if (matchedCityKey === 'October') {
       this.form.district = this.translate.instant('DISTRICTS.October') || '6 أكتوبر';
+    } else {
+      this.form.district = '';
     }
 
     // 3. Zip Code
-    if (address.postcode) {
-      this.form.zipCode = address.postcode;
-    }
+    this.form.zipCode = address.postcode || '';
 
     // 4. Detailed Address
     const parts = [];
@@ -1638,9 +1774,7 @@ export class PropertyFormComponent implements OnInit {
     if (rawDistrict && rawDistrict !== rawCity) parts.push(rawDistrict);
     if (rawCity) parts.push(rawCity);
     
-    if (parts.length > 0) {
-      this.form.addressLine = parts.join(', ');
-    }
+    this.form.addressLine = parts.length > 0 ? parts.join(', ') : rawCity;
   }
 
   // --- 1. Draft Autosave State Management (localStorage) ---

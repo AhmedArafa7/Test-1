@@ -314,7 +314,10 @@
       "PASSWORD_MIN": "Password must be at least 6 characters",
       "PASSWORD_HINT": "Minimum 6 characters",
       "SAVE_DISABLED_HINT": "Complete email and password correctly to sign in",
-      "WELCOME_BACK": "Welcome back, {name}"
+      "WELCOME_BACK": "Welcome back, {name}",
+      "INVALID_CREDENTIALS": "Email or password is incorrect",
+      "EMAIL_NOT_FOUND": "Email is not registered",
+      "ACCOUNT_LOCKED": "Account temporarily locked due to too many attempts. Please try again later"
     },
     "REGISTER": {
       "LEFT_TITLE": "Curated Spaces for a Better Life.",
@@ -619,7 +622,8 @@
     },
     "MIN_PRICE": "Min Price",
     "MAX_PRICE": "Max Price",
-    "GOVERNORATE": "Governorate"
+    "GOVERNORATE": "Governorate",
+    "BAYTOLOGY_PREMIUM": "Baytology Premium"
   },
   "MESSAGES": {
     "LOCATING": "Locating you...",
@@ -988,6 +992,8 @@
     "UNTITLED": "Untitled",
     "PRIMARY_IMAGE": "Primary",
     "SET_AS_PRIMARY": "Set as Primary",
+    "SELECT_PRIMARY_HINT": "Click the star to select the main image that will appear on the property page",
+    "GO_TO": "Go to {{step}}",
     "PLACEHOLDER_PRICE": "e.g. 2500000",
     "PLACEHOLDER_AREA": "e.g. 150",
     "PLACEHOLDER_BEDROOMS": "e.g. 3",
@@ -1121,6 +1127,7 @@
       "CREATE_SUCCESS": "Booking rescheduled successfully! Redirecting to payment...",
       "CREATE_ERROR": "Failed to complete the request. Please try again.",
       "SYNC_SUCCESS": "Calendar synced across all platforms successfully!",
+      "SYNC_NOT_AVAILABLE": "Calendar sync is not available yet",
       "CONFIRM_SUCCESS": "Booking confirmed successfully",
       "CONFIRM_ERROR": "Failed to confirm booking",
       "REJECT_SUCCESS": "Booking rejected",
@@ -1379,7 +1386,8 @@
     "SUCCESS_MSG": "Reset link transmitted successfully!",
     "SUCCESS_DESC": "Please check your inbox at",
     "ISSUE_HINT": "Experiencing access issues?",
-    "CONTACT_SUPPORT": "Contact Concierge Security"
+    "CONTACT_SUPPORT": "Contact Concierge Security",
+    "ERROR": "Failed to send reset link"
   },
   "RESET_PASSWORD": {
     "TITLE": "Reset Password",
@@ -1736,7 +1744,8 @@
       "SOUND_PREMIUM_NAME": "✨ Crystal (Chime)",
       "SOUND_POP_NAME": "🎈 Bubble (Pop)",
       "NO_CUSTOM_TONE": "You haven't uploaded a custom tone yet. Please go to settings to upload a tone first.",
-      "CUSTOM_TONE_MISSING": "Custom tone file not found (browser data may have been cleared). Automatically reverted to default tone."
+      "CUSTOM_TONE_MISSING": "Custom tone file not found (browser data may have been cleared). Automatically reverted to default tone.",
+      "EMAIL": "Email"
     },
     "CROP": {
       "TITLE": "Adjust Photo Appearance",
@@ -1802,6 +1811,7 @@
       "BOOKING_SUCCESS_GENERIC": "Viewing appointment confirmed successfully!",
       "BOOKING_SUCCESS_DETAILED": "Viewing appointment confirmed for {{ date }} at {{ time }}!",
       "BOOKING_FAILED": "An error occurred while trying to book the appointment.",
+      "NO_LISTING_AVAILABLE": "No property available for booking at the moment",
       "SHARE_DEFAULT_NAME": "Real Estate Agent",
       "SHARE_TEXT_TEMPLATE": "Browse the premium profile of agent {{ name }} on Baytology - for instant viewing bookings and exclusive villa browsing!",
       "SHARE_SUCCESS": "Profile shared successfully!",
@@ -2848,7 +2858,8 @@
     "LAG": {
       "MS": "ms",
       "SEC": "sec"
-    }
+    },
+    "ENGINE_OPTIMIZED": "Engine Optimized"
   },
   "PAYMENTS": {
     "TITLE": "Financial Monitoring",
@@ -2950,6 +2961,9 @@
     "SEARCH_BTN": "Search with AI",
     "SEARCHING": "Searching...",
     "STILL_PROCESSING": "Search is still processing. Check back shortly.",
+    "MICROPHONE_ERROR": "Could not access microphone. Please allow microphone permission.",
+    "IMAGE_TOO_LARGE": "Image too large. Max 10MB.",
+    "SEARCH_FAILED": "Search failed",
     "ERROR_FAILED": "Search failed",
     "RESULTS_TITLE": "Results",
     "FOUND": "found",
@@ -3450,7 +3464,9 @@
     "FRI": "Fri",
     "SAT": "Sat",
     "FOR_PROPERTY": "For specific property",
-    "MIN": "min"
+    "MIN": "min",
+    "HOUR_ABBR": "h",
+    "MINUTE_ABBR": "m"
   },
   "TRASH": {
     "TITLE": "Trash",
@@ -3475,6 +3491,7 @@
     "DAYS": "days"
   },
   "CHAT": {
-    "NEW_MESSAGE": "New message"
+    "NEW_MESSAGE": "New message",
+    "PRIVATE_ADVISORY": "Private Advisory"
   }
 }

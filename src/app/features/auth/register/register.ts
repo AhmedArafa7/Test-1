@@ -125,6 +125,8 @@ import { ToastService } from '../../../core/services/toast.service';
               <label class="block text-[11px] font-black text-slate-400 uppercase tracking-wider">{{ 'AUTH.REGISTER.PASSWORD' | translate }} <span class="text-red-500">*</span></label>
               <div class="relative">
                 <input [type]="showPassword() ? 'text' : 'password'" [ngModel]="password()" (ngModelChange)="password.set($event); onPasswordInput($event); passwordTouched.set(true)" (blur)="passwordTouched.set(true)" name="password"
+                       (paste)="$event.preventDefault()" (copy)="$event.preventDefault()" (cut)="$event.preventDefault()"
+                       autocomplete="new-password"
                        [class]="passwordFieldClass() + ' ltr:pr-12 rtl:pl-12'"
                        [placeholder]="'AUTH.REGISTER.PASSWORD_HINT' | translate">
                 <button type="button" (click)="showPassword.set(!showPassword())"
@@ -147,7 +149,8 @@ import { ToastService } from '../../../core/services/toast.service';
                   <svg class="icon" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
                   <span>{{ passwordError() === 'required' ? ('AUTH.REGISTER.REQUIRED' | translate) : passwordError() === 'minLength' ? ('AUTH.REGISTER.PASSWORD_MIN' | translate) : ('VALIDATION.Register_PasswordComplex' | translate) }}</span>
                 </div>
-              } @else if (password().length > 0) {
+              }
+              @if (password().length > 0) {
                 <div class="mt-3 space-y-3 animate-fade-in bg-white/70 border border-slate-200/60 backdrop-blur-sm rounded-2xl p-4 shadow-sm">
                   <div class="flex items-center justify-between text-[11px] font-bold">
                     <span class="text-slate-400">{{ 'AUTH.REGISTER.PASSWORD_STRENGTH' | translate }}</span>

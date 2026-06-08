@@ -53,12 +53,15 @@ declare global {
             </div>
           </div>
 
-          <form (ngSubmit)="login()" class="space-y-5">
+          <form (ngSubmit)="login()" class="space-y-5" autocomplete="off">
              <div class="space-y-2 ">
               <label class="block text-[11px] font-black text-slate-400 uppercase tracking-wider">{{ 'AUTH.LOGIN.EMAIL_LABEL' | translate }}</label>
               <input type="email"
                      [ngModel]="email()" (ngModelChange)="email.set($event); emailTouched.set(true)"
                      (blur)="emailTouched.set(true)"
+                     (focus)="onFieldFocus($event)"
+                     [readonly]="fieldsLocked()"
+                     autocomplete="one-time-code"
                      name="email"
                      placeholder="admin@baytology.local"
                      [class]="emailFieldClass()" />
@@ -81,12 +84,16 @@ declare global {
                  <a routerLink="/auth/forgot-password" class="text-xs font-bold text-[#0c7379] hover:text-[#0b656b] transition-colors">{{ 'AUTH.LOGIN.FORGOT_PASSWORD' | translate }}</a>
                </div>
                <div class="relative">
-                 <input [type]="showPassword() ? 'text' : 'password'"
-                        [ngModel]="password()" (ngModelChange)="password.set($event); passwordTouched.set(true)"
-                        (blur)="passwordTouched.set(true)"
-                        name="password"
-                        placeholder="••••••••••"
-                        [class]="passwordFieldClass() + ' rtl:pl-12 ltr:pr-12 '" />
+                  <input [type]="showPassword() ? 'text' : 'password'"
+                         [ngModel]="password()" (ngModelChange)="password.set($event); passwordTouched.set(true)"
+                         (blur)="passwordTouched.set(true)"
+                         (focus)="onFieldFocus($event)"
+                         [readonly]="fieldsLocked()"
+                         (paste)="$event.preventDefault()" (copy)="$event.preventDefault()" (cut)="$event.preventDefault()"
+                         autocomplete="one-time-code"
+                         name="password"
+                         placeholder="••••••••••"
+                         [class]="passwordFieldClass() + ' rtl:pl-12 ltr:pr-12 '" />
                  <button type="button" (click)="showPassword.set(!showPassword())" class="absolute ltr:right-4 rtl:left-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer">
                    @if (showPassword()) {
                      <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
@@ -176,6 +183,7 @@ export class LoginComponent implements OnInit {
   rememberMe = signal(true);
   bgLoaded = signal(false);
   loading = signal(false);
+  fieldsLocked = signal(true);
 
   // Validation: touched state
   emailTouched = signal(false);
@@ -240,11 +248,20 @@ export class LoginComponent implements OnInit {
   ngOnInit(): void {
     this.initializeGoogleSdk();
 
+    // Unlock fields after a short delay to ensure browser autofill is blocked
+    setTimeout(() => this.fieldsLocked.set(false), 50);
+
     // Pre-fill email if passed from register page
     const emailParam = this.route.snapshot.queryParamMap.get('email');
     if (emailParam) {
       this.email.set(emailParam);
     }
+  }
+
+  /** Remove readonly on focus so user can type immediately */
+  onFieldFocus(event: FocusEvent) {
+    this.fieldsLocked.set(false);
+    (event.target as HTMLInputElement).removeAttribute('readonly');
   }
 
   async login() {
@@ -259,16 +276,25 @@ export class LoginComponent implements OnInit {
       this.toast.success(msg);
       this.router.navigate(['/']);
     } catch (e: any) {
-      let errorMessage = 'AUTH.LOGIN.ERROR';
+      let errorMessage = this.translate.instant('AUTH.LOGIN.ERROR');
 
       if (e?.error?.detail) {
-        errorMessage = e.error.detail;
+        const detail = e.error.detail.toLowerCase();
+        if (detail.includes('email') && detail.includes('password')) {
+          errorMessage = this.translate.instant('AUTH.LOGIN.INVALID_CREDENTIALS');
+        } else if (detail.includes('email')) {
+          errorMessage = this.translate.instant('AUTH.LOGIN.EMAIL_NOT_FOUND');
+        } else if (detail.includes('locked')) {
+          errorMessage = this.translate.instant('AUTH.LOGIN.ACCOUNT_LOCKED');
+        } else {
+          errorMessage = this.translate.instant('AUTH.LOGIN.ERROR');
+        }
       } else if (e?.error?.errors) {
         const firstErrorKey = Object.keys(e.error.errors)[0];
         const firstErrorMessages = e.error.errors[firstErrorKey];
         errorMessage = Array.isArray(firstErrorMessages) ? firstErrorMessages[0] : firstErrorMessages;
       } else if (e?.error?.title) {
-        errorMessage = e.error.title;
+        errorMessage = this.translate.instant('AUTH.LOGIN.ERROR');
       }
 
       this.toast.error(errorMessage);

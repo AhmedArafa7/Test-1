@@ -437,7 +437,7 @@ export class AiSearchComponent {
         this.recordingDuration.set(this.secondsElapsed);
       }, 1000);
     } catch {
-      this.toast.error('Could not access microphone. Please allow microphone permission.');
+      this.toast.error(this.translate.instant('AI_SEARCH.MICROPHONE_ERROR'));
     }
   }
 
@@ -473,7 +473,7 @@ export class AiSearchComponent {
 
   private handleImageFile(file: File) {
     if (file.size > 10 * 1024 * 1024) {
-      this.toast.error('Image too large. Max 10MB.');
+      this.toast.error(this.translate.instant('AI_SEARCH.IMAGE_TOO_LARGE'));
       return;
     }
 
@@ -589,10 +589,10 @@ export class AiSearchComponent {
       }
 
       if (!this.result()) {
-        this.toast.info('Search is still processing. Check back shortly.');
+        this.toast.info(this.translate.instant('AI_SEARCH.STILL_PROCESSING'));
       }
     } catch (error: any) {
-      this.toast.error(error?.error?.detail || 'Search failed');
+      this.toast.error(error?.error?.detail || this.translate.instant('AI_SEARCH.SEARCH_FAILED'));
     } finally {
       this.searching.set(false);
       this.searchProgress.set(0);

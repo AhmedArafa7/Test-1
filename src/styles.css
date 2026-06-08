@@ -194,7 +194,7 @@ body.lang-en {
 
 /* Pagination Modern */
 .pagination-modern-item {
-  @apply w-10 h-10 flex items-center justify-center rounded-xl font-black text-sm transition-all;
+  @apply w-10 h-10 flex items-center justify-center rounded-xl font-black text-sm transition-all cursor-pointer;
 }
 .pagination-modern-active { @apply bg-[#0a8f96] text-white shadow-lg shadow-[#0a8f96]/20; }
 .pagination-modern-inactive { @apply text-gray-400 hover:bg-gray-50; }
@@ -702,4 +702,13 @@ a[routerLink]:not(.btn-luxury):not([class*="bg-"]) {
     color: #0a8f96 !important;
     -webkit-print-color-adjust: exact;
   }
+}
+
+/* ─── Global Button Cursor ─── */
+button:not(:disabled):not([cursor]) {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
 }

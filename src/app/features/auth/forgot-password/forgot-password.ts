@@ -1,5 +1,5 @@
 import { Component, signal, computed } from '@angular/core';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../core/auth/auth.service';
@@ -133,7 +133,7 @@ export class ForgotPasswordComponent {
     return 'field-hint is-neutral';
   });
 
-  constructor(private auth: AuthService, private toast: ToastService) {}
+  constructor(private auth: AuthService, private toast: ToastService, private translate: TranslateService) {}
   async submit() {
     this.emailTouched.set(true);
     if (!this.isFormValid()) return;
@@ -142,7 +142,7 @@ export class ForgotPasswordComponent {
       await this.auth.forgotPassword({ email: this.email() });
       this.sent.set(true);
     } catch (e: any) {
-      this.toast.error(e?.error?.detail || 'Failed');
+      this.toast.error(e?.error?.detail || this.translate.instant('AUTH.FORGOT_PASSWORD.ERROR'));
     } finally { this.loading.set(false); }
   }
 }

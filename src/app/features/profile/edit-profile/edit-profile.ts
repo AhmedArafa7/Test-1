@@ -483,6 +483,7 @@ export class EditProfileComponent implements OnInit {
     const url = this.avatarUrl();
     if (!url) return null;
     if (url.startsWith('data:image')) return null;
+    if (url.startsWith('blob:')) return null;
     if (url.length > 500) return 'maxLength';
     try {
       const u = new URL(url);
@@ -569,7 +570,7 @@ export class EditProfileComponent implements OnInit {
         this.lastName.set(nameParts.slice(1).join(' ') || '');
         this.phoneNumber.set(p.phoneNumber || '');
         this.bio.set(p.bio || '');
-        this.preferredContactMethod.set(p.preferredContactMethod || 'Email');
+        this.preferredContactMethod.set(p.preferredContactMethod || this.translate.instant('PROFILE.EDIT.EMAIL'));
         this.avatarUrl.set(p.avatarUrl || null);
         this.isNew.set(false);
       } else {
@@ -737,6 +738,15 @@ export class EditProfileComponent implements OnInit {
     };
   }
 
+  private blobUrlToDataUrl(blobUrl: string): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      fetch(blobUrl).then(r => r.blob()).then(blob => reader.readAsDataURL(blob)).catch(reject);
+    });
+  }
+
   loadImageFailed() {
     this.toast.error(this.translate.instant('PROFILE.EDIT.LOAD_IMAGE_ERROR'));
     this.imageChangedEvent = '';
@@ -780,6 +790,16 @@ export class EditProfileComponent implements OnInit {
     this.loading.set(true);
     try {
       let finalAvatarUrl = this.avatarUrl();
+
+      // If avatar is a Blob URL (from cropper objectUrl), convert to data URL first
+      if (finalAvatarUrl && finalAvatarUrl.startsWith('blob:')) {
+        try {
+          finalAvatarUrl = await this.blobUrlToDataUrl(finalAvatarUrl);
+        } catch {
+          this.toast.error(this.translate.instant('PROFILE.EDIT.UPLOAD_ERROR'));
+          return;
+        }
+      }
 
       // If avatar is a Base64 string (from cropper), upload to Cloudinary first
       if (finalAvatarUrl && finalAvatarUrl.startsWith('data:image')) {

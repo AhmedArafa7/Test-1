@@ -316,8 +316,8 @@ export class AvailabilityComponent implements OnInit {
     if (parts.length === 3) {
       const h = parseInt(parts[0]);
       const m = parseInt(parts[1]);
-      if (h > 0 && m > 0) return `${h}h ${m}m`;
-      if (h > 0) return `${h}h`;
+      if (h > 0 && m > 0) return `${h}${this.translate.instant('AVAILABILITY.HOUR_ABBR')} ${m}${this.translate.instant('AVAILABILITY.MINUTE_ABBR')}`;
+      if (h > 0) return `${h}${this.translate.instant('AVAILABILITY.HOUR_ABBR')}`;
       if (m > 0) return `${m} ${this.translate.instant('AVAILABILITY.MIN')}`;
     }
     return duration;

@@ -5,7 +5,7 @@ import { PaginationComponent } from '../../../shared/components/pagination/pagin
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner';
 import { EmptyStateComponent } from '../../../shared/components/empty-state/empty-state';
 import { PropertyService } from '../services/property.service';
-import { PropertyListItem, GetPropertiesParams, Property } from '../../../core/models';
+import { PropertyListItem, GetPropertiesParams, Property, CreatePropertyRequest } from '../../../core/models';
 import { AuthService } from '../../../core/auth/auth.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { ConfirmService } from '../../../core/services/confirm.service';
@@ -330,7 +330,7 @@ import { EGYPT_REGIONS, Governorate, City } from '../../../core/constants/egypt-
                       }
                       <div class="absolute inset-0 -z-10 flex flex-col items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 text-[#0a8f96]/10">
                         <svg class="w-12 h-12 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
-                        <span class="text-[8px] font-black uppercase tracking-widest opacity-30">Baytology Premium</span>
+                        <span class="text-[8px] font-black uppercase tracking-widest opacity-30">{{ 'PROPERTY_LIST.BAYTOLOGY_PREMIUM' | translate }}</span>
                       </div>
                     </a>
                   </div>
@@ -562,7 +562,7 @@ export class PropertyListComponent implements OnInit, AfterViewInit {
         lng = p.longitude;
       } else {
         // Fallback: city center + jitter
-        let cityKey = this.getCityKeyFromValue(p.city || 'Cairo');
+        let cityKey = this.getCityKeyFromValue(p.city || this.translate.instant('CITIES.Cairo'));
         let baseCoords = this.cityCoords[cityKey];
         
         // Smart fallback: check if district matches a known city/district coords
@@ -878,9 +878,44 @@ export class PropertyListComponent implements OnInit, AfterViewInit {
     });
     if (!ok) return;
 
-    this.trashService.addProperty(item.id, item.title, item.primaryImageUrl);
-    this.toast.success(this.translate.instant('PROPERTY_LIST.MESSAGES.MOVED_TO_TRASH'));
-    this.search();
+    try {
+      const full = await this.propertyService.getById(item.id);
+      const createRequest: CreatePropertyRequest = {
+        title: full.title,
+        description: full.description,
+        propertyType: full.propertyType as any,
+        listingType: full.listingType as any,
+        price: full.price,
+        area: full.area,
+        bedrooms: full.bedrooms,
+        bathrooms: full.bathrooms,
+        floor: full.floor,
+        totalFloors: full.totalFloors,
+        addressLine: full.addressLine,
+        city: full.city,
+        district: full.district,
+        zipCode: full.zipCode,
+        latitude: full.latitude,
+        longitude: full.longitude,
+        hasParking: full.amenity?.hasParking ?? false,
+        hasPool: full.amenity?.hasPool ?? false,
+        hasGym: full.amenity?.hasGym ?? false,
+        hasElevator: full.amenity?.hasElevator ?? false,
+        hasSecurity: full.amenity?.hasSecurity ?? false,
+        hasBalcony: full.amenity?.hasBalcony ?? false,
+        hasGarden: full.amenity?.hasGarden ?? false,
+        hasCentralAC: full.amenity?.hasCentralAC ?? false,
+        furnishingStatus: (full.amenity?.furnishingStatus ?? 'Unfurnished') as any,
+        viewType: full.amenity?.viewType as any,
+        imageUrls: full.images?.map(i => i.url) ?? [],
+      };
+      await this.propertyService.delete(item.id);
+      this.trashService.addProperty(item.id, item.title, item.primaryImageUrl, createRequest);
+      this.toast.success(this.translate.instant('PROPERTY_LIST.MESSAGES.MOVED_TO_TRASH'));
+      this.search();
+    } catch {
+      this.toast.error(this.translate.instant('TRASH.DELETE_ERROR'));
+    }
   }
 
   onImageError(event: any, propertyId: string) {

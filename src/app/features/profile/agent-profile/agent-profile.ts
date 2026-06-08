@@ -513,13 +513,9 @@ export class AgentProfileComponent implements OnInit {
         this.toast.success(this.translate.instant('PROFILE.AGENT.BOOKING_SUCCESS_GENERIC'));
       } catch (error: any) {
         this.toast.error(this.translate.instant('PROFILE.AGENT.BOOKING_FAILED'));
-        // Fallback to local booking if backend fails (e.g. database constraint or auth)
-        this.store.bookCalendarSlot(agentId, slot.id);
       }
     } else {
-      // Local state fallback if agent has no listings
-      this.store.bookCalendarSlot(agentId, slot.id);
-      this.toast.success(this.translate.instant('PROFILE.AGENT.BOOKING_SUCCESS_DETAILED', { date: slot.dateStr, time: slot.timeStr }));
+      this.toast.error(this.translate.instant('PROFILE.AGENT.NO_LISTING_AVAILABLE'));
     }
 
     this.selectedSlot.set(null);

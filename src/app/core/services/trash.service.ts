@@ -1,6 +1,6 @@
 import { Injectable, signal, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { TrashItem, TrashImageData, TrashPropertyData } from '../models';
+import { TrashItem, TrashImageData, TrashPropertyData, CreatePropertyRequest } from '../models';
 import { environment } from '../../../environments/environment';
 import { firstValueFrom } from 'rxjs';
 
@@ -67,13 +67,13 @@ export class TrashService {
     }).catch(() => {});
   }
 
-  addProperty(propertyId: string, propertyTitle: string, propertyImageUrl?: string): void {
+  addProperty(propertyId: string, propertyTitle: string, propertyImageUrl: string | undefined, createRequest: CreatePropertyRequest): void {
     const now = new Date();
     const expires = new Date(now.getTime() + TTL_DAYS * 24 * 60 * 60 * 1000);
     const item: TrashItem<TrashPropertyData> = {
       id: crypto.randomUUID(),
       type: 'property',
-      data: { propertyId, propertyTitle, propertyImageUrl },
+      data: { propertyId, propertyTitle, propertyImageUrl, createRequest },
       deletedAt: now.toISOString(),
       expiresAt: expires.toISOString(),
       synced: false,

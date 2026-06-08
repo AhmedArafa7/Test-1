@@ -1,3 +1,5 @@
+import { CreatePropertyRequest } from './property.models';
+
 export interface TrashImageData {
   imageId: string;
   imageUrl: string;
@@ -9,6 +11,7 @@ export interface TrashPropertyData {
   propertyId: string;
   propertyTitle: string;
   propertyImageUrl?: string;
+  createRequest: CreatePropertyRequest;
 }
 
 export type TrashItemType = 'image' | 'property';

@@ -35,7 +35,7 @@ import { CommonModule } from '@angular/common';
 
           <div class="flex-1 pt-0.5">
             <p class="text-[10px] font-black uppercase tracking-widest opacity-50 mb-1">{{ getTitle(toast.type) }}</p>
-            <p class="text-sm font-bold leading-relaxed">{{ toast.message }}</p>
+            <p class="text-sm font-bold leading-relaxed">{{ toast.message | translate }}</p>
           </div>
 
           <button (click)="toastService.remove(toast.id)" class="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-black/5 rounded-lg">

@@ -333,7 +333,7 @@ export class BookingListComponent implements OnInit {
     this.syncing.set(true);
     setTimeout(() => {
       this.syncing.set(false);
-      this.toast.success(this.translate.instant('BOOKINGS.MESSAGES.SYNC_SUCCESS'));
+      this.toast.info(this.translate.instant('BOOKINGS.MESSAGES.SYNC_NOT_AVAILABLE'));
     }, 1500);
   }
 

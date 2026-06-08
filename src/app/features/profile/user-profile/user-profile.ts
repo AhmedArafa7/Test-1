@@ -188,20 +188,47 @@ import { LocalizedDatePipe } from '../../../shared/pipes/localized-date.pipe';
             <form (submit)="submitChangePassword($event)" class="space-y-6">
               <div>
                 <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 pr-2">{{ 'PROFILE.CURRENT_PW' | translate }}</label>
-                <input type="password" name="current" [(ngModel)]="pwForm.currentPassword" required
-                       class="w-full bg-slate-50 border border-slate-100 rounded-xl text-sm font-bold p-4 focus:bg-white focus:ring-2 focus:ring-[#0a8f96]/20 transition-all outline-none">
+                <div class="relative">
+                  <input [type]="showCurrentPw() ? 'text' : 'password'" name="current" [(ngModel)]="pwForm.currentPassword" required
+                         class="w-full bg-slate-50 border border-slate-100 rounded-xl text-sm font-bold p-4 pr-12 focus:bg-white focus:ring-2 focus:ring-[#0a8f96]/20 transition-all outline-none">
+                  <button type="button" (click)="showCurrentPw.set(!showCurrentPw())" class="absolute top-1/2 -translate-y-1/2 ltr:right-4 rtl:left-4 text-gray-400 hover:text-gray-600 transition-colors cursor-pointer">
+                    @if (showCurrentPw()) {
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/></svg>
+                    } @else {
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                    }
+                  </button>
+                </div>
               </div>
               
               <div>
                 <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 pr-2">{{ 'PROFILE.NEW_PW' | translate }}</label>
-                <input type="password" name="new" [(ngModel)]="pwForm.newPassword" required
-                       class="w-full bg-slate-50 border border-slate-100 rounded-xl text-sm font-bold p-4 focus:bg-white focus:ring-2 focus:ring-[#0a8f96]/20 transition-all outline-none">
+                <div class="relative">
+                  <input [type]="showNewPw() ? 'text' : 'password'" name="new" [(ngModel)]="pwForm.newPassword" required
+                         class="w-full bg-slate-50 border border-slate-100 rounded-xl text-sm font-bold p-4 pr-12 focus:bg-white focus:ring-2 focus:ring-[#0a8f96]/20 transition-all outline-none">
+                  <button type="button" (click)="showNewPw.set(!showNewPw())" class="absolute top-1/2 -translate-y-1/2 ltr:right-4 rtl:left-4 text-gray-400 hover:text-gray-600 transition-colors cursor-pointer">
+                    @if (showNewPw()) {
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/></svg>
+                    } @else {
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                    }
+                  </button>
+                </div>
               </div>
               
               <div>
                 <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 pr-2">{{ 'PROFILE.CONFIRM_PW' | translate }}</label>
-                <input type="password" name="confirm" [(ngModel)]="pwForm.confirmPassword" required
-                       class="w-full bg-slate-50 border border-slate-100 rounded-xl text-sm font-bold p-4 focus:bg-white focus:ring-2 focus:ring-[#0a8f96]/20 transition-all outline-none">
+                <div class="relative">
+                  <input [type]="showConfirmPw() ? 'text' : 'password'" name="confirm" [(ngModel)]="pwForm.confirmPassword" required
+                         class="w-full bg-slate-50 border border-slate-100 rounded-xl text-sm font-bold p-4 pr-12 focus:bg-white focus:ring-2 focus:ring-[#0a8f96]/20 transition-all outline-none">
+                  <button type="button" (click)="showConfirmPw.set(!showConfirmPw())" class="absolute top-1/2 -translate-y-1/2 ltr:right-4 rtl:left-4 text-gray-400 hover:text-gray-600 transition-colors cursor-pointer">
+                    @if (showConfirmPw()) {
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/></svg>
+                    } @else {
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                    }
+                  </button>
+                </div>
               </div>
               
               <button type="submit" [disabled]="changingPassword()"
@@ -248,6 +275,9 @@ export class UserProfileComponent implements OnInit {
   
   // Password Change State
   showChangePassword = signal(false);
+  showCurrentPw = signal(false);
+  showNewPw = signal(false);
+  showConfirmPw = signal(false);
   showFullImage = signal(false);
   changingPassword = signal(false);
   pwForm = { currentPassword: '', newPassword: '', confirmPassword: '' };

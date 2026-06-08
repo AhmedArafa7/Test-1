@@ -6,7 +6,7 @@ import { DecimalPipe } from '@angular/common';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 
 import { AuthService } from '../../../core/auth/auth.service';
-import { Property, PropertyListItem } from '../../../core/models';
+import { Property, PropertyListItem, CreatePropertyRequest } from '../../../core/models';
 import { ToastService } from '../../../core/services/toast.service';
 import { ConfirmService } from '../../../core/services/confirm.service';
 import { TrashService } from '../../../core/services/trash.service';
@@ -572,7 +572,12 @@ export class PropertyDetailComponent implements OnInit {
   getAllImages(): string[] {
     const property = this.property();
     if (!property) return [];
-    const serverImages = (property.images || []).map(img => getPropertyImageUrl(img.url, property.title));
+    const sorted = [...(property.images || [])].sort((a, b) => {
+      if (a.isPrimary && !b.isPrimary) return -1;
+      if (!a.isPrimary && b.isPrimary) return 1;
+      return (a.sortOrder ?? 0) - (b.sortOrder ?? 0);
+    });
+    const serverImages = sorted.map(img => getPropertyImageUrl(img.url, property.title));
     if (serverImages.length > 0) {
       return serverImages;
     }
@@ -582,9 +587,13 @@ export class PropertyDetailComponent implements OnInit {
   getImageMetadata(): { url: string; isPrimary: boolean }[] {
     const property = this.property();
     if (!property) return [];
-    const serverImages = property.images || [];
-    if (serverImages.length > 0) {
-      return serverImages.map(img => ({
+    const sorted = [...(property.images || [])].sort((a, b) => {
+      if (a.isPrimary && !b.isPrimary) return -1;
+      if (!a.isPrimary && b.isPrimary) return 1;
+      return (a.sortOrder ?? 0) - (b.sortOrder ?? 0);
+    });
+    if (sorted.length > 0) {
+      return sorted.map(img => ({
         url: getPropertyImageUrl(img.url, property.title),
         isPrimary: !!img.isPrimary,
       }));
@@ -957,9 +966,43 @@ export class PropertyDetailComponent implements OnInit {
     });
     if (!ok) return;
 
-    this.trashService.addProperty(property.id, property.title, property.images?.[0]?.url);
-    this.toast.success(this.translate.instant('PROPERTY_DETAIL.MESSAGES.MOVED_TO_TRASH'));
-    this.router.navigate(['/properties']);
+    try {
+      const createRequest: CreatePropertyRequest = {
+        title: property.title,
+        description: property.description,
+        propertyType: property.propertyType as any,
+        listingType: property.listingType as any,
+        price: property.price,
+        area: property.area,
+        bedrooms: property.bedrooms,
+        bathrooms: property.bathrooms,
+        floor: property.floor,
+        totalFloors: property.totalFloors,
+        addressLine: property.addressLine,
+        city: property.city,
+        district: property.district,
+        zipCode: property.zipCode,
+        latitude: property.latitude,
+        longitude: property.longitude,
+        hasParking: property.amenity?.hasParking ?? false,
+        hasPool: property.amenity?.hasPool ?? false,
+        hasGym: property.amenity?.hasGym ?? false,
+        hasElevator: property.amenity?.hasElevator ?? false,
+        hasSecurity: property.amenity?.hasSecurity ?? false,
+        hasBalcony: property.amenity?.hasBalcony ?? false,
+        hasGarden: property.amenity?.hasGarden ?? false,
+        hasCentralAC: property.amenity?.hasCentralAC ?? false,
+        furnishingStatus: (property.amenity?.furnishingStatus ?? 'Unfurnished') as any,
+        viewType: property.amenity?.viewType as any,
+        imageUrls: property.images?.map(i => i.url) ?? [],
+      };
+      await this.propertyService.delete(property.id);
+      this.trashService.addProperty(property.id, property.title, property.images?.[0]?.url, createRequest);
+      this.toast.success(this.translate.instant('PROPERTY_DETAIL.MESSAGES.MOVED_TO_TRASH'));
+      this.router.navigate(['/properties']);
+    } catch {
+      this.toast.error(this.translate.instant('TRASH.DELETE_ERROR'));
+    }
   }
 
   async submitReview() {
