@@ -978,9 +978,16 @@
       "GEO_UPDATED": "Location identified and map updated successfully!",
       "GEO_NOT_FOUND": "Could not locate this place. Please type a known city or district.",
       "GEO_SERVICE_ERROR": "Error connecting to the geographic service.",
-      "DELETE_IMAGE_MOVED_TO_TRASH": "Image moved to trash"
+      "DELETE_IMAGE_MOVED_TO_TRASH": "Image moved to trash",
+      "SET_PRIMARY_SUCCESS": "Image set as primary",
+      "SET_PRIMARY_ERROR": "Failed to set image as primary",
+      "SET_PRIMARY_BAD_REQUEST": "Invalid request to set primary image",
+      "SET_PRIMARY_NOT_FOUND": "Image not found",
+      "SET_PRIMARY_FORBIDDEN": "You don't have permission to change the primary image"
     },
     "UNTITLED": "Untitled",
+    "PRIMARY_IMAGE": "Primary",
+    "SET_AS_PRIMARY": "Set as Primary",
     "PLACEHOLDER_PRICE": "e.g. 2500000",
     "PLACEHOLDER_AREA": "e.g. 150",
     "PLACEHOLDER_BEDROOMS": "e.g. 3",
@@ -3466,5 +3473,8 @@
     "DELETED_AT": "Deleted",
     "EXPIRES_IN": "Expires in",
     "DAYS": "days"
+  },
+  "CHAT": {
+    "NEW_MESSAGE": "New message"
   }
 }

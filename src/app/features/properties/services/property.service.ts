@@ -67,6 +67,10 @@ export class PropertyService {
     return firstValueFrom(this.http.delete<void>(`${this.url}/${propertyId}/images/${imageId}`));
   }
 
+  async setPrimaryImage(propertyId: string, imageId: string): Promise<void> {
+    return firstValueFrom(this.http.put<void>(`${this.url}/${propertyId}/images/${imageId}/set-primary`, {}));
+  }
+
   async save(id: string): Promise<{ savedId: string }> {
     const res = await firstValueFrom(this.http.post<{ savedId: string }>(`${this.url}/${id}/save`, {}));
     this.updateSavedCache([id], 'add');

@@ -313,7 +313,7 @@
       "PASSWORD_HINT": "6 أحرف على الأقل",
       "SAVE_DISABLED_HINT": "أكمل البريد الإلكتروني وكلمة المرور بشكل صحيح لتسجيل الدخول",
       "REMEMBER_ME": "تذكر تسجيل دخولي في هذا المتصفح",
-      "WELCOME_BACK": "مرحباً بعودتك، {name}"
+      "WELCOME_BACK": "مرحباً بعودتك"
     },
     "REGISTER": {
       "LEFT_TITLE": "مساحات منتقاة لحياة أرقى.",
@@ -976,9 +976,16 @@
       "GEO_UPDATED": "تم تحديد الموقع الجغرافي وتحديث الخريطة بنجاح!",
       "GEO_NOT_FOUND": "لم نتمكن من تحديد هذا الموقع. يرجى كتابة اسم مدينة أو حي معروف.",
       "GEO_SERVICE_ERROR": "حدث خطأ أثناء الاتصال بخدمة الخرائط الجغرافية.",
-      "DELETE_IMAGE_MOVED_TO_TRASH": "تم نقل الصورة إلى سلة المهملات"
+      "DELETE_IMAGE_MOVED_TO_TRASH": "تم نقل الصورة إلى سلة المهملات",
+      "SET_PRIMARY_SUCCESS": "تم تعيين الصورة كصورة رئيسية",
+      "SET_PRIMARY_ERROR": "فشل تعيين الصورة كصورة رئيسية",
+      "SET_PRIMARY_BAD_REQUEST": "طلب غير صالح لتعيين الصورة الرئيسية",
+      "SET_PRIMARY_NOT_FOUND": "الصورة غير موجودة",
+      "SET_PRIMARY_FORBIDDEN": "ليس لديك صلاحية تغيير الصورة الرئيسية"
     },
     "UNTITLED": "بدون عنوان",
+    "PRIMARY_IMAGE": "رئيسية",
+    "SET_AS_PRIMARY": "تعيين كرئيسية",
     "PLACEHOLDER_PRICE": "مثال: 2500000",
     "PLACEHOLDER_BEDROOMS": "مثال: 3",
     "PLACEHOLDER_BATHROOMS": "مثال: 2",
@@ -3463,5 +3470,8 @@
     "DELETED_AT": "محذوف في",
     "EXPIRES_IN": "ينتهي خلال",
     "DAYS": "يوم"
+  },
+  "CHAT": {
+    "NEW_MESSAGE": "رسالة جديدة"
   }
 }

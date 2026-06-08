@@ -71,6 +71,17 @@ export class ChatRoomComponent implements OnInit, OnDestroy {
   showProfileMenu = signal(false);
   showChatMenu = signal(false);
   showEmojiPicker = signal(false);
+
+  // Mobile layout: control sidebar vs chat visibility
+  hasConversation = computed(() => !!this.conversationId);
+  mainClasses = computed(() => {
+    const base = 'flex-1 flex flex-col bg-white overflow-hidden relative min-w-0 shadow-[0_0_40px_rgba(0,0,0,0.015)]';
+    return this.hasConversation() ? base : base + ' hidden md:!flex';
+  });
+  asideClasses = computed(() => {
+    const base = 'flex flex-col bg-white shrink-0 border-s border-slate-100 overflow-hidden relative z-30';
+    return this.hasConversation() ? base + ' hidden md:!flex md:w-[380px]' : base + ' w-full md:w-[380px]';
+  });
   activeEmojiCategory = signal<'all' | 'faces' | 'home' | 'nature' | 'objects'>('all');
   
   emojiCategories: { id: 'all' | 'faces' | 'home' | 'nature' | 'objects', name: string, icon: string }[] = [
@@ -1192,6 +1203,10 @@ export class ChatRoomComponent implements OnInit, OnDestroy {
 
   closeChat() {
     this.showChatMenu.set(false);
+    this.router.navigate(['/conversations']);
+  }
+
+  goBack() {
     this.router.navigate(['/conversations']);
   }
 

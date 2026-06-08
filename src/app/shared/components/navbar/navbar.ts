@@ -1,12 +1,14 @@
-import { Component, HostListener, computed, signal, effect, inject, OnInit } from '@angular/core';
+import { Component, HostListener, computed, signal, effect, inject, OnInit, OnDestroy } from '@angular/core';
 import { RouterLink, RouterLinkActive, Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { AuthService } from '../../../core/auth/auth.service';
 import { NotificationSignalRService } from '../../../core/services/notification-signalr.service';
 import { LanguageService } from '../../../core/services/language.service';
 import { ChatSignalRService } from '../../../core/services/chat-signalr.service';
+import { ConversationService } from '../../../features/conversations/services/conversation.service';
+import { Conversation } from '../../../core/models';
 
 @Component({
   selector: 'app-navbar',
@@ -98,8 +100,8 @@ import { ChatSignalRService } from '../../../core/services/chat-signalr.service'
 
               <!-- Profile -->
               <div class="relative" data-profile-menu>
-                <button (click)="toggleProfileMenu($event)" class="flex items-center gap-2.5 p-1 px-3 bg-gray-50 border border-gray-100 rounded-full hover:bg-gray-100 transition-all group">
-                  <div class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform overflow-hidden border border-white ring-1 ring-gray-100 relative">
+                <button (click)="toggleProfileMenu($event)" class="flex items-center gap-2.5 p-1 px-3 bg-gray-50 border border-gray-100 rounded-full hover:bg-gray-100 transition-all group ">
+                  <div class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform overflow-hidden border border-white ring-1 ring-gray-100 ">
                     @if (auth.userAvatar() && (auth.userAvatar()?.length || 0) > 20) {
                       <img [src]="auth.userAvatar()" (error)="auth.userAvatar.set(null)" class="w-full h-full object-contain img-circle b-tr b-2x">
                     } @else {
@@ -115,7 +117,7 @@ import { ChatSignalRService } from '../../../core/services/chat-signalr.service'
                 </button>
 
                 @if (menuOpen) {
-                  <div class="absolute end-0 top-full mt-3 w-64 bg-white rounded-2xl shadow-xl py-3 border border-gray-100 animate-slide-up overflow-hidden z-[110]">
+                  <div class="absolute end-0 top-full mt-60 w-64 bg-white rounded-2xl shadow-xl py-3 border border-gray-100 animate-slide-up overflow-hidden z-[110]">
                     <div class="px-5 py-4 border-b border-gray-50 text-start">
                       <p class="text-[10px] text-[#0a8f96] font-black uppercase tracking-widest">{{ roleLabel() | translate }}</p>
                       <p class="text-sm font-bold text-gray-900 truncate mt-0.5">{{ displayIdentity() }}</p>
@@ -168,10 +170,15 @@ import { ChatSignalRService } from '../../../core/services/chat-signalr.service'
             }
 
             <!-- Mobile Toggle -->
-            <button (click)="mobileOpen = !mobileOpen" class="lg:hidden w-11 h-11 flex items-center justify-center rounded-full bg-gray-50 text-gray-500 active:scale-90 transition-all">
+            <button (click)="mobileOpen = !mobileOpen" class="lg:hidden relative w-11 h-11 flex items-center justify-center rounded-full bg-gray-50 text-gray-500 active:scale-90 transition-all">
               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path [attr.d]="mobileOpen ? 'M6 18L18 6M6 6l12 12' : 'M4 6h16M4 12h16M4 18h16'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
               </svg>
+              @if (!mobileOpen && unreadMessagesCount() > 0) {
+                <span class="absolute -top-0.5 -end-0.5 bg-[#0a8f96] text-white text-[8px] font-black w-4 h-4 rounded-full flex items-center justify-center shadow-md animate-pulse border-2 border-white">
+                  {{ unreadMessagesCount() > 9 ? '9+' : unreadMessagesCount() }}
+                </span>
+              }
             </button>
           </div>
         </div>
@@ -209,14 +216,47 @@ import { ChatSignalRService } from '../../../core/services/chat-signalr.service'
         }
       </div>
     </nav>
+
+    <!-- Message Notification Popup -->
+    @if (messagePopup()) {
+      <div class="fixed bottom-6 end-6 z-[200] animate-slide-up"
+           [class.start-6]="lang.currentLang() === 'ar'"
+           [class.end-6]="lang.currentLang() !== 'ar'">
+        <button (click)="onPopupClick()"
+                class="bg-white rounded-2xl shadow-2xl border border-gray-100 p-4 max-w-[340px] w-full text-start hover:shadow-3xl transition-all group cursor-pointer">
+          <div class="flex items-start gap-3">
+            <div class="w-10 h-10 rounded-full bg-[#0a8f96]/10 flex items-center justify-center shrink-0">
+              <svg class="w-5 h-5 text-[#0a8f96]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+              </svg>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-xs font-black text-[#0a8f96] uppercase tracking-wider">{{ messagePopup()!.senderName }}</p>
+              <p class="text-sm font-bold text-gray-700 mt-0.5 line-clamp-2">{{ messagePopup()!.content }}</p>
+            </div>
+            <button (click)="dismissPopup(); $event.stopPropagation()"
+                    class="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-200 transition-all shrink-0">
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+            </button>
+          </div>
+        </button>
+      </div>
+    }
   `,
 })
-export class NavbarComponent implements OnInit {
+export class NavbarComponent implements OnInit, OnDestroy {
   menuOpen = false;
   mobileOpen = false;
   unreadMessagesCount = signal(0);
+  messagePopup = signal<{ senderName: string; content: string; conversationId: string } | null>(null);
+  private popupTimer: ReturnType<typeof setTimeout> | null = null;
+  private conversationsCache = signal<Conversation[]>([]);
 
   private chatSignalR = inject(ChatSignalRService);
+  private conversationService = inject(ConversationService);
+  private translate = inject(TranslateService);
   private router = inject(Router);
 
   displayIdentity = computed(() => {
@@ -249,6 +289,10 @@ export class NavbarComponent implements OnInit {
     effect(() => {
       const msg = this.chatSignalR.incomingMessage();
       if (msg) {
+        const isIncoming = msg.senderId !== this.auth.userId();
+        if (isIncoming) {
+          this.showMessagePopup(msg);
+        }
         setTimeout(() => this.updateUnreadStatus(), 150);
       }
     });
@@ -282,6 +326,60 @@ export class NavbarComponent implements OnInit {
 
   clearUnreadMessagesDot() {
     this.unreadMessagesCount.set(0);
+  }
+
+  private async showMessagePopup(msg: any) {
+    if (this.popupTimer) clearTimeout(this.popupTimer);
+
+    const conversationId = msg.conversationId;
+    let senderName = this.translate.instant('CHAT.NEW_MESSAGE');
+
+    const cached = this.conversationsCache().find(c => c.id === conversationId);
+    if (cached) {
+      senderName = this.resolveSenderName(cached, msg.senderId);
+    } else {
+      try {
+        const conversations = await this.conversationService.getAll();
+        this.conversationsCache.set(conversations);
+        const conv = conversations.find(c => c.id === conversationId);
+        if (conv) {
+          senderName = this.resolveSenderName(conv, msg.senderId);
+        }
+      } catch {}
+    }
+
+    this.messagePopup.set({ senderName, content: msg.content, conversationId });
+
+    this.popupTimer = setTimeout(() => {
+      this.messagePopup.set(null);
+    }, 5000);
+  }
+
+  private resolveSenderName(conversation: Conversation, senderId: string): string {
+    if (conversation.agentUserId === senderId && conversation.agentDisplayName) {
+      return conversation.agentDisplayName;
+    }
+    if (conversation.buyerUserId === senderId && conversation.buyerDisplayName) {
+      return conversation.buyerDisplayName;
+    }
+    return this.translate.instant('CHAT.NEW_MESSAGE');
+  }
+
+  onPopupClick() {
+    const popup = this.messagePopup();
+    if (popup) {
+      this.router.navigate(['/conversations', popup.conversationId]);
+      this.dismissPopup();
+    }
+  }
+
+  dismissPopup() {
+    if (this.popupTimer) clearTimeout(this.popupTimer);
+    this.messagePopup.set(null);
+  }
+
+  ngOnDestroy() {
+    if (this.popupTimer) clearTimeout(this.popupTimer);
   }
 
   @HostListener('document:click', ['$event'])
