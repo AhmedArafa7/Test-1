@@ -1,4 +1,4 @@
-import { Component, signal, OnInit, ElementRef, viewChild, effect, OnDestroy, inject, HostListener } from '@angular/core';
+import { Component, signal, OnInit, OnDestroy, inject, HostListener } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { ProfileService } from '../../profile/services/profile.service';
@@ -150,17 +150,13 @@ import { EmptyStateComponent } from '../../../shared/components/empty-state/empt
                         <!-- Icon -->
                         <div class="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-sm transition-transform duration-300 group-hover:scale-105"
                              [class]="n.isRead ? 'bg-slate-50 text-slate-400' : 'bg-[#0a8f96]/10 text-[#0a8f96]'">
-                          @if (n.type === 'BookingUpdate') {
-                            <svg class="w-5.5 h-5.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                            </svg>
-                          } @else if (n.type === 'NewMessage') {
+                           @if (n.type === 'NewMessage') {
                             <svg class="w-5.5 h-5.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
                             </svg>
                           } @else if (n.type === 'PaymentUpdate') {
                             <svg class="w-5.5 h-5.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                             </svg>
                           } @else {
                             <svg class="w-5.5 h-5.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -185,13 +181,10 @@ import { EmptyStateComponent } from '../../../shared/components/empty-state/empt
                           </p>
                           
                           <!-- Quick actions for booking -->
-                          @if (!n.isRead && n.type === 'BookingUpdate') {
+                          @if (!n.isRead && n.type === 'PaymentUpdate') {
                             <div class="flex items-center gap-3 mt-4">
-                              <button class="bg-[#0a8f96] text-white text-[11px] font-black uppercase tracking-wider px-5 py-2.5 rounded-lg hover:bg-[#076b70] shadow-sm hover:shadow transition-all duration-200 cursor-pointer">
+                              <button (click)="markRead(n)" class="bg-[#0a8f96] text-white text-[11px] font-black uppercase tracking-wider px-5 py-2.5 rounded-lg hover:bg-[#076b70] shadow-sm hover:shadow transition-all duration-200 cursor-pointer">
                                 {{ 'NOTIFICATIONS.VIEW_DETAILS' | translate }}
-                              </button>
-                              <button class="bg-white text-slate-700 text-[11px] font-black uppercase tracking-wider px-5 py-2.5 rounded-lg border border-slate-200 hover:bg-slate-50 hover:border-slate-300 transition-all duration-200 cursor-pointer">
-                                {{ 'NOTIFICATIONS.RESCHEDULE' | translate }}
                               </button>
                             </div>
                           }
@@ -200,19 +193,6 @@ import { EmptyStateComponent } from '../../../shared/components/empty-state/empt
                     </div>
                   }
                 </div>
-              </div>
-            }
-          </div>
-          
-          <!-- Infinite Scroll Sentinel Element -->
-          <div #infiniteScrollSentinel class="h-20 w-full flex items-center justify-center py-6">
-            @if (loading()) {
-              <div class="flex items-center gap-2 text-slate-500 font-bold text-xs bg-white px-5 py-3 rounded-full border border-slate-100 shadow-sm animate-pulse">
-                <svg class="animate-spin h-4 w-4 text-[#0a8f96]" fill="none" viewBox="0 0 24 24">
-                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                <span>{{ 'NOTIFICATIONS.LOADING_MORE' | translate }}</span>
               </div>
             }
           </div>
@@ -362,10 +342,6 @@ import { EmptyStateComponent } from '../../../shared/components/empty-state/empt
 export class NotificationListComponent implements OnInit, OnDestroy {
   notifications = signal<AppNotification[]>([]);
   
-  page = signal(1);
-  pageSize = 10;
-  totalPages = signal(1);
-  hasMore = signal(false);
   loading = signal(false);
 
   // Swipe gesture variables
@@ -394,7 +370,6 @@ export class NotificationListComponent implements OnInit, OnDestroy {
   ];
 
   // Infinite Scroll Observer
-  infiniteScrollSentinel = viewChild<ElementRef>('infiniteScrollSentinel');
   private observer: IntersectionObserver | null = null;
 
   constructor(
@@ -403,18 +378,11 @@ export class NotificationListComponent implements OnInit, OnDestroy {
     private router: Router,
     private translate: TranslateService
   ) {
-    // Reactively initialize the observer as soon as sentinel is rendered
-    effect(() => {
-      const el = this.infiniteScrollSentinel()?.nativeElement;
-      if (el) {
-        this.setupInfiniteScroll(el);
-      }
-    });
   }
   
   async ngOnInit() { 
     this.checkPushPermission();
-    await this.loadNotifications(1);
+    await this.loadNotifications();
   }
 
   ngOnDestroy() {
@@ -476,66 +444,37 @@ export class NotificationListComponent implements OnInit, OnDestroy {
 
   setupInfiniteScroll(sentinelElement: HTMLElement) {
     this.observer?.disconnect();
-    this.observer = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting && this.hasMore() && !this.loading()) {
-        void this.loadMore();
-      }
-    }, {
-      rootMargin: '150px' // Start loading 150px before reaching bottom
-    });
-    this.observer.observe(sentinelElement);
   }
 
-  async loadNotifications(p: number, append = false) {
+  async loadNotifications(append = false) {
     this.loading.set(true);
     try {
-      const res = await this.profileService.getNotifications(p, this.pageSize);
-      console.log('ProfileService.getNotifications backend response:', res);
+      const res = await this.profileService.getNotifications();
 
       let items: AppNotification[] = [];
-      let pageNumber = 1;
-      let totalPages = 1;
-      let hasNextPage = false;
 
       if (res) {
         if (Array.isArray(res)) {
           items = res;
-          pageNumber = p;
-          totalPages = 1;
-          hasNextPage = false;
         } else {
-          items = res.items || (res as any).Items || [];
-          pageNumber = res.pageNumber || (res as any).PageNumber || p;
-          totalPages = res.totalPages || (res as any).TotalPages || 1;
-          hasNextPage = res.hasNextPage || (res as any).HasNextPage || false;
+          items = (res as any).items || (res as any).Items || [];
         }
       }
-
-      console.log('Parsed notification items:', items);
 
       if (append) {
         this.notifications.update(current => [...current, ...items]);
       } else {
         this.notifications.set(items);
       }
-      this.page.set(pageNumber);
-      this.totalPages.set(totalPages);
-      this.hasMore.set(hasNextPage);
       
-      // Sync with SignalR service if it's the first page
-      if (p === 1 && !append) {
+      // Sync with SignalR service
+      if (!append) {
         this.notifService.setNotifications(items);
       }
     } catch (err) {
       console.error('Failed to load notifications in component:', err);
     } finally {
       this.loading.set(false);
-    }
-  }
-
-  async loadMore() {
-    if (this.hasMore() && !this.loading()) {
-      await this.loadNotifications(this.page() + 1, true);
     }
   }
 
@@ -593,23 +532,14 @@ export class NotificationListComponent implements OnInit, OnDestroy {
 
     switch (n.referenceType) {
       case 'Property':
-      case 'PropertyUpdate':
         this.router.navigate(['/properties', n.referenceId]);
         break;
       case 'Booking':
-      case 'BookingUpdate':
-      case 'BookingConfirmed':
+      case 'Payment':
         this.router.navigate(['/bookings', n.referenceId]);
         break;
       case 'Message':
-      case 'NewMessage':
-      case 'Conversation':
         this.router.navigate(['/conversations']);
-        break;
-      case 'Payment':
-      case 'PaymentUpdate':
-      case 'Refund':
-        this.router.navigate(['/bookings']);
         break;
       default:
         console.warn('Unhandled notification reference type:', n.referenceType);

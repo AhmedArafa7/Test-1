@@ -34,11 +34,11 @@ export interface SendMessageRequest {
 // ─── Notification ───
 export interface AppNotification {
   id: string;
-  type: string;
+  type: 'NewMessage' | 'PaymentUpdate' | 'PropertyMatch';
   title: string;
   body: string;
-  referenceId?: string;
-  referenceType?: string;
+  referenceId: string | null;
+  referenceType: 'Property' | 'Booking' | 'Payment' | 'Message' | null;
   isRead: boolean;
   createdOnUtc: string;
 }

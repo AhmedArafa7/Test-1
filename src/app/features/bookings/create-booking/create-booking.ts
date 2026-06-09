@@ -6,7 +6,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
 import { AuthService } from '../../../core/auth/auth.service';
-import { CreateBookingRequest, Property, BookingDetail, UpdateBookingStatusRequest, BookingStatus, AvailabilityRuleDto } from '../../../core/models';
+import { CreateBookingRequest, Property, BookingDetail, UpdateBookingStatusRequest, BookingStatus } from '../../../core/models';
 import { ToastService } from '../../../core/services/toast.service';
 import { buildPropertyPlaceholder, getPropertyImageUrl } from '../../../core/utils/media';
 import { environment } from '../../../../environments/environment';
@@ -420,53 +420,36 @@ export class CreateBookingComponent implements OnInit {
 
   private async generateSlotsFromAvailability(propertyId: string, date: string): Promise<void> {
     try {
-      const rules = await firstValueFrom(this.availabilityService.getPropertyAvailability(propertyId));
-      if (rules && rules.length > 0) {
-        const dayOfWeek = new Date(date).getDay();
-        const slots = this.generateSlotsFromRules(rules, dayOfWeek, date);
-        if (slots.length > 0) {
-          this.slots.set(slots);
-          return;
-        }
+      const start = `${date}T00:00:00Z`;
+      const endDate = new Date(date);
+      endDate.setDate(endDate.getDate() + 1);
+      const end = endDate.toISOString().split('T')[0] + 'T23:59:59Z';
+
+      const timeSlots = await firstValueFrom(
+        this.availabilityService.getPropertyAvailability(propertyId, start, end)
+      );
+
+      if (timeSlots && timeSlots.length > 0) {
+        const slots: Slot[] = timeSlots.map((ts, i) => {
+          const startDate = new Date(ts.startTime);
+          const endDate = new Date(ts.endTime);
+          const startH = startDate.getHours();
+          const startM = startDate.getMinutes();
+          const endH = endDate.getHours();
+          const endM = endDate.getMinutes();
+          const start = `${startH.toString().padStart(2, '0')}:${startM.toString().padStart(2, '0')}`;
+          const endStr = `${endH.toString().padStart(2, '0')}:${endM.toString().padStart(2, '0')}`;
+          return { id: `av${i}`, start, end: endStr, hour: startH };
+        });
+        this.slots.set(slots);
+      } else {
+        this.slots.set([]);
       }
-    } catch {
-      // Fall through to default slots
+    } catch (err) {
+      console.error('Failed to load slots from backend availability:', err);
+      this.slots.set([]);
+      this.toast.error(this.translate.instant('BOOKINGS.SLOTS.LOAD_ERROR'));
     }
-    this.slots.set(this.generateSlots());
-  }
-
-  private generateSlotsFromRules(rules: AvailabilityRuleDto[], dayOfWeek: number, date: string): Slot[] {
-    const out: Slot[] = [];
-    let slotId = 0;
-
-    for (const rule of rules) {
-      if (rule.recurrenceType === 'None' && rule.specificDate !== date) continue;
-      if (rule.recurrenceType === 'Weekly' && rule.dayOfWeek !== dayOfWeek) continue;
-
-      const startParts = rule.startTime.split(':').map(Number);
-      const endParts = rule.endTime.split(':').map(Number);
-      let startMinutes = startParts[0] * 60 + (startParts[1] || 0);
-      const endMinutes = endParts[0] * 60 + (endParts[1] || 0);
-
-      let durationMinutes = 60;
-      if (rule.slotDuration) {
-        const match = rule.slotDuration.match(/^(\d+)/);
-        if (match) durationMinutes = parseInt(match[1], 10);
-      }
-
-      while (startMinutes + durationMinutes <= endMinutes) {
-        const startH = Math.floor(startMinutes / 60);
-        const startM = startMinutes % 60;
-        const endH = Math.floor((startMinutes + durationMinutes) / 60);
-        const endM = (startMinutes + durationMinutes) % 60;
-        const start = `${startH.toString().padStart(2, '0')}:${startM.toString().padStart(2, '0')}`;
-        const end = `${endH.toString().padStart(2, '0')}:${endM.toString().padStart(2, '0')}`;
-        out.push({ id: `av${slotId++}`, start, end, hour: startH });
-        startMinutes += durationMinutes;
-      }
-    }
-
-    return out;
   }
 
   groupedSlots = computed<{ key: 'MORNING' | 'AFTERNOON' | 'EVENING'; label: string; slots: Slot[] }[]>(() => {

@@ -1033,10 +1033,10 @@
     "PRICE_POSITIVE": "Please specify a correct property price (must be greater than zero)",
     "AREA_POSITIVE": "Please specify a correct property area (must be greater than zero)",
     "BEDROOMS_POSITIVE": "Please enter correct numbers for bedrooms and bathrooms",
-    "Property_TitleTooShort": "Title must be at least 3 characters",
+    "Property_TitleTooShort": "Title must be at least 2 characters",
     "Property_TitleTooLong": "Title cannot exceed 500 characters",
+    "Property_PriceTooHigh": "Price cannot exceed 999,999,999.99",
     "Property_PriceTooLow": "Price must be at least 1,000",
-    "Property_PriceTooHigh": "Price cannot exceed 999,999,999",
     "Property_AreaTooSmall": "Area must be at least 10 sqm",
     "Property_AreaTooLarge": "Area cannot exceed 100,000 sqm",
     "Property_BedroomsTooMany": "Number of bedrooms cannot exceed 100",
@@ -1048,8 +1048,9 @@
     "Property_ZipCodeTooLong": "Zip code cannot exceed 20 characters",
     "Property_LatitudeOutOfRange": "Latitude must be between -90 and 90",
     "Property_LongitudeOutOfRange": "Longitude must be between -180 and 180",
-    "Property_FloorTooHigh": "Floor cannot exceed 999",
-    "Property_TotalFloorsTooHigh": "Total floors cannot exceed 999",
+    "Property_FloorTooHigh": "Floor cannot exceed 149",
+    "Property_FloorExceedsTotal": "Floor number cannot exceed total floors",
+    "Property_TotalFloorsTooHigh": "Total floors cannot exceed 150",
     "Property_CannotDeleteLastImage": "Cannot delete the last image of the property. The property must have at least one image.",
     "UserProfile_DisplayNameTooShort": "Display name must be at least 2 characters",
     "UserProfile_DisplayNameTooLong": "Display name cannot exceed 100 characters",
@@ -1271,7 +1272,8 @@
       "SELECTED": "Selected slot",
       "DURATION_HINT": "Viewing duration: 1 hour",
       "REQUIRED": "Please select a viewing slot",
-      "BTN_SELECT": "Select this slot"
+      "BTN_SELECT": "Select this slot",
+      "LOAD_ERROR": "Failed to load available slots. Please try again."
     }
   },
   "CREATE": {
@@ -1842,7 +1844,9 @@
         "December"
       ],
       "TIME_LABEL_SHORT": "at",
-      "BOOKING_NOTES_PREFIX": "Interactive viewing booking from agent calendar"
+      "BOOKING_NOTES_PREFIX": "Interactive viewing booking from agent calendar",
+      "AVAILABILITY_DESC": "Manage your daily availability rules and schedule slot durations so buyers can book tours for your properties.",
+      "MANAGE_AVAILABILITY": "Manage Availability Schedule"
     }
   },
   "EDIT": {

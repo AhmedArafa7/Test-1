@@ -1030,23 +1030,24 @@
     "PRICE_POSITIVE": "يرجى تحديد سعر صحيح للعقار (يجب أن يكون أكبر من صفر)",
     "AREA_POSITIVE": "يرجى تحديد مساحة صحيحة للعقار (يجب أن تكون أكبر من صفر)",
     "BEDROOMS_POSITIVE": "يرجى إدخال أعداد صحيحة لغرف النوم والحمامات",
-    "Property_TitleTooShort": "العنوان يجب أن يكون 3 أحرف على الأقل",
+    "Property_TitleTooShort": "العنوان يجب أن يكون 2 حرف على الأقل",
     "Property_TitleTooLong": "العنوان أقصى 500 حرف",
     "Property_PriceTooLow": "السعر لا يمكن أن يقل عن 1000",
-    "Property_PriceTooHigh": "السعر لا يمكن أن يزيد عن 999,999,999",
+    "Property_PriceTooHigh": "السعر لا يمكن أن يزيد عن 999,999,999.99",
     "Property_AreaTooSmall": "المساحة لا يمكن أن تقل عن 10 متر²",
     "Property_AreaTooLarge": "المساحة لا يمكن أن تزيد عن 100,000 متر²",
     "Property_BedroomsTooMany": "عدد الغرف لا يمكن أن يزيد عن 100",
     "Property_BathroomsTooMany": "عدد الحمامات لا يمكن أن يزيد عن 100",
-    "Property_DescriptionTooLong": "الوصف لا يمكن أن يزيد عن 5000 حرف",
+    "Property_DescriptionTooLong": "الوصف لا يمكن أن يزيد عن 10000 حرف",
     "Property_AddressLineTooLong": "العنوان لا يمكن أن يزيد عن 500 حرف",
     "Property_CityTooLong": "المدينة لا يمكن أن تزيد عن 100 حرف",
     "Property_DistrictTooLong": "المنطقة لا يمكن أن تزيد عن 100 حرف",
     "Property_ZipCodeTooLong": "الرمز البريدي لا يمكن أن يزيد عن 20 حرف",
     "Property_LatitudeOutOfRange": "خط العرض يجب أن يكون بين -90 و 90",
     "Property_LongitudeOutOfRange": "خط الطول يجب أن يكون بين -180 و 180",
-    "Property_FloorTooHigh": "الدور لا يمكن أن يزيد عن 999",
-    "Property_TotalFloorsTooHigh": "إجمالي الأدوار لا يمكن أن يزيد عن 999",
+    "Property_FloorTooHigh": "الدور لا يمكن أن يزيد عن 149",
+    "Property_FloorExceedsTotal": "رقم الدور لا يمكن أن يتجاوز إجمالي الأدوار",
+    "Property_TotalFloorsTooHigh": "إجمالي الأدوار لا يمكن أن يزيد عن 150",
     "Property_CannotDeleteLastImage": "لا يمكن حذف آخر صورة في العقار. يجب أن يكون للعقار صورة واحدة على الأقل.",
     "UserProfile_DisplayNameTooShort": "الاسم المعروض يجب أن يكون حرفين على الأقل",
     "UserProfile_DisplayNameTooLong": "الاسم المعروض لا يمكن أن يزيد عن 100 حرف",
@@ -1268,7 +1269,8 @@
       "SELECTED": "الموعد المختار",
       "DURATION_HINT": "مدة المعاينة: ساعة واحدة",
       "REQUIRED": "يرجى اختيار موعد للمعاينة",
-      "BTN_SELECT": "اختر هذا الموعد"
+      "BTN_SELECT": "اختر هذا الموعد",
+      "LOAD_ERROR": "حدث خطأ أثناء تحميل المواعيد المتاحة. يرجى المحاولة مرة أخرى."
     }
   },
   "CREATE": {
@@ -1839,7 +1841,9 @@
         "ديسمبر"
       ],
       "TIME_LABEL_SHORT": "الساعة",
-      "BOOKING_NOTES_PREFIX": "حجز معاينة تفاعلية من خلال تقويم الوكيل"
+      "BOOKING_NOTES_PREFIX": "حجز معاينة تفاعلية من خلال تقويم الوكيل",
+      "AVAILABILITY_DESC": "قم بإدارة مواعيدك المتاحة واليومية وتحديد فترات المعاينة ليتمكن المشترون من حجز جولات المعاينة لعقاراتك.",
+      "MANAGE_AVAILABILITY": "إدارة جدول المواعيد المتاحة"
     }
   },
   "EDIT": {

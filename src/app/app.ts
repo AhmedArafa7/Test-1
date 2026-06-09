@@ -63,8 +63,8 @@ export class App {
     }
 
     try {
-      const res = await this.profileService.getNotifications(1, 10);
-      this.notificationService.setNotifications(res.items);
+      const res = await this.profileService.getNotifications();
+      this.notificationService.setNotifications(res);
     } catch {
       this.notificationService.setNotifications([]);
     }

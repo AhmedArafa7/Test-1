@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
-import { CreateAvailabilityRuleRequest, AvailabilityRuleDto } from '../../core/models';
+import { CreateAvailabilityRuleRequest, AvailabilityRuleDto, TimeSlotDto } from '../../core/models';
 
 @Injectable({ providedIn: 'root' })
 export class AvailabilityService {
@@ -20,7 +20,9 @@ export class AvailabilityService {
     return this.http.delete(`${this.url}/rules/${id}`);
   }
 
-  getPropertyAvailability(propertyId: string) {
-    return this.http.get<AvailabilityRuleDto[]>(`${this.url}/Properties/${propertyId}/availability`);
+  getPropertyAvailability(propertyId: string, startDate: string, endDate: string) {
+    return this.http.get<TimeSlotDto[]>(`${environment.apiUrl}/Properties/${propertyId}/availability`, {
+      params: { startDate, endDate }
+    });
   }
 }

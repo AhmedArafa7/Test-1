@@ -118,7 +118,7 @@ import { firstValueFrom } from 'rxjs';
                   <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div class="space-y-3">
                       <label class="block text-xs font-black text-gray-800 mb-3 tracking-wide">{{ 'PROPERTY_FORM.LABEL_PROPERTY_TYPE' | translate }} <span class="text-red-500">*</span></label>
-                      <select [(ngModel)]="form.propertyType" name="type" class="w-full bg-gray-50 border border-transparent rounded-2xl px-6 py-4.5 text-sm font-bold focus:bg-white focus:border-[#0a8f96] outline-none transition-all appearance-none cursor-pointer">
+                      <select [(ngModel)]="form.propertyType" name="type" [disabled]="isEdit()" class="w-full bg-gray-50 border border-transparent rounded-2xl px-6 py-4.5 text-sm font-bold focus:bg-white focus:border-[#0a8f96] outline-none transition-all appearance-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
                         <option [ngValue]="'Apartment'">{{ 'PROPERTY.TYPES.Apartment' | translate }}</option>
                         <option [ngValue]="'Villa'">{{ 'PROPERTY.TYPES.Villa' | translate }}</option>
                         <option [ngValue]="'Office'">{{ 'PROPERTY.TYPES.Office' | translate }}</option>
@@ -127,7 +127,7 @@ import { firstValueFrom } from 'rxjs';
                     </div>
                     <div class="space-y-3">
                       <label class="block text-xs font-black text-gray-800 mb-3 tracking-wide">{{ 'PROPERTY_FORM.LABEL_LISTING_TYPE' | translate }} <span class="text-red-500">*</span></label>
-                      <select [(ngModel)]="form.listingType" name="listing" class="w-full bg-gray-50 border border-transparent rounded-2xl px-6 py-4.5 text-sm font-bold focus:bg-white focus:border-[#0a8f96] outline-none transition-all appearance-none cursor-pointer">
+                      <select [(ngModel)]="form.listingType" name="listing" [disabled]="isEdit()" class="w-full bg-gray-50 border border-transparent rounded-2xl px-6 py-4.5 text-sm font-bold focus:bg-white focus:border-[#0a8f96] outline-none transition-all appearance-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
                         <option [ngValue]="'Sale'">{{ 'PROPERTY.LISTING_TYPES.Sale' | translate }}</option>
                         <option [ngValue]="'Rent'">{{ 'PROPERTY.LISTING_TYPES.Rent' | translate }}</option>
                       </select>
@@ -187,13 +187,13 @@ import { firstValueFrom } from 'rxjs';
                   <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
                     <div class="space-y-3">
                       <label class="block text-xs font-black text-gray-800 mb-1 px-1">{{ 'PROPERTY_FORM.LABEL_BEDROOMS' | translate }} <span class="text-red-500">*</span></label>
-                      <input type="number" [(ngModel)]="form.bedrooms" name="bedrooms" id="bedrooms" min="0" [placeholder]="'PROPERTY_FORM.PLACEHOLDER_BEDROOMS' | translate"
+                       <input type="number" [(ngModel)]="form.bedrooms" name="bedrooms" id="bedrooms" min="1" [placeholder]="'PROPERTY_FORM.PLACEHOLDER_BEDROOMS' | translate"
                              class="w-full bg-gray-50 border border-transparent focus:bg-white focus:border-[#0a8f96] focus:ring-4 focus:ring-[#0a8f96]/5 outline-none rounded-2xl px-6 py-4 text-sm font-bold transition-all shadow-inner text-center">
                     </div>
 
                     <div class="space-y-3">
                       <label class="block text-xs font-black text-gray-800 mb-1 px-1">{{ 'PROPERTY_FORM.LABEL_BATHROOMS' | translate }} <span class="text-red-500">*</span></label>
-                      <input type="number" [(ngModel)]="form.bathrooms" name="bathrooms" id="bathrooms" min="0" [placeholder]="'PROPERTY_FORM.PLACEHOLDER_BATHROOMS' | translate"
+                       <input type="number" [(ngModel)]="form.bathrooms" name="bathrooms" id="bathrooms" min="1" [placeholder]="'PROPERTY_FORM.PLACEHOLDER_BATHROOMS' | translate"
                              class="w-full bg-gray-50 border border-transparent focus:bg-white focus:border-[#0a8f96] focus:ring-4 focus:ring-[#0a8f96]/5 outline-none rounded-2xl px-6 py-4 text-sm font-bold transition-all shadow-inner text-center">
                     </div>
 
@@ -858,7 +858,7 @@ export class PropertyFormComponent implements OnInit {
     const step = this.currentStep();
     if (step <= 1) return missing;
 
-    if (!this.form.title || this.form.title.trim().length < 3) {
+    if (!this.form.title || this.form.title.trim().length < 2) {
       missing.push({ id: 'title', labelKey: 'PROPERTY_FORM.LABEL_TITLE', step: 1 });
     }
     if (!this.form.price || this.form.price <= 0) {
@@ -880,14 +880,14 @@ export class PropertyFormComponent implements OnInit {
 
   // Per-step validity for the Next button + visual indicators
   isStep1Valid(): boolean {
-    return !!(this.form.title && this.form.title.trim().length >= 3 && this.form.title.trim().length <= 500) &&
-           !!(this.form.price && this.form.price >= 1000 && this.form.price <= 999999999) &&
+    return !!(this.form.title && this.form.title.trim().length >= 2 && this.form.title.trim().length <= 500) &&
+           !!(this.form.price && this.form.price >= 1000 && this.form.price <= 999999999.99) &&
            !!(this.form.area && this.form.area >= 10 && this.form.area <= 100000) &&
-           (this.form.bedrooms === undefined || this.form.bedrooms === null || (this.form.bedrooms >= 0 && this.form.bedrooms <= 100)) &&
-           (this.form.bathrooms === undefined || this.form.bathrooms === null || (this.form.bathrooms >= 0 && this.form.bathrooms <= 100)) &&
-           (this.form.floor === undefined || this.form.floor === null || (this.form.floor >= 0 && this.form.floor <= 999)) &&
-           (this.form.totalFloors === undefined || this.form.totalFloors === null || (this.form.totalFloors >= 1 && this.form.totalFloors <= 999)) &&
-           (!this.form.description || this.form.description.length <= 5000);
+           (this.form.bedrooms === undefined || this.form.bedrooms === null || (this.form.bedrooms >= 1 && this.form.bedrooms <= 100)) &&
+           (this.form.bathrooms === undefined || this.form.bathrooms === null || (this.form.bathrooms >= 1 && this.form.bathrooms <= 100)) &&
+           (this.form.floor === undefined || this.form.floor === null || (this.form.floor >= 0 && this.form.floor <= 149 && (!this.form.totalFloors || this.form.floor <= this.form.totalFloors))) &&
+           (this.form.totalFloors === undefined || this.form.totalFloors === null || (this.form.totalFloors >= 1 && this.form.totalFloors <= 150)) &&
+           (!this.form.description || this.form.description.length <= 10000);
   }
   isStep2Valid(): boolean {
     const totalImages = (this.isEdit() ? this.existingImageUrls().length : 0) + this.localImages().length;
@@ -928,14 +928,14 @@ export class PropertyFormComponent implements OnInit {
   getFieldError(id: string): string | null {
     if (id === 'title') {
       if (!this.form.title || !this.form.title.trim()) return 'required';
-      if (this.form.title.trim().length < 3) return 'minLength';
+      if (this.form.title.trim().length < 2) return 'minLength';
       if (this.form.title.trim().length > 500) return 'maxLength';
       return null;
     }
     if (id === 'price') {
       if (this.form.price === undefined || this.form.price === null) return 'required';
       if (this.form.price < 1000) return 'minPrice';
-      if (this.form.price > 999999999) return 'maxPrice';
+      if (this.form.price > 999999999.99) return 'maxPrice';
       return null;
     }
     if (id === 'area') {
@@ -964,30 +964,31 @@ export class PropertyFormComponent implements OnInit {
     }
     if (id === 'bedrooms') {
       if (this.form.bedrooms !== undefined && this.form.bedrooms !== null) {
-        if (this.form.bedrooms < 0 || this.form.bedrooms > 100) return 'invalid';
+        if (this.form.bedrooms < 1 || this.form.bedrooms > 100) return 'invalid';
       }
       return null;
     }
     if (id === 'bathrooms') {
       if (this.form.bathrooms !== undefined && this.form.bathrooms !== null) {
-        if (this.form.bathrooms < 0 || this.form.bathrooms > 100) return 'invalid';
+        if (this.form.bathrooms < 1 || this.form.bathrooms > 100) return 'invalid';
       }
       return null;
     }
     if (id === 'floor') {
       if (this.form.floor !== undefined && this.form.floor !== null) {
-        if (this.form.floor < 0 || this.form.floor > 999) return 'invalid';
+        if (this.form.floor < 0 || this.form.floor > 149) return 'invalid';
+        if (this.form.totalFloors && this.form.floor > this.form.totalFloors) return 'floorExceedsTotal';
       }
       return null;
     }
     if (id === 'totalFloors') {
       if (this.form.totalFloors !== undefined && this.form.totalFloors !== null) {
-        if (this.form.totalFloors < 1 || this.form.totalFloors > 999) return 'invalid';
+        if (this.form.totalFloors < 1 || this.form.totalFloors > 150) return 'invalid';
       }
       return null;
     }
     if (id === 'description') {
-      if (this.form.description && this.form.description.length > 5000) return 'maxLength';
+      if (this.form.description && this.form.description.length > 10000) return 'maxLength';
       return null;
     }
     if (id === 'zipCode') {
@@ -1139,22 +1140,11 @@ export class PropertyFormComponent implements OnInit {
     this.existingImages.set(reordered);
     this.existingImageUrls.set(reordered.map(img => img.url));
 
-    let apiOk = false;
     try {
       await this.propertyService.setPrimaryImage(this.propertyId, image.id);
-      apiOk = true;
-    } catch {
-      try {
-        await this.propertyService.update(this.propertyId, {
-          ...this.getFormPayload(),
-          imageUrls: reordered.map(img => img.url),
-          isFeatured: false
-        } as any);
-        apiOk = true;
-      } catch { /* set-primary not supported — local reorder only */ }
-    }
-    if (apiOk) {
       this.toast.success(this.translate.instant('PROPERTY_FORM.MESSAGES.SET_PRIMARY_SUCCESS'));
+    } catch {
+      this.toast.error(this.translate.instant('PROPERTY_FORM.MESSAGES.SET_PRIMARY_ERROR'));
     }
   }
 
@@ -1252,7 +1242,7 @@ export class PropertyFormComponent implements OnInit {
       }, 150);
     };
 
-    if (!this.form.title || this.form.title.length < 3) {
+    if (!this.form.title || this.form.title.length < 2) {
       this.toast.error(this.translate.instant('PROPERTY_FORM.VALIDATION.TITLE_REQUIRED'));
       scrollToError('title', 1);
       return;
@@ -1267,7 +1257,7 @@ export class PropertyFormComponent implements OnInit {
       scrollToError('price', 1);
       return;
     }
-    if (this.form.price > 999999999) {
+    if (this.form.price > 999999999.99) {
       this.toast.error(this.translate.instant('VALIDATION.Property_PriceTooHigh'));
       scrollToError('price', 1);
       return;
@@ -1282,27 +1272,32 @@ export class PropertyFormComponent implements OnInit {
       scrollToError('area', 1);
       return;
     }
-    if (this.form.bedrooms !== undefined && this.form.bedrooms !== null && (this.form.bedrooms < 0 || this.form.bedrooms > 100)) {
+    if (this.form.bedrooms !== undefined && this.form.bedrooms !== null && (this.form.bedrooms < 1 || this.form.bedrooms > 100)) {
       this.toast.error(this.translate.instant('VALIDATION.Property_BedroomsTooMany'));
       scrollToError('bedrooms', 1);
       return;
     }
-    if (this.form.bathrooms !== undefined && this.form.bathrooms !== null && (this.form.bathrooms < 0 || this.form.bathrooms > 100)) {
+    if (this.form.bathrooms !== undefined && this.form.bathrooms !== null && (this.form.bathrooms < 1 || this.form.bathrooms > 100)) {
       this.toast.error(this.translate.instant('VALIDATION.Property_BathroomsTooMany'));
       scrollToError('bathrooms', 1);
       return;
     }
-    if (this.form.floor !== undefined && this.form.floor !== null && (this.form.floor < 0 || this.form.floor > 999)) {
+    if (this.form.floor !== undefined && this.form.floor !== null && (this.form.floor < 0 || this.form.floor > 149)) {
       this.toast.error(this.translate.instant('VALIDATION.Property_FloorTooHigh'));
       scrollToError('floor', 1);
       return;
     }
-    if (this.form.totalFloors !== undefined && this.form.totalFloors !== null && (this.form.totalFloors < 1 || this.form.totalFloors > 999)) {
+    if (this.form.totalFloors !== undefined && this.form.totalFloors !== null && (this.form.totalFloors < 1 || this.form.totalFloors > 150)) {
       this.toast.error(this.translate.instant('VALIDATION.Property_TotalFloorsTooHigh'));
       scrollToError('totalFloors', 1);
       return;
     }
-    if (this.form.description && this.form.description.length > 5000) {
+    if (this.form.floor !== undefined && this.form.floor !== null && this.form.totalFloors !== undefined && this.form.totalFloors !== null && this.form.totalFloors > 0 && this.form.floor > this.form.totalFloors) {
+      this.toast.error(this.translate.instant('VALIDATION.Property_FloorExceedsTotal'));
+      scrollToError('floor', 1);
+      return;
+    }
+    if (this.form.description && this.form.description.length > 10000) {
       this.toast.error(this.translate.instant('VALIDATION.Property_DescriptionTooLong'));
       scrollToError('description', 1);
       return;

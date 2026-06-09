@@ -89,6 +89,27 @@ import { LocalizedDatePipe } from '../../../shared/pipes/localized-date.pipe';
             <!-- Main Info Area -->
             <div class="col-span-12 lg:col-span-8 space-y-8">
               
+              <!-- Agent Availability Card -->
+              @if (auth.isAgent()) {
+                <div class="bg-white rounded-[24px] border border-slate-100 shadow-[0_4px_24px_rgba(0,0,0,0.015)] p-6 md:p-8">
+                  <div class="flex items-start justify-between mb-6">
+                    <div class="ltr:text-left rtl:text-right">
+                      <h3 class="text-xl font-black text-slate-900 mb-2">{{ 'AVAILABILITY.TITLE' | translate }}</h3>
+                      <p class="text-slate-500 font-bold text-xs md:text-sm leading-relaxed max-w-md">{{ 'PROFILE.AGENT.AVAILABILITY_DESC' | translate }}</p>
+                    </div>
+                    <div class="w-12 h-12 bg-teal-50 text-[#0a8f96] rounded-full flex items-center justify-center shadow-sm shrink-0">
+                      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                    </div>
+                  </div>
+                  
+                  <a routerLink="/availability" 
+                     class="w-full py-4.5 bg-slate-50 hover:bg-slate-100 border border-slate-100 text-slate-700 font-black rounded-2xl text-xs transition-all duration-200 active:scale-[0.99] flex items-center justify-center gap-3">
+                    <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
+                    <span>{{ 'PROFILE.AGENT.MANAGE_AVAILABILITY' | translate }}</span>
+                  </a>
+                </div>
+              }
+
               <!-- Personal Info Card -->
               <div class="bg-white rounded-[24px] border border-slate-100 shadow-[0_4px_24px_rgba(0,0,0,0.015)] p-6 md:p-8">
                 <div class="flex items-center justify-between mb-8 border-b border-slate-100 pb-5">

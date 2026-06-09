@@ -35,13 +35,11 @@ export class ProfileService {
     return firstValueFrom(this.http.put<void>(`${this.url}/agents/me`, request));
   }
 
-  // ─── Notifications ─── (Backend: NotificationsController → api/v1/notifications → Paged)
-  async getNotifications(page = 1, size = 20, unreadOnly = false): Promise<PaginatedList<AppNotification>> {
+  // ─── Notifications ─── (Backend: NotificationsController → api/v1/notifications → Array)
+  async getNotifications(unreadOnly = false): Promise<AppNotification[]> {
     return firstValueFrom(
-      this.http.get<PaginatedList<AppNotification>>(`${this.url}/notifications`, { 
+      this.http.get<AppNotification[]>(`${this.url}/notifications`, { 
         params: { 
-          pageNumber: page, 
-          pageSize: size,
           unreadOnly: unreadOnly.toString() 
         } 
       })
