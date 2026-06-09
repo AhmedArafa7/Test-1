@@ -1,12 +1,22 @@
-import { Component, signal, OnInit, OnDestroy, inject, HostListener } from '@angular/core';
+import { Component, signal, computed, OnInit, OnDestroy, inject, HostListener } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { ProfileService } from '../../profile/services/profile.service';
 import { NotificationSignalRService } from '../../../core/services/notification-signalr.service';
+import { ConversationService } from '../../conversations/services/conversation.service';
 import { AppNotification } from '../../../core/models';
 import { RelativeTimePipe } from '../../../shared/pipes/relative-time.pipe';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { EmptyStateComponent } from '../../../shared/components/empty-state/empty-state';
+
+interface NotificationGroup {
+  type: string;
+  labelKey: string;
+  items: AppNotification[];
+  expanded: boolean;
+  latestUnread: AppNotification | null;
+  unreadCount: number;
+}
 
 @Component({
   selector: 'app-notification-list',
@@ -72,127 +82,125 @@ import { EmptyStateComponent } from '../../../shared/components/empty-state/empt
         }
 
         @if (notifications().length === 0) {
-          <!-- Empty State -->
           <app-empty-state
             title="NOTIFICATIONS.EMPTY_TITLE"
             message="NOTIFICATIONS.EMPTY_MSG"
             actionText="NOTIFICATIONS.BROWSE_PROPERTIES"
             (actionClicked)="goToProperties()">
-            <!-- Projected Icon -->
             <svg icon class="w-12 h-12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
               <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
               <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
             </svg>
           </app-empty-state>
         } @else {
-          <!-- Smart Time-Grouped Notifications -->
-          <div class="flex flex-col gap-8 w-full">
-            @for (group of getGroupedNotifications(); track group.key) {
-              <div class="flex flex-col gap-4">
-                <!-- Group Temporal Heading -->
-                <div class="flex items-center gap-3 px-2">
-                    <h2 class="text-xs font-black uppercase tracking-wider text-[#0a8f96] bg-[#0a8f96]/5 px-3 py-1.5 rounded-lg">
-                      {{ group.titleKey | translate }}
-                    </h2>
-                  <div class="h-px bg-slate-100 flex-1"></div>
-                  <span class="text-[10px] font-bold text-slate-400">
-                    {{ group.items.length }} {{ group.items.length === 1 ? ('NOTIFICATIONS.NOTIFICATION_SINGULAR' | translate) : ('NOTIFICATIONS.NOTIFICATION_PLURAL' | translate) }}
-                  </span>
-                </div>
+          <!-- Grouped by Type -->
+          <div class="flex flex-col gap-4 w-full">
+            @for (group of groupedNotifications(); track group.type) {
+              <div class="rounded-3xl border transition-all overflow-hidden"
+                   [class]="group.unreadCount > 0 ? 'bg-white border-[#0a8f96]/20 shadow-sm' : 'bg-white border-slate-100'">
+                
+                <!-- Group Header (always visible) -->
+                <div (click)="toggleGroup(group.type)"
+                     class="flex items-center gap-4 px-6 md:px-8 py-5 cursor-pointer hover:bg-slate-50/50 transition-colors select-none">
+                  
+                  <!-- Icon -->
+                  <div class="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-sm"
+                       [class]="group.unreadCount > 0 ? 'bg-[#0a8f96]/10 text-[#0a8f96]' : 'bg-slate-100 text-slate-400'">
+                    @if (group.type === 'NewMessage') {
+                      <svg class="w-5.5 h-5.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
+                      </svg>
+                    } @else if (group.type === 'PaymentUpdate') {
+                      <svg class="w-5.5 h-5.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                      </svg>
+                    } @else {
+                      <svg class="w-5.5 h-5.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                      </svg>
+                    }
+                  </div>
 
-                <!-- Group Items Container -->
-                <div class="flex flex-col gap-3">
-                  @for (n of group.items; track n.id) {
-                    <!-- Swipe Container Outer Card -->
-                    <div class="notification-container relative overflow-hidden rounded-3xl bg-slate-100 shadow-sm border border-slate-100 transition-all select-none"
-                         [class.removing]="removingIds().has(n.id)">
-                         
-                      <!-- Swipe Right: Mark as Read Background -->
-                      <div class="absolute inset-0 bg-[#0a8f96] flex items-center justify-start px-6 text-white transition-opacity duration-200 rounded-3xl"
-                           [class.opacity-100]="getSwipeX(n.id) > 10"
-                           [class.opacity-0]="getSwipeX(n.id) <= 10">
-                        <div class="flex items-center gap-2">
-                          <svg class="w-5 h-5 animate-pulse" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                          </svg>
-                          <span class="text-[11px] font-black uppercase tracking-wider">{{ 'NOTIFICATIONS.MARK_READ_ACTION' | translate }}</span>
-                        </div>
-                      </div>
-
-                      <!-- Swipe Left: Delete Background -->
-                      <div class="absolute inset-0 bg-red-500 flex items-center justify-end px-6 text-white transition-opacity duration-200 rounded-3xl"
-                           [class.opacity-100]="getSwipeX(n.id) < -10"
-                           [class.opacity-0]="getSwipeX(n.id) >= -10">
-                        <div class="flex items-center gap-2">
-                          <span class="text-[11px] font-black uppercase tracking-wider">{{ 'NOTIFICATIONS.DELETE_ACTION' | translate }}</span>
-                          <svg class="w-5 h-5 animate-pulse" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                          </svg>
-                        </div>
-                      </div>
-
-                      <!-- Main Interactive Card -->
-                      <div (touchstart)="onTouchStart($event, n.id)"
-                           (touchmove)="onTouchMove($event, n.id)"
-                           (touchend)="onTouchEnd($event, n.id)"
-                           [style.transform]="'translateX(' + getSwipeX(n.id) + 'px)'"
-                           [style.transition]="isSwiping(n.id) ? 'none' : 'transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1)'"
-                           (click)="markRead(n)"
-                           class="px-6 md:px-8 py-6 flex items-start gap-5 cursor-pointer bg-white transition-all hover:bg-slate-50/50 relative group rounded-3xl"
-                           [class.bg-[#0a8f96]/[0.01]]="!n.isRead"
-                           [class.opacity-60]="n.isRead">
-                        
-                        <!-- Notification Active Border for Unread -->
-                        @if (!n.isRead) {
-                          <div class="absolute right-0 top-0 bottom-0 w-1 bg-[#0a8f96] rounded-r-md"></div>
-                        }
-
-                        <!-- Icon -->
-                        <div class="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-sm transition-transform duration-300 group-hover:scale-105"
-                             [class]="n.isRead ? 'bg-slate-50 text-slate-400' : 'bg-[#0a8f96]/10 text-[#0a8f96]'">
-                           @if (n.type === 'NewMessage') {
-                            <svg class="w-5.5 h-5.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
-                            </svg>
-                          } @else if (n.type === 'PaymentUpdate') {
-                            <svg class="w-5.5 h-5.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                            </svg>
-                          } @else {
-                            <svg class="w-5.5 h-5.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
-                            </svg>
-                          }
-                        </div>
-
-                        <!-- Info -->
-                        <div class="flex-1 min-w-0">
-                          <div class="flex items-center justify-between gap-4 mb-1.5">
-                            <h3 class="font-extrabold text-slate-900 text-base md:text-lg group-hover:text-[#0a8f96] transition-colors duration-200"
-                                [class.text-slate-500]="n.isRead">
-                              {{ n.title }}
-                            </h3>
-                            <span class="text-xs font-bold text-slate-400 shrink-0">
-                              {{ n.createdOnUtc | relativeTime }}
-                            </span>
-                          </div>
-                          <p class="text-sm font-medium text-slate-500 leading-relaxed">
-                            {{ n.body }}
-                          </p>
-                          
-                          <!-- Quick actions for booking -->
-                          @if (!n.isRead && n.type === 'PaymentUpdate') {
-                            <div class="flex items-center gap-3 mt-4">
-                              <button (click)="markRead(n)" class="bg-[#0a8f96] text-white text-[11px] font-black uppercase tracking-wider px-5 py-2.5 rounded-lg hover:bg-[#076b70] shadow-sm hover:shadow transition-all duration-200 cursor-pointer">
-                                {{ 'NOTIFICATIONS.VIEW_DETAILS' | translate }}
-                              </button>
-                            </div>
-                          }
-                        </div>
-                      </div>
+                  <!-- Info -->
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-2">
+                      <h3 class="font-extrabold text-slate-900 text-sm md:text-base"
+                          [class.text-[#0a8f96]]="group.unreadCount > 0">
+                        {{ group.labelKey | translate }}
+                      </h3>
+                      @if (group.unreadCount > 0) {
+                        <span class="bg-[#0a8f96] text-white text-[10px] font-black px-2 py-0.5 rounded-full min-w-5 h-5 flex items-center justify-center tabular-nums shadow-sm">
+                          {{ group.unreadCount > 99 ? '99+' : group.unreadCount }}
+                        </span>
+                      }
                     </div>
-                  }
+                    @if (group.latestUnread && group.unreadCount > 0) {
+                      <p class="text-xs font-bold text-slate-500 mt-0.5 truncate max-w-[280px]">
+                        @if (group.type === 'NewMessage') {
+                          {{ group.latestUnread.body }}
+                        } @else {
+                          {{ group.latestUnread.title }}
+                        }
+                      </p>
+                    } @else if (group.items.length > 0) {
+                      <p class="text-xs font-bold text-slate-400 mt-0.5">
+                        {{ group.items.length }} {{ group.items.length === 1 ? ('NOTIFICATIONS.NOTIFICATION_SINGULAR' | translate) : ('NOTIFICATIONS.NOTIFICATION_PLURAL' | translate) }}
+                      </p>
+                    }
+                  </div>
+
+                  <!-- Expand Arrow -->
+                  <div class="shrink-0 transition-transform duration-200"
+                       [class.rotate-180]="isGroupExpanded(group.type)">
+                    <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/>
+                    </svg>
+                  </div>
                 </div>
+
+                <!-- Expanded Items -->
+                @if (isGroupExpanded(group.type)) {
+                  <div class="border-t border-slate-100">
+                    @for (n of group.items; track n.id; let i = $index) {
+                      <div (click)="markRead(n)"
+                           class="flex items-start gap-4 px-6 md:px-8 py-4 cursor-pointer hover:bg-slate-50/80 transition-colors border-b border-slate-50 last:border-b-0"
+                           [class.bg-[#0a8f96]/[0.02]]="!n.isRead">
+                        
+                        <!-- Unread dot -->
+                        <div class="shrink-0 mt-2">
+                          @if (!n.isRead) {
+                            <div class="w-2 h-2 rounded-full bg-[#0a8f96]"></div>
+                          } @else {
+                            <div class="w-2 h-2 rounded-full bg-transparent"></div>
+                          }
+                        </div>
+
+                        <!-- Content -->
+                        <div class="flex-1 min-w-0">
+                          @if (group.type === 'NewMessage') {
+                            <p class="text-sm font-bold text-slate-800 leading-relaxed"
+                               [class.text-slate-500]="n.isRead">
+                              {{ n.body }}
+                            </p>
+                          } @else {
+                            <p class="text-sm font-bold text-slate-800"
+                               [class.text-slate-500]="n.isRead">
+                              {{ n.title }}
+                            </p>
+                            <p class="text-xs font-medium text-slate-400 mt-0.5">
+                              {{ n.body }}
+                            </p>
+                          }
+                        </div>
+
+                        <!-- Time -->
+                        <span class="text-[11px] font-bold text-slate-400 shrink-0">
+                          {{ n.createdOnUtc | relativeTime }}
+                        </span>
+                      </div>
+                    }
+                  </div>
+                }
               </div>
             }
           </div>
@@ -219,133 +227,93 @@ import { EmptyStateComponent } from '../../../shared/components/empty-state/empt
                   <path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z"/>
                 </svg>
               </div>
-              <div class="min-w-0">
-                <h2 class="text-xl md:text-2xl font-black text-slate-900 leading-tight">
-                  {{ 'NOTIFICATIONS.GUIDE_TITLE' | translate }}
-                </h2>
+              <div>
+                <h2 class="text-xl md:text-2xl font-black text-slate-900">{{ 'NOTIFICATIONS.GUIDE_TITLE' | translate }}</h2>
+                <p class="text-sm text-slate-500 font-bold">{{ 'NOTIFICATIONS.GUIDE_DESC' | translate }}</p>
               </div>
             </div>
-            <button (click)="closeGuide()"
-                    [attr.aria-label]="'NOTIFICATIONS.GUIDE_CLOSE' | translate"
-                    class="w-10 h-10 shrink-0 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-400 hover:text-slate-700 flex items-center justify-center transition-all cursor-pointer">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <button (click)="closeGuide()" class="w-10 h-10 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-colors cursor-pointer shrink-0">
+              <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
               </svg>
             </button>
           </div>
 
-          <!-- Body (scrollable) -->
-          <div class="flex-1 overflow-y-auto p-6 md:p-8 custom-scrollbar">
-            <p class="text-slate-600 text-sm md:text-base font-medium leading-relaxed mb-6">
-              {{ 'NOTIFICATIONS.GUIDE_INTRO' | translate }}
-            </p>
-
-            <h3 class="text-xs font-black uppercase tracking-wider text-[#0a8f96] mb-4">
-              {{ 'NOTIFICATIONS.GUIDE_TYPES_TITLE' | translate }}
-            </h3>
-
-            <div class="flex flex-col gap-4">
-              @for (type of guideTypesList; track type.key) {
-                <div class="bg-slate-50/50 border border-slate-100 rounded-2xl p-5 hover:border-[#0a8f96]/30 hover:bg-white transition-all">
-                  <div class="flex items-start gap-4">
-                    <div class="w-11 h-11 shrink-0 rounded-xl flex items-center justify-center shadow-sm"
-                         [class]="getGuideIconBg(type.icon)">
-                      <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
-                        @switch (type.icon) {
-                          @case ('message') {
-                            <path d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
-                          }
-                          @case ('check') {
-                            <path d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                          }
-                          @case ('wallet') {
-                            <path d="M21 12a2.25 2.25 0 00-2.25-2.25H15a3 3 0 11-6 0H5.25A2.25 2.25 0 003 12m18 0v6a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 18v-6m18 0V9M3 12V9m18 0a2.25 2.25 0 00-2.25-2.25H5.25A2.25 2.25 0 003 9m18 0V6a2.25 2.25 0 00-2.25-2.25H5.25A2.25 2.25 0 003 6v3"/>
-                          }
-                          @case ('alert') {
-                            <path d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/>
-                          }
-                          @case ('cancel') {
-                            <path d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
-                          }
-                          @case ('home') {
-                            <path d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/>
-                          }
-                          @case ('refund') {
-                            <path d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z"/>
-                          }
-                          @case ('block') {
-                            <path d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
-                          }
-                        }
+          <!-- Content -->
+          <div class="overflow-y-auto flex-1 p-6 md:p-8 space-y-5">
+            @for (type of guideTypesList; track type.key) {
+              <div class="flex items-start gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-100">
+                <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+                     [class]="getGuideIconBg(type.icon)">
+                  @switch (type.icon) {
+                    @case ('message') {
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
                       </svg>
-                    </div>
-                    <div class="flex-1 min-w-0">
-                      <h4 class="font-black text-slate-900 text-base mb-1">
-                        {{ 'NOTIFICATIONS.GUIDE_TYPES.' + type.key + '.title' | translate }}
-                      </h4>
-                      <p class="text-[11px] font-black uppercase tracking-wider text-[#0a8f96] mb-2">
-                        {{ 'NOTIFICATIONS.GUIDE_TYPES.' + type.key + '.when' | translate }}
-                      </p>
-                      <p class="text-sm text-slate-600 font-medium leading-relaxed">
-                        {{ 'NOTIFICATIONS.GUIDE_TYPES.' + type.key + '.explainer' | translate }}
-                      </p>
-                    </div>
-                  </div>
+                    }
+                    @case ('check') {
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                      </svg>
+                    }
+                    @case ('wallet') {
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a2.25 2.25 0 00-2.25-2.25H15a3 3 0 11-6 0H5.25A2.25 2.25 0 003 12m18 0v6a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 18v-6m18 0V9M3 12V9m18 0a2.25 2.25 0 00-2.25-2.25H5.25A2.25 2.25 0 003 9m18 0V6a2.25 2.25 0 00-2.25-2.25H5.25A2.25 2.25 0 003 6v3"/>
+                      </svg>
+                    }
+                    @case ('alert') {
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/>
+                      </svg>
+                    }
+                    @case ('cancel') {
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                      </svg>
+                    }
+                    @case ('home') {
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/>
+                      </svg>
+                    }
+                    @case ('refund') {
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 14.25l6-6m0 0l-6-6m6 6H4.5"/>
+                      </svg>
+                    }
+                    @case ('block') {
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
+                      </svg>
+                    }
+                  }
                 </div>
-              }
-            </div>
+                <div class="flex-1 min-w-0">
+                  <h3 class="font-extrabold text-slate-900 text-sm">{{ 'NOTIFICATIONS.GUIDE_TYPES.' + type.key + '.TITLE' | translate }}</h3>
+                  <p class="text-xs text-slate-500 font-bold mt-0.5">{{ 'NOTIFICATIONS.GUIDE_TYPES.' + type.key + '.BADGE' | translate }}</p>
+                  <p class="text-xs text-slate-400 font-medium mt-1 leading-relaxed">{{ 'NOTIFICATIONS.GUIDE_TYPES.' + type.key + '.DESC' | translate }}</p>
+                </div>
+              </div>
+            }
           </div>
 
           <!-- Footer -->
-          <div class="p-6 md:p-8 border-t border-slate-100 bg-slate-50/30">
-            <button (click)="closeGuide()"
-                    class="w-full bg-[#0a8f96] hover:bg-[#076b70] text-white font-black text-sm py-3.5 rounded-2xl transition-all shadow-md shadow-[#0a8f96]/15 hover:shadow-lg active:scale-[0.99] cursor-pointer">
-              {{ 'NOTIFICATIONS.GUIDE_CLOSE' | translate }}
+          <div class="p-6 md:p-8 border-t border-slate-100">
+            <button (click)="closeGuide()" class="w-full py-4 rounded-2xl bg-[#0a8f96] hover:bg-[#076b70] text-white font-black text-sm transition-all shadow-lg shadow-[#0a8f96]/20 hover:shadow-xl active:scale-[0.98] cursor-pointer">
+              {{ 'NOTIFICATIONS.GUIDE_GOT_IT' | translate }}
             </button>
           </div>
         </div>
       </div>
     }
-  `,
-  styles: [`
-    :host { display: block; }
-    
-    .notification-container {
-      transition: max-height 0.3s ease-out, opacity 0.3s ease-out, margin 0.3s ease-out, transform 0.3s ease-out;
-      max-height: 350px;
-    }
-    
-    .notification-container.removing {
-      max-height: 0 !important;
-      margin: 0 !important;
-      padding: 0 !important;
-      opacity: 0 !important;
-      border-color: transparent !important;
-      transform: translateX(-100%) scale(0.9) !important;
-      pointer-events: none !important;
-    }
-
-    @keyframes swing {
-      0%, 100% { transform: rotate(0); }
-      20% { transform: rotate(15deg); }
-      40% { transform: rotate(-10deg); }
-      60% { transform: rotate(5deg); }
-      80% { transform: rotate(-5deg); }
-    }
-    
-    .animate-swing {
-      animation: swing 1.2s ease-in-out infinite;
-      transform-origin: top center;
-    }
-  `]
+  `
 })
 export class NotificationListComponent implements OnInit, OnDestroy {
   notifications = signal<AppNotification[]>([]);
-  
   loading = signal(false);
 
   // Swipe gesture variables
-  private swipeData = new Map<string, { startX: number; currentX: number; isSwiping: boolean }>();
+  swipeData = new Map<string, { startX: number; currentX: number; isSwiping: boolean }>();
   activeSwipeId = signal<string | null>(null);
   removingIds = signal<Set<string>>(new Set());
 
@@ -355,7 +323,10 @@ export class NotificationListComponent implements OnInit, OnDestroy {
   // Notification Guide Modal
   showGuide = signal(false);
 
-  // Guide types ordered list (mirrors NOTIFICATIONS.GUIDE_TYPES keys)
+  // Group expanded state
+  private _expandedGroups = signal<Set<string>>(new Set());
+
+  // Guide types ordered list
   readonly guideTypesList: Array<{ key: string; icon: string }> = [
     { key: 'NewMessage', icon: 'message' },
     { key: 'BookingConfirmed', icon: 'check' },
@@ -375,6 +346,7 @@ export class NotificationListComponent implements OnInit, OnDestroy {
   constructor(
     private profileService: ProfileService, 
     private notifService: NotificationSignalRService, 
+    private conversationService: ConversationService,
     private router: Router,
     private translate: TranslateService
   ) {
@@ -412,7 +384,6 @@ export class NotificationListComponent implements OnInit, OnDestroy {
     try {
       if ('serviceWorker' in navigator) {
         const reg = await navigator.serviceWorker.register('/sw.js');
-        console.log('Service Worker registered successfully:', reg);
       }
       
       const permission = await Notification.requestPermission();
@@ -449,7 +420,10 @@ export class NotificationListComponent implements OnInit, OnDestroy {
   async loadNotifications(append = false) {
     this.loading.set(true);
     try {
-      const res = await this.profileService.getNotifications();
+      const [res, conversations] = await Promise.all([
+        this.profileService.getNotifications(),
+        this.conversationService.getAll().catch(() => [])
+      ]);
 
       let items: AppNotification[] = [];
 
@@ -460,6 +434,21 @@ export class NotificationListComponent implements OnInit, OnDestroy {
           items = (res as any).items || (res as any).Items || [];
         }
       }
+
+      const convMap = new Map(conversations.map(c => [c.id, c]));
+
+      items = items.map(n => {
+        if (n.type === 'NewMessage' && n.referenceId) {
+          const conv = convMap.get(n.referenceId);
+          if (conv?.lastMessageContent) {
+            const content = conv.lastMessageContent.startsWith('[PROPS:') || conv.lastMessageContent.startsWith('[PROP:')
+              ? this.translate.instant('NOTIFICATIONS.SHARED_PROPERTY')
+              : conv.lastMessageContent;
+            return { ...n, body: content };
+          }
+        }
+        return n;
+      });
 
       if (append) {
         this.notifications.update(current => [...current, ...items]);
@@ -539,7 +528,7 @@ export class NotificationListComponent implements OnInit, OnDestroy {
         this.router.navigate(['/bookings', n.referenceId]);
         break;
       case 'Message':
-        this.router.navigate(['/conversations']);
+        this.router.navigate(['/conversations', n.referenceId]);
         break;
       default:
         console.warn('Unhandled notification reference type:', n.referenceType);
@@ -567,7 +556,6 @@ export class NotificationListComponent implements OnInit, OnDestroy {
     this.swipeData.set(id, { ...data });
     
     const diffX = data.currentX - data.startX;
-    // If swiping noticeably horizontal, prevent page scroll
     if (Math.abs(diffX) > 10) {
       if (event.cancelable) {
         event.preventDefault();
@@ -584,14 +572,12 @@ export class NotificationListComponent implements OnInit, OnDestroy {
 
     const diffX = data.currentX - data.startX;
     
-    // In RTL/Arabic layout, swiping right increases X, which marks as read
     if (diffX > 80) {
       const n = this.notifications().find(x => x.id === id);
       if (n && !n.isRead) {
         await this.markRead(n);
       }
     }
-    // Swiping left decreases X, which deletes/removes the notification locally
     else if (diffX < -80) {
       this.deleteNotificationLocally(id);
     }
@@ -630,55 +616,69 @@ export class NotificationListComponent implements OnInit, OnDestroy {
     }, 300);
   }
 
-  // Time-Grouping logic
-  getGroupedNotifications() {
+  // Group by type
+  groupedNotifications = computed<NotificationGroup[]>(() => {
     const list = this.notifications();
     if (list.length === 0) return [];
 
-    const today: AppNotification[] = [];
-    const yesterday: AppNotification[] = [];
-    const lastWeek: AppNotification[] = [];
-    const older: AppNotification[] = [];
-
-    const now = new Date();
-    
-    const getMidnight = (d: Date) => {
-      const copy = new Date(d);
-      copy.setHours(0, 0, 0, 0);
-      return copy.getTime();
-    };
-
-    const todayMidnight = getMidnight(now);
-    const yesterdayMidnight = todayMidnight - 24 * 60 * 60 * 1000;
-    const sevenDaysAgoMidnight = todayMidnight - 7 * 24 * 60 * 60 * 1000;
-
+    const typeMap = new Map<string, AppNotification[]>();
     for (const n of list) {
-      const time = new Date(n.createdOnUtc).getTime();
-      if (time >= todayMidnight) {
-        today.push(n);
-      } else if (time >= yesterdayMidnight) {
-        yesterday.push(n);
-      } else if (time >= sevenDaysAgoMidnight) {
-        lastWeek.push(n);
-      } else {
-        older.push(n);
-      }
+      const arr = typeMap.get(n.type) || [];
+      arr.push(n);
+      typeMap.set(n.type, arr);
     }
 
-    const groups: { key: string; titleKey: string; items: AppNotification[] }[] = [];
-    if (today.length > 0) {
-      groups.push({ key: 'today', titleKey: 'NOTIFICATIONS.GROUP_TODAY', items: today });
+    const typeOrder = ['NewMessage', 'PaymentUpdate'];
+    const groups: NotificationGroup[] = [];
+
+    // Process known types first (in order)
+    for (const type of typeOrder) {
+      const items = typeMap.get(type);
+      if (!items) continue;
+      typeMap.delete(type);
+      groups.push(this.buildGroup(type, items));
     }
-    if (yesterday.length > 0) {
-      groups.push({ key: 'yesterday', titleKey: 'NOTIFICATIONS.GROUP_YESTERDAY', items: yesterday });
-    }
-    if (lastWeek.length > 0) {
-      groups.push({ key: 'lastWeek', titleKey: 'NOTIFICATIONS.GROUP_LAST_WEEK', items: lastWeek });
-    }
-    if (older.length > 0) {
-      groups.push({ key: 'older', titleKey: 'NOTIFICATIONS.GROUP_OLDER', items: older });
+
+    // Process any remaining unknown types
+    for (const [type, items] of typeMap) {
+      groups.push(this.buildGroup(type, items));
     }
 
     return groups;
+  });
+
+  private buildGroup(type: string, items: AppNotification[]): NotificationGroup {
+    const labelMap: Record<string, string> = {
+      NewMessage: 'NOTIFICATIONS.TYPE_NEW_MESSAGE',
+      PaymentUpdate: 'NOTIFICATIONS.TYPE_PAYMENT_UPDATE',
+    };
+
+    const unreadItems = items.filter(n => !n.isRead);
+    const latestUnread = unreadItems.length > 0 ? unreadItems[0] : null;
+
+    return {
+      type,
+      labelKey: labelMap[type] || type,
+      items,
+      expanded: this._expandedGroups().has(type),
+      latestUnread,
+      unreadCount: unreadItems.length,
+    };
+  }
+
+  isGroupExpanded(type: string): boolean {
+    return this._expandedGroups().has(type);
+  }
+
+  toggleGroup(type: string) {
+    this._expandedGroups.update(set => {
+      const newSet = new Set(set);
+      if (newSet.has(type)) {
+        newSet.delete(type);
+      } else {
+        newSet.add(type);
+      }
+      return newSet;
+    });
   }
 }

@@ -208,6 +208,14 @@ import { Conversation } from '../../../core/models';
                     </span>
                   }
                 </a>
+                <a routerLink="/notifications" (click)="mobileOpen = false" class="block p-4 rounded-2xl hover:bg-gray-50 text-gray-700 font-bold flex items-center justify-between">
+                  <span>{{ 'NOTIFICATIONS.TITLE' | translate }}</span>
+                  @if (notificationService.unreadCount() > 0) {
+                    <span class="bg-red-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full min-w-5 h-5 flex items-center justify-center shadow-sm tabular-nums animate-pulse">
+                      {{ notificationService.unreadCount() > 9 ? '9+' : notificationService.unreadCount() }}
+                    </span>
+                  }
+                </a>
               }
               @if (auth.isAgent()) {
                 <a routerLink="/properties/new" (click)="mobileOpen = false" class="block p-4 rounded-2xl hover:bg-gray-50 text-gray-700 font-bold">{{ 'NAV.ADD_PROPERTY' | translate }}</a>

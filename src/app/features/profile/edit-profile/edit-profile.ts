@@ -870,11 +870,15 @@ export class EditProfileComponent implements OnInit {
 
       let errorMessage = '';
       if (translationKey) {
-        const translated = this.translate.instant('VALIDATION.' + translationKey);
-        if (translated !== 'VALIDATION.' + translationKey) {
-          errorMessage = translated;
-        } else {
-          errorMessage = translationKey;
+        const isValidKey = /^[A-Za-z0-9_.]+$/.test(translationKey);
+        if (isValidKey) {
+          const translated = this.translate.instant('VALIDATION.' + translationKey);
+          if (translated !== 'VALIDATION.' + translationKey) {
+            errorMessage = translated;
+          }
+        }
+        if (!errorMessage) {
+          errorMessage = this.translate.instant('PROFILE.EDIT.ERROR');
         }
       } else {
         errorMessage = this.translate.instant('PROFILE.EDIT.ERROR');

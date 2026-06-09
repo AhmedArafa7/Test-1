@@ -430,18 +430,40 @@ export class CreateBookingComponent implements OnInit {
       );
 
       if (timeSlots && timeSlots.length > 0) {
-        const slots: Slot[] = timeSlots.map((ts, i) => {
+        const slots: Slot[] = [];
+        timeSlots.forEach((ts, i) => {
           const startDate = new Date(ts.startTime);
-          const endDate = new Date(ts.endTime);
-          const startH = startDate.getHours();
-          const startM = startDate.getMinutes();
-          const endH = endDate.getHours();
-          const endM = endDate.getMinutes();
-          const start = `${startH.toString().padStart(2, '0')}:${startM.toString().padStart(2, '0')}`;
-          const endStr = `${endH.toString().padStart(2, '0')}:${endM.toString().padStart(2, '0')}`;
-          return { id: `av${i}`, start, end: endStr, hour: startH };
+          
+          // Get local date string YYYY-MM-DD
+          const year = startDate.getFullYear();
+          const month = (startDate.getMonth() + 1).toString().padStart(2, '0');
+          const day = startDate.getDate().toString().padStart(2, '0');
+          const localDateStr = `${year}-${month}-${day}`;
+
+          if (localDateStr === date) {
+            const startH = startDate.getHours();
+            const startM = startDate.getMinutes();
+            const endDateObj = new Date(ts.endTime);
+            const endH = endDateObj.getHours();
+            const endM = endDateObj.getMinutes();
+            const startStr = `${startH.toString().padStart(2, '0')}:${startM.toString().padStart(2, '0')}`;
+            const endStr = `${endH.toString().padStart(2, '0')}:${endM.toString().padStart(2, '0')}`;
+            slots.push({ id: `av${i}`, start: startStr, end: endStr, hour: startH });
+          }
         });
-        this.slots.set(slots);
+
+        // Deduplicate slots with the same start and end times
+        const uniqueSlots: Slot[] = [];
+        const seen = new Set<string>();
+        for (const slot of slots) {
+          const key = `${slot.start}-${slot.end}`;
+          if (!seen.has(key)) {
+            seen.add(key);
+            uniqueSlots.push(slot);
+          }
+        }
+
+        this.slots.set(uniqueSlots);
       } else {
         this.slots.set([]);
       }
@@ -451,6 +473,7 @@ export class CreateBookingComponent implements OnInit {
       this.toast.error(this.translate.instant('BOOKINGS.SLOTS.LOAD_ERROR'));
     }
   }
+
 
   groupedSlots = computed<{ key: 'MORNING' | 'AFTERNOON' | 'EVENING'; label: string; slots: Slot[] }[]>(() => {
     const all = this.slots();
@@ -709,11 +732,15 @@ export class CreateBookingComponent implements OnInit {
 
       let errorMessage = '';
       if (translationKey) {
-        const translated = this.translate.instant('VALIDATION.' + translationKey);
-        if (translated !== 'VALIDATION.' + translationKey) {
-          errorMessage = translated;
-        } else {
-          errorMessage = translationKey;
+        const isValidKey = /^[A-Za-z0-9_.]+$/.test(translationKey);
+        if (isValidKey) {
+          const translated = this.translate.instant('VALIDATION.' + translationKey);
+          if (translated !== 'VALIDATION.' + translationKey) {
+            errorMessage = translated;
+          }
+        }
+        if (!errorMessage) {
+          errorMessage = this.translate.instant('BOOKINGS.MESSAGES.CREATE_ERROR');
         }
       } else {
         errorMessage = this.translate.instant('BOOKINGS.MESSAGES.CREATE_ERROR');
