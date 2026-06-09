@@ -31,6 +31,10 @@
           },
           "configurations": {
             "production": {
+              "outputPath": {
+                "base": "dist/client",
+                "browser": ""
+              },
               "budgets": [
                 {
                   "type": "initial",
