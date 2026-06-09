@@ -134,10 +134,7 @@ import { Conversation } from '../../../core/models';
                           <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
                           <span class="flex-1 text-start">{{ 'NAV.MY_PROPERTIES' | translate }}</span>
                         </a>
-                        <a routerLink="/properties/add" (click)="closeProfileMenu()" class="flex items-center gap-3 px-4 py-2.5 text-[13px] font-bold text-gray-600 hover:bg-gray-50 hover:text-[#0a8f96] rounded-xl transition-all">
-                          <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                          <span class="flex-1 text-start">{{ 'NAV.ADD_PROPERTY' | translate }}</span>
-                        </a>
+
                       }
 
                       @if (auth.isBuyer()) {
@@ -207,7 +204,7 @@ import { Conversation } from '../../../core/models';
                 </a>
               }
               @if (auth.isAgent()) {
-                <a routerLink="/properties/add" (click)="mobileOpen = false" class="block p-4 rounded-2xl hover:bg-gray-50 text-gray-700 font-bold">{{ 'NAV.ADD_PROPERTY' | translate }}</a>
+                <a routerLink="/properties/new" (click)="mobileOpen = false" class="block p-4 rounded-2xl hover:bg-gray-50 text-gray-700 font-bold">{{ 'NAV.ADD_PROPERTY' | translate }}</a>
               }
               <a routerLink="/profile" (click)="mobileOpen = false" class="block p-4 rounded-2xl hover:bg-gray-50 text-gray-700 font-bold">{{ 'NAV.PROFILE' | translate }}</a>
               <button (click)="logout(); mobileOpen = false" class="w-full p-4 rounded-2xl bg-gradient-to-br from-red-100 to-red-50 text-red-500 font-black text-start">{{ 'NAV.LOGOUT' | translate }}</button>
