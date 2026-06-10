@@ -53,7 +53,7 @@ declare global {
             </div>
           </div>
 
-          <form (ngSubmit)="login()" class="space-y-5" autocomplete="off">
+          <form (ngSubmit)="login()" class="space-y-5" autocomplete="on">
              <div class="space-y-2 ">
               <label class="block text-[11px] font-black text-slate-400 uppercase tracking-wider">{{ 'AUTH.LOGIN.EMAIL_LABEL' | translate }}</label>
               <input type="email"
@@ -61,7 +61,7 @@ declare global {
                      (blur)="emailTouched.set(true)"
                      (focus)="onFieldFocus($event)"
                      [readonly]="fieldsLocked()"
-                     autocomplete="one-time-code"
+                     autocomplete="email"
                      name="email"
                      placeholder="admin@baytology.local"
                      [class]="emailFieldClass()" />
@@ -90,7 +90,7 @@ declare global {
                          (focus)="onFieldFocus($event)"
                          [readonly]="fieldsLocked()"
                          (paste)="$event.preventDefault()" (copy)="$event.preventDefault()" (cut)="$event.preventDefault()"
-                         autocomplete="one-time-code"
+                         autocomplete="current-password"
                          name="password"
                          placeholder="••••••••••"
                          [class]="passwordFieldClass() + ' rtl:pl-12 ltr:pr-12 '" />

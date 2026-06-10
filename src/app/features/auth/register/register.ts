@@ -109,6 +109,7 @@ import { ToastService } from '../../../core/services/toast.service';
             <div class="space-y-2">
               <label class="block text-[11px] font-black text-slate-400 uppercase tracking-wider">{{ 'AUTH.REGISTER.EMAIL' | translate }} <span class="text-red-500">*</span></label>
               <input type="email" [ngModel]="email()" (ngModelChange)="email.set($event); emailTouched.set(true)" (blur)="emailTouched.set(true)" name="email"
+                     autocomplete="email"
                      [class]="emailFieldClass()"
                      [placeholder]="'AUTH.REGISTER.EMAIL_PLACEHOLDER' | translate">
               <div [class]="emailHintClass()">

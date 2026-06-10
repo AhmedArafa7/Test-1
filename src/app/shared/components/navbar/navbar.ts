@@ -332,20 +332,37 @@ export class NavbarComponent implements OnInit, OnDestroy {
       let total = 0;
       const counts: Record<string, number> = {};
 
-      for (const conv of conversations) {
-        const theirId = conv.agentUserId === this.auth.userId() ? conv.buyerUserId : conv.agentUserId;
-        if (!theirId) continue;
-        const convLastViewed = localStorage.getItem(`baytology_last_viewed_${conv.id}`);
-        const convLastMsgAt = conv.lastMessageAt ? new Date(conv.lastMessageAt).getTime() : 0;
-        const viewedAt = convLastViewed ? parseInt(convLastViewed, 10) : 0;
+      // Read last viewed timestamps (same key structure as chat-room.ts)
+      const lastViewedRaw = localStorage.getItem('baytology_last_viewed') || '{}';
+      const lastViewed: Record<string, string> = JSON.parse(lastViewedRaw);
 
-        const isUnread = convLastMsgAt > viewedAt && conv.lastMessageSenderId && conv.lastMessageSenderId !== this.auth.userId();
-        if (isUnread) {
+      for (const conv of conversations) {
+        // Skip conversations where I am the last sender (my own messages are not "unread")
+        const effectiveSenderId = conv.lastMessageSenderId;
+        if (effectiveSenderId === this.auth.userId()) continue;
+
+        // Must have content to be considered unread
+        if (!conv.lastMessageContent) continue;
+
+        const lastViewTime = lastViewed[conv.id];
+        if (lastViewTime) {
+          // User has viewed this conversation before — check timestamps
+          const lastMsgMs = new Date(conv.lastMessageAt || 0).getTime();
+          const viewMs = new Date(lastViewTime).getTime();
+          if (lastMsgMs > viewMs + 2000) {
+            total++;
+            const key = conv.agentUserId === this.auth.userId()
+              ? `buyer_${conv.buyerUserId}`
+              : `agent_${conv.agentUserId}`;
+            counts[key] = (counts[key] || 0) + 1;
+          }
+        } else {
+          // Never viewed this conversation before AND it has content → unread
+          total++;
           const key = conv.agentUserId === this.auth.userId()
             ? `buyer_${conv.buyerUserId}`
             : `agent_${conv.agentUserId}`;
           counts[key] = (counts[key] || 0) + 1;
-          total++;
         }
       }
 
