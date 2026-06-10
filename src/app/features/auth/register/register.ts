@@ -399,12 +399,17 @@ export class RegisterComponent {
     this.loading.set(true);
     try {
       const displayName = `${this.firstName()} ${this.lastName()}`.trim();
-      await this.auth.register({
+      const response = await this.auth.register({
         email: this.email(),
         password: this.password(),
         displayName: displayName || this.email(),
         role: this.role
       });
+      // Store welcome flag so app.ts shows "Welcome to Baytology" on first login
+      localStorage.setItem(
+        `baytology_welcome_new_${response.userId}`,
+        displayName || this.email()
+      );
       this.toast.success('AUTH.REGISTER.SUCCESS');
       this.router.navigate(['/auth/login'], { queryParams: { email: this.email() } });
     } catch (e: any) {

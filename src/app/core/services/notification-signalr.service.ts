@@ -16,6 +16,12 @@ export class NotificationSignalRService implements OnDestroy {
   readonly unreadCount = this._unreadCount.asReadonly();
 
   constructor(private auth: AuthService, private toast: ToastService) {
+    // Initialize unread count from localStorage cache (fast fallback before API call)
+    const persisted = localStorage.getItem('baytology_notification_unread_count');
+    if (persisted !== null) {
+      this._unreadCount.set(parseInt(persisted, 10));
+    }
+
     // Automatically disconnect when user logs out
     effect(() => {
       if (!this.auth.token) {
@@ -49,7 +55,9 @@ export class NotificationSignalRService implements OnDestroy {
 
         if (this.shouldShowNotification(notification)) {
           this._notifications.update(n => [notification, ...n]);
-          this._unreadCount.update(c => c + 1);
+          const newCount = this._unreadCount() + 1;
+          this._unreadCount.set(newCount);
+          localStorage.setItem('baytology_notification_unread_count', newCount.toString());
 
           // Play sound if enabled
           if (prefs.sound !== false) {
@@ -88,12 +96,16 @@ export class NotificationSignalRService implements OnDestroy {
     });
 
     this._notifications.set(notifications);
-    this._unreadCount.set(notifications.filter(notification => !notification.isRead).length);
+    const count = notifications.filter(notification => !notification.isRead).length;
+    this._unreadCount.set(count);
+    localStorage.setItem('baytology_notification_unread_count', count.toString());
   }
 
   setNotifications(notifications: AppNotification[]): void {
     this._notifications.set(notifications);
-    this._unreadCount.set(notifications.filter(n => !n.isRead).length);
+    const count = notifications.filter(n => !n.isRead).length;
+    this._unreadCount.set(count);
+    localStorage.setItem('baytology_notification_unread_count', count.toString());
   }
 
   private shouldShowNotification(n: AppNotification): boolean {

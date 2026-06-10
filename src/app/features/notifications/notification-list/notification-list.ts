@@ -4,7 +4,8 @@ import { CommonModule } from '@angular/common';
 import { ProfileService } from '../../profile/services/profile.service';
 import { NotificationSignalRService } from '../../../core/services/notification-signalr.service';
 import { ConversationService } from '../../conversations/services/conversation.service';
-import { AppNotification } from '../../../core/models';
+import { AuthService } from '../../../core/auth/auth.service';
+import { AppNotification, Conversation } from '../../../core/models';
 import { RelativeTimePipe } from '../../../shared/pipes/relative-time.pipe';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { EmptyStateComponent } from '../../../shared/components/empty-state/empty-state';
@@ -136,7 +137,10 @@ interface NotificationGroup {
                     </div>
                     @if (group.latestUnread && group.unreadCount > 0) {
                       <p class="text-xs font-bold text-slate-500 mt-0.5 truncate max-w-[280px]">
-                        @if (group.type === 'NewMessage') {
+                        @if (group.type === 'NewMessage' && group.latestUnread.title) {
+                          <span class="text-[#0a8f96]">{{ group.latestUnread.title }}:</span>
+                          {{ group.latestUnread.body }}
+                        } @else if (group.type === 'NewMessage') {
                           {{ group.latestUnread.body }}
                         } @else {
                           {{ group.latestUnread.title }}
@@ -178,7 +182,15 @@ interface NotificationGroup {
                         <!-- Content -->
                         <div class="flex-1 min-w-0">
                           @if (group.type === 'NewMessage') {
-                            <p class="text-sm font-bold text-slate-800 leading-relaxed"
+                            <!-- Sender name as bold header -->
+                            @if (n.title) {
+                              <p class="text-[11px] font-black text-[#0a8f96] mb-0.5 truncate"
+                                 [class.text-slate-400]="n.isRead">
+                                {{ n.title }}
+                              </p>
+                            }
+                            <!-- Actual message preview -->
+                            <p class="text-sm font-bold text-slate-800 leading-relaxed truncate"
                                [class.text-slate-500]="n.isRead">
                               {{ n.body }}
                             </p>
@@ -343,6 +355,12 @@ export class NotificationListComponent implements OnInit, OnDestroy {
   // Infinite Scroll Observer
   private observer: IntersectionObserver | null = null;
 
+  // Conversation map for enriching NewMessage notifications
+  private convMap = new Map<string, Conversation>();
+
+  // Auth service for current user context
+  private auth = inject(AuthService);
+
   constructor(
     private profileService: ProfileService, 
     private notifService: NotificationSignalRService, 
@@ -435,16 +453,34 @@ export class NotificationListComponent implements OnInit, OnDestroy {
         }
       }
 
-      const convMap = new Map(conversations.map(c => [c.id, c]));
+      // Build a map of conversationId → Conversation for quick lookup
+      this.convMap = new Map(conversations.map(c => [c.id, c]));
 
+      // Enrich each NewMessage notification with real sender + message preview
       items = items.map(n => {
         if (n.type === 'NewMessage' && n.referenceId) {
-          const conv = convMap.get(n.referenceId);
-          if (conv?.lastMessageContent) {
-            const content = conv.lastMessageContent.startsWith('[PROPS:') || conv.lastMessageContent.startsWith('[PROP:')
-              ? this.translate.instant('NOTIFICATIONS.SHARED_PROPERTY')
-              : conv.lastMessageContent;
-            return { ...n, body: content };
+          const conv = this.convMap.get(n.referenceId);
+          if (conv) {
+            // Determine sender name (the other party in the conversation)
+            const currentUserId = this.auth.userId();
+            let senderName = '';
+            if (conv.buyerUserId === currentUserId) {
+              senderName = conv.agentDisplayName || this.translate.instant('MESSAGES.AGENT');
+            } else {
+              senderName = conv.buyerDisplayName || this.translate.instant('MESSAGES.BUYER');
+            }
+
+            // Get message content (prefer lastMessageContent over generic body)
+            let content = conv.lastMessageContent || n.body || '';
+            if (content.startsWith('[PROPS:') || content.startsWith('[PROP:') || content.startsWith('[TRANSCRIPT:')) {
+              content = this.translate.instant('NOTIFICATIONS.SHARED_PROPERTY');
+            }
+
+            return {
+              ...n,
+              title: senderName,
+              body: content
+            };
           }
         }
         return n;
@@ -515,6 +551,14 @@ export class NotificationListComponent implements OnInit, OnDestroy {
       } catch {}
     }
 
+    // Navigate for NewMessage type (referenceId is the conversationId)
+    if (n.type === 'NewMessage' && n.referenceId) {
+      this.router.navigate(['/conversations', n.referenceId], {
+        queryParams: { scrollToBottom: 'true' }
+      });
+      return;
+    }
+
     if (!n.referenceId || !n.referenceType) {
       return;
     }
@@ -528,7 +572,9 @@ export class NotificationListComponent implements OnInit, OnDestroy {
         this.router.navigate(['/bookings', n.referenceId]);
         break;
       case 'Message':
-        this.router.navigate(['/conversations', n.referenceId]);
+        this.router.navigate(['/conversations', n.referenceId], {
+          queryParams: { scrollToBottom: 'true' }
+        });
         break;
       default:
         console.warn('Unhandled notification reference type:', n.referenceType);

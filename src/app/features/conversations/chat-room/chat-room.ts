@@ -381,12 +381,19 @@ export class ChatRoomComponent implements OnInit, OnDestroy {
                 ...c,
                 lastMessageContent: msg.content,
                 lastMessageAt: msg.sentAt,
+                lastMessageSenderId: msg.senderId,
                 unreadCount: newUnreadCount
               };
             }
             return c;
           });
         });
+
+        // Persist lastMessageSenderId to localStorage so it survives page reload
+        const sendersRaw = localStorage.getItem('baytology_last_message_senders') || '{}';
+        const senders = JSON.parse(sendersRaw);
+        senders[msg.conversationId] = msg.senderId;
+        localStorage.setItem('baytology_last_message_senders', JSON.stringify(senders));
 
         // Save updated unread counts to localStorage
         localStorage.setItem('baytology_unread_counts', JSON.stringify(unreadCounts));
@@ -450,7 +457,7 @@ export class ChatRoomComponent implements OnInit, OnDestroy {
       }
     });
 
-    // Check for propertyId in query params to auto-attach
+    // Check for propertyId / scrollToBottom in query params
     this.route.queryParams.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(async q => {
       const propId = q['propertyId'];
       if (propId) {
@@ -476,6 +483,11 @@ export class ChatRoomComponent implements OnInit, OnDestroy {
           console.error('Failed to auto-attach property:', err);
         }
       }
+
+      // When coming from a notification, scroll to the latest message
+      if (q['scrollToBottom'] === 'true') {
+        setTimeout(() => this.scrollToBottom(), 300);
+      }
     });
 
     this.loadConversations();
@@ -487,6 +499,9 @@ export class ChatRoomComponent implements OnInit, OnDestroy {
 
     const lastViewedRaw = localStorage.getItem('baytology_last_viewed') || '{}';
     const lastViewed = JSON.parse(lastViewedRaw);
+
+    const cachedSendersRaw = localStorage.getItem('baytology_last_message_senders') || '{}';
+    const cachedSenders = JSON.parse(cachedSendersRaw);
 
     let changed = false;
 
@@ -510,8 +525,15 @@ export class ChatRoomComponent implements OnInit, OnDestroy {
     const mapped = list.map(c => {
       let count = unreadCounts[c.id] || 0;
 
-      // Synthesize unread status from lastViewed timestamp if unreadCount is 0 in localStorage
-      if (c.lastMessageAt && c.id !== this.conversationId) {
+      const effectiveSenderId = c.lastMessageSenderId || cachedSenders[c.id];
+
+      if (effectiveSenderId === this.auth.userId()) {
+        if (count !== 0) {
+          count = 0;
+          unreadCounts[c.id] = 0;
+          changed = true;
+        }
+      } else if (c.lastMessageAt && c.id !== this.conversationId) {
         const lastViewTime = lastViewed[c.id];
         if (lastViewTime) {
           const lastMsgMs = new Date(c.lastMessageAt).getTime();
@@ -641,6 +663,13 @@ export class ChatRoomComponent implements OnInit, OnDestroy {
       this.selectedFileUrl = '';
       this.showPropertyPreview.set(false);
       this.showEmojiPicker.set(false);
+
+      // Update lastViewed so own sent messages never trigger unread on reload
+      const lastViewedRaw = localStorage.getItem('baytology_last_viewed') || '{}';
+      const lastViewed = JSON.parse(lastViewedRaw);
+      lastViewed[this.conversationId] = new Date().toISOString();
+      localStorage.setItem('baytology_last_viewed', JSON.stringify(lastViewed));
+
       setTimeout(() => this.scrollToBottom(), 100);
     } catch (err: any) {
       console.error('Failed to send message:', err);

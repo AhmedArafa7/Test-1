@@ -312,11 +312,50 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.updateUnreadStatus();
+
+    // Load unread message count from API if no localStorage cache exists
+    const cachedCounts = localStorage.getItem('baytology_unread_counts');
+    if (!cachedCounts || cachedCounts === '{}') {
+      this.loadUnreadConversationsCount();
+    }
+
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
     ).subscribe(() => {
       this.updateUnreadStatus();
     });
+  }
+
+  private async loadUnreadConversationsCount() {
+    try {
+      const conversations = await this.conversationService.getAll();
+      let total = 0;
+      const counts: Record<string, number> = {};
+
+      for (const conv of conversations) {
+        const theirId = conv.agentUserId === this.auth.userId() ? conv.buyerUserId : conv.agentUserId;
+        if (!theirId) continue;
+        const convLastViewed = localStorage.getItem(`baytology_last_viewed_${conv.id}`);
+        const convLastMsgAt = conv.lastMessageAt ? new Date(conv.lastMessageAt).getTime() : 0;
+        const viewedAt = convLastViewed ? parseInt(convLastViewed, 10) : 0;
+
+        const isUnread = convLastMsgAt > viewedAt && conv.lastMessageSenderId && conv.lastMessageSenderId !== this.auth.userId();
+        if (isUnread) {
+          const key = conv.agentUserId === this.auth.userId()
+            ? `buyer_${conv.buyerUserId}`
+            : `agent_${conv.agentUserId}`;
+          counts[key] = (counts[key] || 0) + 1;
+          total++;
+        }
+      }
+
+      if (total > 0) {
+        localStorage.setItem('baytology_unread_counts', JSON.stringify(counts));
+      }
+      this.updateUnreadStatus();
+    } catch {
+      // Silent fallback
+    }
   }
 
   updateUnreadStatus() {
