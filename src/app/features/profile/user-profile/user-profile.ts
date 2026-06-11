@@ -1,6 +1,6 @@
 import { Component, signal, OnInit, computed, inject } from '@angular/core';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { RouterLink } from '@angular/router';
+import { RouterLink, ActivatedRoute } from '@angular/router';
 import { DatePipe, CommonModule } from '@angular/common';
 import { ProfileService } from '../services/profile.service';
 import { UserProfile } from '../../../core/models';
@@ -24,10 +24,10 @@ import { LocalizedDatePipe } from '../../../shared/pipes/localized-date.pipe';
           <!-- Header Area -->
           <div class="ltr:text-left rtl:text-right mb-10 w-full">
             <h1 class="text-3xl md:text-[40px] font-black text-gray-900 tracking-tight mb-2">
-              {{ 'PROFILE.TITLE' | translate }}
+              {{ (isOwnProfile() ? 'PROFILE.TITLE' : 'PROFILE.VIEW_TITLE') | translate }}
             </h1>
             <p class="text-slate-500 font-bold text-sm md:text-base">
-              {{ 'PROFILE.SUBTITLE' | translate }}
+              {{ (isOwnProfile() ? 'PROFILE.SUBTITLE' : 'PROFILE.VIEW_SUBTITLE') | translate }}
             </p>
           </div>
 
@@ -56,41 +56,45 @@ import { LocalizedDatePipe } from '../../../shared/pipes/localized-date.pipe';
                   </div>
                   
                   <h2 class="text-2xl font-black text-slate-900 mb-1 leading-tight">{{ profile()?.displayName || ('PROFILE.WELCOME' | translate) }}</h2>
-                  <p class="text-sm text-slate-400 font-bold mb-6 tracking-wide">{{ auth.currentUser()?.email }}</p>
-                  
-                  <div class="flex flex-wrap justify-center gap-2 mb-8">
-                    @for (role of auth.userRoles(); track role) { 
-                      <span class="bg-slate-900 text-white text-[10px] font-bold px-4 py-1.5 rounded-full uppercase tracking-wider">
-                        {{ 'NAV.ROLES.' + role.toUpperCase() | translate }}
-                      </span> 
-                    }
-                  </div>
+                  @if (isOwnProfile()) {
+                    <p class="text-sm text-slate-400 font-bold mb-6 tracking-wide">{{ auth.currentUser()?.email }}</p>
+                    
+                    <div class="flex flex-wrap justify-center gap-2 mb-8">
+                      @for (role of auth.userRoles(); track role) { 
+                        <span class="bg-slate-900 text-white text-[10px] font-bold px-4 py-1.5 rounded-full uppercase tracking-wider">
+                          {{ 'NAV.ROLES.' + role.toUpperCase() | translate }}
+                        </span> 
+                      }
+                    </div>
 
-                  <div class="pt-8 border-t border-slate-100 flex justify-center gap-12">
-                    <a routerLink="/saved" class="text-center group cursor-pointer">
-                      <p class="text-2xl font-black text-slate-900 group-hover:text-[#0a8f96] transition-colors tabular-nums">{{ savedCount() }}</p>
-                      <p class="text-[10px] font-bold text-slate-400 mt-1">{{ 'PROFILE.SAVED' | translate }}</p>
-                    </a>
-                    <a routerLink="/bookings" class="text-center group cursor-pointer">
-                      <p class="text-2xl font-black text-slate-900 group-hover:text-[#0a8f96] transition-colors tabular-nums">{{ bookingCount() }}</p>
-                      <p class="text-[10px] font-bold text-slate-400 mt-1">{{ 'PROFILE.BOOKINGS' | translate }}</p>
-                    </a>
-                  </div>
+                    <div class="pt-8 border-t border-slate-100 flex justify-center gap-12">
+                      <a routerLink="/saved" class="text-center group cursor-pointer">
+                        <p class="text-2xl font-black text-slate-900 group-hover:text-[#0a8f96] transition-colors tabular-nums">{{ savedCount() }}</p>
+                        <p class="text-[10px] font-bold text-slate-400 mt-1">{{ 'PROFILE.SAVED' | translate }}</p>
+                      </a>
+                      <a routerLink="/bookings" class="text-center group cursor-pointer">
+                        <p class="text-2xl font-black text-slate-900 group-hover:text-[#0a8f96] transition-colors tabular-nums">{{ bookingCount() }}</p>
+                        <p class="text-[10px] font-bold text-slate-400 mt-1">{{ 'PROFILE.BOOKINGS' | translate }}</p>
+                      </a>
+                    </div>
+                  }
                 </div>
               </div>
 
-              <button (click)="auth.logout()" 
-                      class="w-full bg-white hover:bg-rose-50 border border-slate-100 text-rose-600 font-black py-4.5 rounded-[24px] shadow-sm hover:shadow hover:border-rose-100 transition-all flex items-center justify-center gap-3 active:scale-[0.98] cursor-pointer">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
-                <span>{{ 'PROFILE.LOGOUT' | translate }}</span>
-              </button>
+              @if (isOwnProfile()) {
+                <button (click)="auth.logout()" 
+                        class="w-full bg-white hover:bg-rose-50 border border-slate-100 text-rose-600 font-black py-4.5 rounded-[24px] shadow-sm hover:shadow hover:border-rose-100 transition-all flex items-center justify-center gap-3 active:scale-[0.98] cursor-pointer">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                  <span>{{ 'PROFILE.LOGOUT' | translate }}</span>
+                </button>
+              }
             </div>
 
             <!-- Main Info Area -->
             <div class="col-span-12 lg:col-span-8 space-y-8">
               
               <!-- Agent Availability Card -->
-              @if (auth.isAgent()) {
+              @if (isOwnProfile() && auth.isAgent()) {
                 <div class="bg-white rounded-[24px] border border-slate-100 shadow-[0_4px_24px_rgba(0,0,0,0.015)] p-6 md:p-8">
                   <div class="flex items-start justify-between mb-6">
                     <div class="ltr:text-left rtl:text-right">
@@ -114,10 +118,12 @@ import { LocalizedDatePipe } from '../../../shared/pipes/localized-date.pipe';
               <div class="bg-white rounded-[24px] border border-slate-100 shadow-[0_4px_24px_rgba(0,0,0,0.015)] p-6 md:p-8">
                 <div class="flex items-center justify-between mb-8 border-b border-slate-100 pb-5">
                   <h3 class="text-xl font-black text-slate-900">{{ 'PROFILE.PERSONAL_INFO' | translate }}</h3>
-                  <a routerLink="/profile/edit" class="text-xs font-black text-[#0a8f96] hover:text-[#086b70] transition-colors flex items-center gap-2">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
-                    <span>{{ 'PROFILE.EDIT_BTN' | translate }}</span>
-                  </a>
+                  @if (isOwnProfile()) {
+                    <a routerLink="/profile/edit" class="text-xs font-black text-[#0a8f96] hover:text-[#086b70] transition-colors flex items-center gap-2">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                      <span>{{ 'PROFILE.EDIT_BTN' | translate }}</span>
+                    </a>
+                  }
                 </div>
 
                 @if (profile(); as p) {
@@ -172,23 +178,25 @@ import { LocalizedDatePipe } from '../../../shared/pipes/localized-date.pipe';
               </div>
               
               <!-- Account Security Card -->
-              <div class="bg-white rounded-[24px] border border-slate-100 shadow-[0_4px_24px_rgba(0,0,0,0.015)] p-6 md:p-8">
-                <div class="flex items-start justify-between mb-8">
-                  <div class="ltr:text-left rtl:text-right">
-                    <h3 class="text-xl font-black text-slate-900 mb-2">{{ 'PROFILE.SECURITY' | translate }}</h3>
-                    <p class="text-slate-500 font-bold text-xs md:text-sm leading-relaxed max-w-md">{{ 'PROFILE.SECURITY_DESC' | translate }}</p>
+              @if (isOwnProfile()) {
+                <div class="bg-white rounded-[24px] border border-slate-100 shadow-[0_4px_24px_rgba(0,0,0,0.015)] p-6 md:p-8">
+                  <div class="flex items-start justify-between mb-8">
+                    <div class="ltr:text-left rtl:text-right">
+                      <h3 class="text-xl font-black text-slate-900 mb-2">{{ 'PROFILE.SECURITY' | translate }}</h3>
+                      <p class="text-slate-500 font-bold text-xs md:text-sm leading-relaxed max-w-md">{{ 'PROFILE.SECURITY_DESC' | translate }}</p>
+                    </div>
+                    <div class="w-12 h-12 bg-indigo-50 text-indigo-500 rounded-full flex items-center justify-center shadow-sm shrink-0">
+                      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                    </div>
                   </div>
-                  <div class="w-12 h-12 bg-indigo-50 text-indigo-500 rounded-full flex items-center justify-center shadow-sm shrink-0">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-                  </div>
+                  
+                  <button (click)="showChangePassword.set(true)" 
+                          class="w-full py-4.5 bg-slate-50 hover:bg-slate-100 border border-slate-100 text-slate-700 font-black rounded-2xl text-xs transition-all duration-200 active:scale-[0.99] cursor-pointer flex items-center justify-center gap-3">
+                    <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
+                    <span>{{ 'PROFILE.CHANGE_PW' | translate }}</span>
+                  </button>
                 </div>
-                
-                <button (click)="showChangePassword.set(true)" 
-                        class="w-full py-4.5 bg-slate-50 hover:bg-slate-100 border border-slate-100 text-slate-700 font-black rounded-2xl text-xs transition-all duration-200 active:scale-[0.99] cursor-pointer flex items-center justify-center gap-3">
-                  <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
-                  <span>{{ 'PROFILE.CHANGE_PW' | translate }}</span>
-                </button>
-              </div>
+              }
             </div>
 
           </div>
@@ -307,6 +315,9 @@ export class UserProfileComponent implements OnInit {
   public auth = inject(AuthService);
   private toast = inject(ToastService);
   private translate = inject(TranslateService);
+  private route = inject(ActivatedRoute);
+
+  isOwnProfile = signal(true);
 
   initials = computed(() => {
     const user = this.auth.currentUser();
@@ -321,16 +332,28 @@ export class UserProfileComponent implements OnInit {
 
   async ngOnInit() { 
     try { 
-      const [p, stats] = await Promise.all([
-        this.profileService.getMyProfile(),
-        this.profileService.getProfileStats()
-      ]);
-      this.profile.set(p);
-      if (p.avatarUrl) {
-        this.auth.updateAvatar(p.avatarUrl);
+      const routeId = this.route.snapshot.params['id'];
+      const currentUserId = this.auth.userId();
+
+      if (routeId && routeId !== currentUserId) {
+        this.isOwnProfile.set(false);
+        const p = await this.profileService.getProfile(routeId);
+        this.profile.set(p);
+        this.savedCount.set(0);
+        this.bookingCount.set(0);
+      } else {
+        this.isOwnProfile.set(true);
+        const [p, stats] = await Promise.all([
+          this.profileService.getMyProfile(),
+          this.profileService.getProfileStats()
+        ]);
+        this.profile.set(p);
+        if (p.avatarUrl) {
+          this.auth.updateAvatar(p.avatarUrl);
+        }
+        this.savedCount.set(stats.savedPropertiesCount);
+        this.bookingCount.set(stats.bookingsCount);
       }
-      this.savedCount.set(stats.savedPropertiesCount);
-      this.bookingCount.set(stats.bookingsCount);
     } catch {} finally { 
       this.loading.set(false); 
     } 

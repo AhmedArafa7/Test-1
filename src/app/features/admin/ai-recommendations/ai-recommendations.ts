@@ -159,11 +159,11 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
         </div>
       }
 
-      <!-- AI Recommendation Details Modal -->
+      <!-- AI Recommendation Details Modal (outside animate-fade-in to keep fixed positioning) -->
       @if (selectedRequest()) {
-        <div class="fixed inset-0 z-[1000] flex items-center justify-center p-4 md:p-8 animate-fade-in">
+        <div class="fixed inset-0 z-[1000] flex items-center justify-center p-4 md:p-8">
           <div class="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" (click)="selectedRequest.set(null)"></div>
-          <div class="relative w-full max-w-2xl bg-white rounded-[32px] shadow-2xl overflow-hidden animate-slide-up flex flex-col max-h-[90vh]">
+          <div class="relative w-full max-w-2xl bg-white rounded-[32px] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
             <div class="p-8 border-b border-gray-50 flex items-center justify-between bg-white sticky top-0 z-10 ltr:text-left rtl:text-right">
               <div>
                 <h3 class="text-2xl font-black text-gray-900 tracking-tight">{{ 'ADMIN.AI_RECOMMENDATIONS.MODAL.TITLE' | translate }}</h3>

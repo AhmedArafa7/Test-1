@@ -152,10 +152,11 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
           </div>
         </div>
       }
+    </div>
 
       <!-- AI Request Details Modal -->
       @if (selectedRequest()) {
-        <div class="fixed inset-0 z-[1000] flex items-center justify-center p-4 md:p-8 animate-fade-in">
+        <div class="fixed inset-0 z-[1000] flex items-center justify-center p-4 md:p-8">
           <div class="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" (click)="selectedRequest.set(null)"></div>
           <div class="relative w-full max-w-2xl bg-white rounded-[32px] shadow-2xl overflow-hidden animate-slide-up flex flex-col max-h-[90vh]">
             <div class="p-8 border-b border-gray-50 flex items-center justify-between bg-white sticky top-0 z-10 ltr:text-left rtl:text-right">
@@ -214,7 +215,6 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
           </div>
         </div>
       }
-    </div>
   `,
 })
 export class AiMonitoringComponent implements OnInit {

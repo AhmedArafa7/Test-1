@@ -182,42 +182,68 @@ export interface CalendarSlot {
 
         <!-- 📅 Interactive Booking Calendar Slots Card -->
         <div class="bg-white rounded-[24px] border border-slate-100 shadow-[0_8px_30px_rgba(0,0,0,0.015)] p-6 md:p-8 text-right" dir="rtl">
-          <div class="flex items-center gap-3 mb-6 border-b border-slate-100 pb-4">
-            <div class="w-10 h-10 rounded-xl bg-[#0a8f96]/10 flex items-center justify-center text-xl text-[#0a8f96]">📅</div>
-            <div>
-              <h3 class="text-lg font-black text-slate-800">{{ 'AGENT_PROFILE.CALENDAR_TITLE' | translate }}</h3>
-              <p class="text-[10.5px] text-slate-400 font-bold">{{ 'AGENT_PROFILE.CALENDAR_DESC' | translate }}</p>
+          <div class="flex items-center justify-between mb-8 border-b border-slate-100 pb-5 flex-wrap gap-4">
+            <div class="flex items-center gap-3">
+              <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-[#0a8f96]/15 to-[#0a8f96]/5 flex items-center justify-center text-xl text-[#0a8f96] border border-[#0a8f96]/10">📅</div>
+              <div>
+                <h3 class="text-lg font-black text-slate-800">{{ 'AGENT_PROFILE.CALENDAR_TITLE' | translate }}</h3>
+                <p class="text-[10.5px] text-slate-400 font-bold">{{ 'AGENT_PROFILE.CALENDAR_DESC' | translate }}</p>
+              </div>
+            </div>
+            
+            <div class="inline-flex items-center gap-3 px-3.5 py-1.5 bg-slate-50 border border-slate-100 rounded-xl text-xs font-bold text-slate-500 shadow-sm">
+              <div class="flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span>{{ 'AGENT_PROFILE.SLOT_AVAILABLE' | translate }}</span>
+              </div>
+              <div class="w-px h-3 bg-slate-200"></div>
+              <div class="flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-slate-300"></span>
+                <span>{{ 'AGENT_PROFILE.SLOT_BOOKED' | translate }}</span>
+              </div>
             </div>
           </div>
 
-          <!-- Horizontal Slots Grid -->
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            @for (slot of calendarSlots(); track slot.id) {
-              <button [disabled]="!slot.available" (click)="selectSlot(slot)"
-                      class="p-4.5 rounded-2xl border text-right transition-all flex flex-col gap-1.5 active:scale-95 disabled:opacity-50 disabled:scale-100 disabled:cursor-not-allowed group relative overflow-hidden cursor-pointer bg-white"
-                      [class]="slot.available 
-                               ? 'border-slate-200 hover:border-[#0a8f96]/30 hover:bg-[#0a8f96]/5 text-slate-700' 
-                               : 'border-red-100 bg-red-50/20 text-slate-400'">
+          <!-- Grouped Weekly Slots Agenda -->
+          <div class="space-y-4">
+            @for (group of groupedSlots(); track group.dateStr) {
+              <div class="flex flex-col md:flex-row md:items-center justify-between p-5 rounded-[22px] border border-slate-100 bg-[#fbfcfd] hover:bg-slate-50/80 transition-all duration-300 gap-4">
                 
-                <!-- Availability indicator badge -->
-                <span class="text-[8px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md self-start border shrink-0"
-                      [class]="slot.available 
-                               ? 'bg-[#0a8f96]/10 border-[#0a8f96]/20 text-[#0a8f96]' 
-                               : 'bg-red-50/50 border-red-100 text-red-500'">
-                  {{ slot.available ? ('AGENT_PROFILE.SLOT_AVAILABLE' | translate) : ('AGENT_PROFILE.SLOT_BOOKED' | translate) }}
-                </span>
-
-                <div class="mt-2.5">
-                  <h4 class="text-xs font-black" [class.text-slate-800]="slot.available" [class.text-slate-400]="!slot.available">
-                    {{ slot.dayName }}
-                  </h4>
-                  <span class="text-[9px] text-slate-400 font-bold">{{ slot.dateStr }}</span>
+                <!-- Day Info Column -->
+                <div class="flex items-center gap-4 shrink-0 min-w-[220px]">
+                  <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#0a8f96]/10 to-[#0a8f96]/5 border border-[#0a8f96]/15 flex flex-col items-center justify-center text-[#0a8f96] shrink-0">
+                    <span class="text-[9px] font-black leading-none uppercase text-[#0a8f96]/80">{{ group.dayName }}</span>
+                    <span class="text-base font-extrabold mt-0.5 leading-none">{{ group.dayNum }}</span>
+                  </div>
+                  <div>
+                    <h4 class="text-sm font-black text-slate-800 leading-snug">{{ group.dayName }}</h4>
+                    <p class="text-[10.5px] text-slate-400 font-bold mt-0.5">{{ group.dateStr }}</p>
+                  </div>
                 </div>
 
-                <span class="text-xs font-black mt-1" [class.text-slate-700]="slot.available" [class.text-slate-400]="!slot.available">
-                  {{ slot.timeStr }}
-                </span>
-              </button>
+                <!-- Available Slots Row -->
+                <div class="flex flex-wrap gap-3 flex-1 justify-start md:justify-end">
+                  @for (slot of group.slots; track slot.id) {
+                    <button [disabled]="!slot.available" (click)="selectSlot(slot)"
+                            class="px-5 py-3 rounded-xl border text-right transition-all flex items-center gap-3 active:scale-95 disabled:opacity-50 disabled:scale-100 disabled:cursor-not-allowed cursor-pointer font-bold text-xs bg-white relative overflow-hidden group shadow-sm hover:shadow"
+                            [class]="slot.available 
+                                     ? 'border-slate-200 hover:border-[#0a8f96] hover:bg-[#0a8f96]/5 text-slate-700' 
+                                     : 'border-slate-100 bg-slate-50/50 text-slate-400'">
+                      
+                      <!-- Clock Icon -->
+                      <svg class="w-4 h-4 text-[#0a8f96]" [class.text-slate-300]="!slot.available" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                      </svg>
+                      
+                      <span class="text-xs font-black">{{ slot.timeStr }}</span>
+
+                      <!-- Status Dot -->
+                      <span class="w-1.5 h-1.5 rounded-full" [class.bg-emerald-500]="slot.available" [class.bg-slate-300]="!slot.available"></span>
+                    </button>
+                  }
+                </div>
+
+              </div>
             }
           </div>
 
@@ -428,6 +454,29 @@ export class AgentProfileComponent implements OnInit {
   calendarSlots = computed(() => {
     const id = this.agent()?.userId || this.route.snapshot.params['id'];
     return this.store.calendarSlots()[id] || [];
+  });
+
+  groupedSlots = computed(() => {
+    const slots = this.calendarSlots();
+    const groups: { dayName: string; dateStr: string; dayNum: string; slots: CalendarSlot[] }[] = [];
+    
+    slots.forEach(slot => {
+      let existingGroup = groups.find(g => g.dateStr === slot.dateStr);
+      if (!existingGroup) {
+        const dateObj = slot.date ? new Date(slot.date) : new Date();
+        const dayNum = dateObj.getDate().toString();
+        existingGroup = {
+          dayName: slot.dayName,
+          dateStr: slot.dateStr,
+          dayNum: dayNum,
+          slots: []
+        };
+        groups.push(existingGroup);
+      }
+      existingGroup.slots.push(slot);
+    });
+    
+    return groups;
   });
 
   selectedSlot = signal<CalendarSlot | null>(null);

@@ -207,10 +207,11 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
           </div>
         </div>
       }
+    </div>
 
       <!-- Details Modal -->
       @if (selectedLog()) {
-        <div class="fixed inset-0 z-[1000] flex items-center justify-center p-4 md:p-8 animate-fade-in">
+        <div class="fixed inset-0 z-[1000] flex items-center justify-center p-4 md:p-8">
           <div class="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" (click)="selectedLog.set(null)"></div>
           <div class="relative w-full max-w-4xl bg-white rounded-[32px] shadow-2xl overflow-hidden animate-slide-up flex flex-col max-h-[90vh]">
             <div class="p-8 border-b border-gray-50 flex items-center justify-between bg-white sticky top-0 z-10 ltr:text-left rtl:text-right">
@@ -271,7 +272,6 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
           </div>
         </div>
       }
-    </div>
   `,
 })
 export class AuditLogsComponent implements OnInit {

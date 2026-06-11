@@ -274,7 +274,11 @@ export class LoginComponent implements OnInit {
       const name = user?.displayName?.trim() || user?.email || '';
       const msg = this.translate.instant('AUTH.LOGIN.WELCOME_BACK', { name });
       this.toast.success(msg);
-      this.router.navigate(['/']);
+      if (this.auth.isAdmin()) {
+        this.router.navigate(['/admin']);
+      } else {
+        this.router.navigate(['/']);
+      }
     } catch (e: any) {
       let errorMessage = this.translate.instant('AUTH.LOGIN.ERROR');
 
@@ -338,7 +342,11 @@ export class LoginComponent implements OnInit {
       const name = user?.displayName?.trim() || user?.email || '';
       const msg = this.translate.instant('AUTH.LOGIN.WELCOME_BACK', { name });
       this.toast.success(msg);
-      await this.router.navigate(['/']);
+      if (this.auth.isAdmin()) {
+        await this.router.navigate(['/admin']);
+      } else {
+        await this.router.navigate(['/']);
+      }
     } catch (error: any) {
       this.toast.error('AUTH.LOGIN.EXTERNAL_FAIL');
     } finally {

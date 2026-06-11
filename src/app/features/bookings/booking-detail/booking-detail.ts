@@ -188,9 +188,15 @@ import { ProfileService } from '../../profile/services/profile.service';
                     </div>
                     <h3 class="text-2xl font-black text-gray-900 tracking-tight">{{ 'BOOKINGS.DETAIL.BUYER_INFO' | translate }}</h3>
                   </div>
-                  <div class="bg-gray-50/50 border border-gray-50 rounded-[32px] p-8">
-                    <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">{{ 'BOOKINGS.DETAIL.BUYER_NAME_LABEL' | translate }}</p>
-                    <p class="text-xl font-black text-gray-900">{{ b.buyerName }}</p>
+                  <div class="bg-gray-50/50 border border-gray-50 rounded-[32px] p-8 flex justify-between items-center">
+                    <div class="text-start">
+                      <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2">{{ 'BOOKINGS.DETAIL.BUYER_NAME_LABEL' | translate }}</p>
+                      <p class="text-xl font-black text-gray-900">{{ b.buyerName }}</p>
+                    </div>
+                    <a [routerLink]="['/profile', b.userId]" class="text-xs font-black text-[#0a8f96] hover:text-[#086b70] transition-colors flex items-center gap-2">
+                      <span>{{ 'BOOKINGS.DETAIL.BUYER_DATA' | translate }}</span>
+                      <svg class="w-4 h-4 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                    </a>
                   </div>
                 </div>
               }
@@ -551,9 +557,8 @@ export class BookingDetailComponent implements OnInit {
     const b = this.booking();
     if (!b) return;
 
-    // [BACKEND_LIMITATION]: Agents cannot open chat with buyers via propertyId due to self-contact check.
     if (this.auth.userId() === b.agentUserId) {
-      this.toast.info(this.translate.instant('BOOKINGS.DETAIL.AGENT_CHAT_LIMIT'));
+      this.router.navigate(['/profile', b.userId]);
       return;
     }
 

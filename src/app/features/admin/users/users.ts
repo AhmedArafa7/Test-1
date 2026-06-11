@@ -61,17 +61,17 @@ import { CommonModule } from '@angular/common';
           </div>
           <p class="text-[11px] font-black text-gray-400 uppercase tracking-wider mb-1">{{ 'ADMIN.USERS.STATS_CONFIRMED' | translate }}</p>
           <p class="text-3xl font-black text-gray-900 tabular-nums">{{ confirmedUsersCount() }}</p>
-        </div>
+        </div> 
 
         <div class="admin-card p-8 group hover:border-[#0a8f96]/30 transition-all">
           <div class="flex justify-between items-start mb-6">
             <div class="w-12 h-12 rounded-xl bg-orange-50 flex items-center justify-center text-orange-600">
               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
             </div>
-            <span class="badge-trend badge-trend-neutral">{{ 'ADMIN.USERS.ROLES.ADMIN' | translate }}</span>
+            <span class="badge-trend badge-trend-neutral">{{ 'ADMIN.USERS.ROLES.AGENT' | translate }}</span>
           </div>
-          <p class="text-[11px] font-black text-gray-400 uppercase tracking-wider mb-1">{{ 'ADMIN.USERS.STATS_ADMINS' | translate }}</p>
-          <p class="text-3xl font-black text-gray-900 tabular-nums">{{ adminUsersCount() }}</p>
+          <p class="text-[11px] font-black text-gray-400 uppercase tracking-wider mb-1">{{ 'ADMIN.USERS.STATS_AGENTS' | translate }}</p>
+          <p class="text-3xl font-black text-gray-900 tabular-nums">{{ agentUsersCount() }}</p>
         </div>
       </div>
 
@@ -176,7 +176,7 @@ export class UsersComponent implements OnInit {
   loading = signal(true);
   activeUsersCount = computed(() => this.filteredUsers().filter(u => u.isActive).length);
   confirmedUsersCount = computed(() => this.filteredUsers().filter(u => u.emailConfirmed).length);
-  adminUsersCount = computed(() => this.filteredUsers().filter(u => u.roles.includes('Admin')).length);
+  agentUsersCount = computed(() => this.filteredUsers().filter(u => u.roles.includes('Agent')).length);
 
   async ngOnInit() { await this.loadUsers(); }
 

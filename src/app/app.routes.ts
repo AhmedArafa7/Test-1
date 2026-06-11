@@ -1,10 +1,11 @@
 import { Routes } from '@angular/router';
-import { authGuard, roleGuard } from './core/auth/auth.guard';
+import { authGuard, roleGuard, nonAdminGuard } from './core/auth/auth.guard';
 
 export const routes: Routes = [
   // Public
   {
     path: '',
+    canActivate: [nonAdminGuard],
     loadComponent: () => import('./shared/layouts/main-layout/main-layout').then(m => m.MainLayoutComponent),
     children: [
       { path: '', loadComponent: () => import('./features/home/home').then(m => m.HomeComponent), data: { title: 'COMMON.HOME' } },
@@ -32,10 +33,11 @@ export const routes: Routes = [
   {
     path: '',
     loadComponent: () => import('./shared/layouts/main-layout/main-layout').then(m => m.MainLayoutComponent),
-    canActivate: [authGuard],
+    canActivate: [authGuard, nonAdminGuard],
     children: [
       { path: 'profile', loadComponent: () => import('./features/profile/user-profile/user-profile').then(m => m.UserProfileComponent), data: { title: 'NAV.PROFILE' } },
       { path: 'profile/edit', loadComponent: () => import('./features/profile/edit-profile/edit-profile').then(m => m.EditProfileComponent), data: { title: 'NAV.EDIT_PROFILE' } },
+      { path: 'profile/:id', loadComponent: () => import('./features/profile/user-profile/user-profile').then(m => m.UserProfileComponent), data: { title: 'NAV.PROFILE' } },
       { path: 'saved', canActivate: [roleGuard('Buyer')], loadComponent: () => import('./features/properties/saved-properties/saved-properties').then(m => m.SavedPropertiesComponent), data: { title: 'NAV.SAVED' } },
       { path: 'bookings', canActivate: [roleGuard('Buyer', 'Agent')], loadComponent: () => import('./features/bookings/booking-list/booking-list').then(m => m.BookingListComponent), data: { title: 'NAV.BOOKINGS' } },
       { path: 'bookings/new', canActivate: [roleGuard('Buyer')], loadComponent: () => import('./features/bookings/create-booking/create-booking').then(m => m.CreateBookingComponent), data: { title: 'BOOKINGS.CREATE.TITLE' } },

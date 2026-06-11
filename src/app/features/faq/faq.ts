@@ -83,7 +83,7 @@ import { AuthService } from '../../core/auth/auth.service';
           </p>
           <div class="flex flex-col sm:flex-row items-center justify-center gap-4 relative z-10">
             <a routerLink="/ai/chatbot" class="w-full sm:w-auto bg-white text-[#0a8f96] font-black px-10 py-4 rounded-2xl hover:bg-gray-50 transition-all active:scale-95">{{ 'FAQ.HELP_CHAT_BTN' | translate }}</a>
-            <a href="mailto:support@baytology.com" class="w-full sm:w-auto bg-white/10 backdrop-blur-md text-white border border-white/20 font-black px-10 py-4 rounded-2xl hover:bg-white/20 transition-all">{{ 'FAQ.HELP_EMAIL_BTN' | translate }}</a>
+            <a href="mailto:mo1999382@gmail.com" class="w-full sm:w-auto bg-white/10 backdrop-blur-md text-white border border-white/20 font-black px-10 py-4 rounded-2xl hover:bg-white/20 transition-all">{{ 'FAQ.HELP_EMAIL_BTN' | translate }}</a>
           </div>
         </div>
       </div>

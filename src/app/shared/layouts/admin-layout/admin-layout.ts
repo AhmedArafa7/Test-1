@@ -31,10 +31,10 @@ import { AdminService } from '../../../features/admin/services/admin.service';
         <div class="flex flex-col h-full">
           <!-- Logo Section -->
           <div class="p-8 mb-4">
-            <a routerLink="/" class="flex flex-col gap-1.5 items-start group">
+            <div class="flex flex-col gap-1.5 items-start group">
               <span class="text-2xl font-black tracking-tighter bg-gradient-to-r from-[#12b5bd] to-[#0a8f96] bg-clip-text text-transparent">Baytology</span>
               <span class="text-[9px] font-black text-gray-500 uppercase tracking-[0.15em]">{{ 'ADMIN.LAYOUT.BADGE' | translate }}</span>
-            </a>
+            </div>
           </div>
 
           <!-- Navigation Links -->

@@ -27,14 +27,14 @@ import { Conversation } from '../../../core/models';
 
             <!-- Center: Main Nav Links (Luxury Style) -->
             <div class="hidden lg:flex items-center gap-1">
-              @if (!auth.isAgent()) {
+              @if (!auth.isAgent() && !auth.isAdmin()) {
                 <a routerLink="/properties" routerLinkActive="!text-[#0a8f96] !bg-[#0a8f96]/5" 
                    [routerLinkActiveOptions]="{exact: true}"
                    class="px-5 py-2.5 rounded-full text-sm font-bold text-gray-500 hover:text-gray-900 transition-all">{{ 'NAV.BROWSE' | translate }}</a>
               }
 
               @if (auth.isAuthenticated()) {
-                @if (!auth.isAgent()) {
+                @if (!auth.isAgent() && !auth.isAdmin()) {
                   <a routerLink="/ai/search" routerLinkActive="!text-[#0a8f96] !bg-[#0a8f96]/5" 
                      [routerLinkActiveOptions]="{exact: true}"
                      class="px-5 py-2.5 rounded-full text-sm font-bold text-gray-500 hover:text-gray-900 transition-all">{{ 'NAV.AI_SEARCH' | translate }}</a>
@@ -127,10 +127,12 @@ import { Conversation } from '../../../core/models';
                     </div>
                     
                     <div class="p-2 space-y-0.5">
-                      <a routerLink="/profile" (click)="closeProfileMenu()" class="flex items-center gap-3 px-4 py-2.5 text-[13px] font-bold text-gray-600 hover:bg-gray-50 hover:text-[#0a8f96] rounded-xl transition-all">
-                        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-                        <span class="flex-1 text-start">{{ 'NAV.PROFILE' | translate }}</span>
-                      </a>
+                      @if (!auth.isAdmin()) {
+                        <a routerLink="/profile" (click)="closeProfileMenu()" class="flex items-center gap-3 px-4 py-2.5 text-[13px] font-bold text-gray-600 hover:bg-gray-50 hover:text-[#0a8f96] rounded-xl transition-all">
+                          <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                          <span class="flex-1 text-start">{{ 'NAV.PROFILE' | translate }}</span>
+                        </a>
+                      }
                       
                       @if (auth.isAgent()) {
                         <a routerLink="/properties" [queryParams]="{ agentUserId: auth.userId() }" (click)="closeProfileMenu()" class="flex items-center gap-3 px-4 py-2.5 text-[13px] font-bold text-gray-600 hover:bg-gray-50 hover:text-[#0a8f96] rounded-xl transition-all">
@@ -188,11 +190,11 @@ import { Conversation } from '../../../core/models';
 
         @if (mobileOpen) {
           <div class="lg:hidden py-6 border-t border-gray-100 animate-fade-in space-y-2">
-            @if (!auth.isAgent()) {
+            @if (!auth.isAgent() && !auth.isAdmin()) {
               <a routerLink="/properties" (click)="mobileOpen = false" class="block p-4 rounded-2xl hover:bg-gray-50 text-gray-700 font-bold">{{ 'NAV.BROWSE' | translate }}</a>
             }
             @if (auth.isAuthenticated()) {
-              @if (!auth.isAgent()) {
+              @if (!auth.isAgent() && !auth.isAdmin()) {
                 <a routerLink="/ai/search" (click)="mobileOpen = false" class="block p-4 rounded-2xl hover:bg-gray-50 text-gray-700 font-bold">{{ 'NAV.AI_SEARCH' | translate }}</a>
                 <a routerLink="/ai/chatbot" (click)="mobileOpen = false" class="block p-4 rounded-2xl hover:bg-gray-50 text-gray-700 font-bold">{{ 'NAV.ASSISTANT' | translate }}</a>
               }
@@ -221,7 +223,9 @@ import { Conversation } from '../../../core/models';
                 <a routerLink="/properties/new" (click)="mobileOpen = false" class="block p-4 rounded-2xl hover:bg-gray-50 text-gray-700 font-bold">{{ 'NAV.ADD_PROPERTY' | translate }}</a>
                 <a routerLink="/availability" (click)="mobileOpen = false" class="block p-4 rounded-2xl hover:bg-gray-50 text-gray-700 font-bold">{{ 'AVAILABILITY.TITLE' | translate }}</a>
               }
-              <a routerLink="/profile" (click)="mobileOpen = false" class="block p-4 rounded-2xl hover:bg-gray-50 text-gray-700 font-bold">{{ 'NAV.PROFILE' | translate }}</a>
+              @if (!auth.isAdmin()) {
+                <a routerLink="/profile" (click)="mobileOpen = false" class="block p-4 rounded-2xl hover:bg-gray-50 text-gray-700 font-bold">{{ 'NAV.PROFILE' | translate }}</a>
+              }
               <button (click)="logout(); mobileOpen = false" class="w-full p-4 rounded-2xl bg-gradient-to-br from-red-100 to-red-50 text-red-500 font-black text-start">{{ 'NAV.LOGOUT' | translate }}</button>
             }
           </div>

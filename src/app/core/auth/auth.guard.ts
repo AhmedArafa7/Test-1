@@ -41,3 +41,22 @@ export const roleGuard = (...roles: string[]): CanActivateFn => {
       : router.createUrlTree(['/']);
   };
 };
+
+export const nonAdminGuard: CanActivateFn = async (route, state) => {
+  const auth = inject(AuthService);
+  const router = inject(Router);
+
+  if (auth.isAuthenticated()) {
+    if (!auth.currentUser()) {
+      await auth.loadCurrentUser();
+    }
+    if (auth.isAdmin()) {
+      const allowedPaths = ['/notifications', '/settings', '/faq', '/agents'];
+      const isAllowed = allowedPaths.some(p => state.url.startsWith(p));
+      if (!isAllowed) {
+        return router.createUrlTree(['/admin']);
+      }
+    }
+  }
+  return true;
+};

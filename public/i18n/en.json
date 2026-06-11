@@ -1649,6 +1649,8 @@
   "PROFILE": {
     "TITLE": "My Profile",
     "SUBTITLE": "Manage your personal information and account preferences",
+    "VIEW_TITLE": "User Profile",
+    "VIEW_SUBTITLE": "Viewing user's public information",
     "DISPLAY_NAME": "Display Name",
     "AVATAR_URL": "Avatar URL",
     "BIO": "Biography",
@@ -2011,6 +2013,7 @@
       "TOAST": {
         "LOAD_ERROR": "Failed to load agent data",
         "VERIFY_SUCCESS": "Agent verified successfully",
+        "REVERT_SUCCESS": "Agent reverted to pending successfully",
         "ACTION_ERROR": "Action failed"
       }
     },
@@ -2041,6 +2044,7 @@
       "STATS_ACTIVE": "Active Users",
       "STATS_CONFIRMED": "Confirmed Accounts",
       "STATS_ADMINS": "Administrators",
+      "STATS_AGENTS": "Agents",
       "TABLE": {
         "USER": "User",
         "EMAIL": "Email",
@@ -2419,6 +2423,7 @@
     "STATS_ACTIVE": "Active Users",
     "STATS_CONFIRMED": "Confirmed Accounts",
     "STATS_ADMINS": "Administrators",
+    "STATS_AGENTS": "Agents",
     "TABLE": {
       "USER": "User",
       "EMAIL": "Email",
