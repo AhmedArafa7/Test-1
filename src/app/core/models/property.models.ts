@@ -122,6 +122,7 @@ export interface GetPropertiesParams {
   minBedrooms?: number;
   maxBedrooms?: number;
   agentUserId?: string;
+  status?: string;
   pageNumber?: number;
   pageSize?: number;
 }

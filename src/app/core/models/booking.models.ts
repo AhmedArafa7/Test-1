@@ -25,6 +25,8 @@ export interface BookingDetail {
   amount: number;
   currency: string;
   commissionRate: number;
+  commission: number;
+  netAmount: number;
   paymentId?: string;
   createdOnUtc: string;
   notes?: string;

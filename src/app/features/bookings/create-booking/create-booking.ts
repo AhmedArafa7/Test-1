@@ -1,5 +1,6 @@
 import { firstValueFrom } from 'rxjs';
 import { Component, OnInit, signal, inject, computed } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { FormsModule } from '@angular/forms';
@@ -92,7 +93,7 @@ interface Slot {
                   <div>
                     <div class="flex items-center justify-between mb-4">
                       <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest">{{ 'BOOKINGS.SLOTS.TITLE' | translate }} <span class="text-red-500">*</span></label>
-                      <span class="text-[10px] font-bold text-gray-400">{{ 'BOOKINGS.SLOTS.DURATION_HINT' | translate }}</span>
+                      <span class="text-[10px] font-bold text-gray-400">{{ durationHint() }}</span>
                     </div>
 
                     @if (groupedSlots().length === 0) {
@@ -397,6 +398,44 @@ export class CreateBookingComponent implements OnInit {
   private slots = signal<Slot[]>([]);
   selectedSlot = signal<Slot | null>(null);
 
+  private langChangeEvent = toSignal(this.translate.onLangChange);
+  readonly currentLang = computed(() => this.langChangeEvent()?.lang || this.translate.currentLang || 'ar');
+
+  readonly durationHint = computed<string>(() => {
+    const slot = this.selectedSlot();
+    const isAr = this.currentLang() === 'ar';
+    if (!slot) {
+      return isAr ? 'مدة المعاينة: تختلف حسب الفترة الزمنية المحددة' : 'Viewing duration: Varies by selected time slot';
+    }
+    const [startH, startM] = slot.start.split(':').map(Number);
+    const [endH, endM] = slot.end.split(':').map(Number);
+    let diff = (endH * 60 + endM) - (startH * 60 + startM);
+    if (diff < 0) diff += 24 * 60;
+
+    if (diff === 30) {
+      return isAr ? 'مدة المعاينة: نصف ساعة' : 'Viewing duration: 30 minutes';
+    }
+    if (diff === 60) {
+      return isAr ? 'مدة المعاينة: ساعة واحدة' : 'Viewing duration: 1 hour';
+    }
+    if (diff === 90) {
+      return isAr ? 'مدة المعاينة: ساعة ونصف' : 'Viewing duration: 1.5 hours';
+    }
+    if (diff === 120) {
+      return isAr ? 'مدة المعاينة: ساعتان' : 'Viewing duration: 2 hours';
+    }
+    
+    const hours = Math.floor(diff / 60);
+    const mins = diff % 60;
+    if (hours > 0) {
+      if (mins > 0) {
+        return isAr ? `مدة المعاينة: ${hours} ساعة و ${mins} دقيقة` : `Viewing duration: ${hours}h ${mins}m`;
+      }
+      return isAr ? `مدة المعاينة: ${hours} ساعة` : `Viewing duration: ${hours} hour(s)`;
+    }
+    return isAr ? `مدة المعاينة: ${mins} دقيقة` : `Viewing duration: ${mins} minutes`;
+  });
+
   async onStartDateChange(value: string) {
     this.form.update(f => ({ ...f, startDate: value }));
     this.startDateTouched.set(true);
@@ -420,14 +459,18 @@ export class CreateBookingComponent implements OnInit {
 
   private async generateSlotsFromAvailability(propertyId: string, date: string): Promise<void> {
     try {
-      const start = `${date}T00:00:00Z`;
+      const start = `${date}T00:00:00`;
       const endDate = new Date(date);
       endDate.setDate(endDate.getDate() + 1);
-      const end = endDate.toISOString().split('T')[0] + 'T23:59:59Z';
+      const end = `${date}T23:59:59`;
+
+      console.log(`[Availability] Requesting slots for property ${propertyId} from ${start} to ${end}`);
 
       const timeSlots = await firstValueFrom(
         this.availabilityService.getPropertyAvailability(propertyId, start, end)
       );
+
+      console.log(`[Availability] Received ${timeSlots?.length || 0} slots:`, timeSlots);
 
       if (timeSlots && timeSlots.length > 0) {
         const slots: Slot[] = [];
@@ -467,10 +510,13 @@ export class CreateBookingComponent implements OnInit {
       } else {
         this.slots.set([]);
       }
-    } catch (err) {
-      console.error('Failed to load slots from backend availability:', err);
+    } catch (err: any) {
+      console.error('[Availability] Failed to load slots:', err?.status, err?.message, err?.error);
       this.slots.set([]);
-      this.toast.error(this.translate.instant('BOOKINGS.SLOTS.LOAD_ERROR'));
+      // Don't show error toast for 404 (no rules set up yet) — just show empty slots
+      if (err?.status !== 404) {
+        this.toast.error(this.translate.instant('BOOKINGS.SLOTS.LOAD_ERROR'));
+      }
     }
   }
 

@@ -6,6 +6,7 @@ export const routes: Routes = [
   {
     path: '',
     canActivate: [nonAdminGuard],
+    canActivateChild: [nonAdminGuard],
     loadComponent: () => import('./shared/layouts/main-layout/main-layout').then(m => m.MainLayoutComponent),
     children: [
       { path: '', loadComponent: () => import('./features/home/home').then(m => m.HomeComponent), data: { title: 'COMMON.HOME' } },
@@ -34,6 +35,7 @@ export const routes: Routes = [
     path: '',
     loadComponent: () => import('./shared/layouts/main-layout/main-layout').then(m => m.MainLayoutComponent),
     canActivate: [authGuard, nonAdminGuard],
+    canActivateChild: [nonAdminGuard],
     children: [
       { path: 'profile', loadComponent: () => import('./features/profile/user-profile/user-profile').then(m => m.UserProfileComponent), data: { title: 'NAV.PROFILE' } },
       { path: 'profile/edit', loadComponent: () => import('./features/profile/edit-profile/edit-profile').then(m => m.EditProfileComponent), data: { title: 'NAV.EDIT_PROFILE' } },
@@ -48,6 +50,7 @@ export const routes: Routes = [
       { path: 'ai/recommendations', canActivate: [roleGuard('Buyer', 'Agent', 'Admin')], loadComponent: () => import('./features/ai/recommendations/recommendations').then(m => m.RecommendationsComponent), data: { title: 'NAV.RECOMMENDATIONS' } },
       { path: 'notifications', loadComponent: () => import('./features/notifications/notification-list/notification-list').then(m => m.NotificationListComponent), data: { title: 'NOTIFICATIONS.TITLE' } },
       { path: 'settings', loadComponent: () => import('./features/settings/settings').then(m => m.SettingsComponent), data: { title: 'NAV.SETTINGS' } },
+      { path: 'agent/dashboard', canActivate: [roleGuard('Agent')], loadComponent: () => import('./features/agents/dashboard/agent-dashboard').then(m => m.AgentDashboardComponent), data: { title: 'AGENT_DASHBOARD.TITLE' } },
       { path: 'availability', canActivate: [roleGuard('Agent')], loadComponent: () => import('./features/availability/availability.component').then(m => m.AvailabilityComponent), data: { title: 'AVAILABILITY.TITLE' } },
       { path: 'trash', canActivate: [roleGuard('Agent')], loadComponent: () => import('./features/trash/trash.component').then(m => m.TrashComponent), data: { title: 'TRASH.TITLE' } },
     ]

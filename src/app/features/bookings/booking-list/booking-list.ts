@@ -202,7 +202,7 @@ import { EmptyStateComponent } from '../../../shared/components/empty-state/empt
                         </div>
                       </div>
 
-                      <!-- Actions footer -->
+                        <!-- Actions footer -->
                       <div class="flex flex-wrap items-center gap-3 pt-4 border-t border-slate-50 w-full">
                         @if (auth.isAgent() && b.status === 'Pending') {
                           <button (click)="confirmBooking(b)"
@@ -216,6 +216,19 @@ import { EmptyStateComponent } from '../../../shared/components/empty-state/empt
                                   class="flex-1 md:flex-none px-6 py-3 bg-rose-50 hover:bg-rose-100 text-rose-500 rounded-xl text-xs font-black transition-all duration-200 active:scale-[0.98] cursor-pointer">
                             {{ 'BOOKINGS.REJECT_BTN' | translate }}
                           </button>
+                        }
+                        @else if (auth.isAgent() && b.status !== 'Cancelled') {
+                          <button (click)="messageBuyer(b)"
+                                  class="flex-1 md:flex-none px-6 py-3 bg-[#076b70] hover:bg-[#055054] text-white rounded-xl text-xs font-black shadow-lg shadow-[#076b70]/15 hover:shadow-xl transition-all duration-200 active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                            </svg>
+                            {{ 'BOOKINGS.MESSAGE_BUYER' | translate }}
+                          </button>
+                          <a [routerLink]="['/bookings', b.id]"
+                             class="flex-1 md:flex-none px-6 py-3 bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-100 rounded-xl text-xs font-black transition-all duration-200 text-center active:scale-[0.98] cursor-pointer">
+                            {{ 'BOOKINGS.DETAILS_BTN' | translate }}
+                          </a>
                         }
                         @else if (b.status === 'Cancelled') {
                           @if (auth.isBuyer()) {
@@ -339,6 +352,17 @@ export class BookingListComponent implements OnInit {
 
   messageUser(b: BookingListItem) {
     this.router.navigate(['/conversations']);
+  }
+
+  async messageBuyer(b: BookingListItem) {
+    try {
+      this.toast.info(this.translate.instant('BOOKINGS.MESSAGES.CHAT_OPENING'));
+      const detail = await this.bookingService.getById(b.id);
+      const res = await this.conversationService.createWithBuyer(b.propertyId, detail.userId);
+      this.router.navigate(['/conversations', res.conversationId], { queryParams: { propertyId: b.propertyId } });
+    } catch {
+      this.toast.error(this.translate.instant('BOOKINGS.MESSAGES.CHAT_ERROR'));
+    }
   }
 
   getImageUrl(b: BookingListItem): string {

@@ -1,10 +1,11 @@
-import { Component, OnInit, signal, inject } from '@angular/core';
+import { Component, OnInit, signal, computed, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
 import { LanguageService } from '../../core/services/language.service';
 import { ToastService } from '../../core/services/toast.service';
+import { TimeFormatService } from '../../core/services/time-format.service';
 
 export interface NotificationPreferences {
   enabled: boolean;
@@ -351,8 +352,59 @@ const PREFS_KEY = 'baytology_notification_prefs';
             </div>
           </div>
 
-        </div>
-      </div>
+            </div>
+            
+            <!-- Time Format -->
+            <div class="space-y-5 pt-5 border-t border-slate-100">
+              <p class="text-xs text-slate-400 font-bold mb-3">
+                {{ 'SETTINGS.TIME_FORMAT' | translate }}
+              </p>
+              
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <button (click)="setTimeFormat('24h')" 
+                        [class.border-[#0a8f96]]="timeFormat() === '24h'" 
+                        [class.bg-[#0a8f96]/5]="timeFormat() === '24h'"
+                        [class.border-slate-100]="timeFormat() !== '24h'"
+                        class="flex items-center justify-between p-5 border-2 rounded-3xl transition-all hover:border-[#0a8f96]/30 group cursor-pointer">
+                  <div class="flex items-center gap-4">
+                    <div class="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-600">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    </div>
+                    <div class="ltr:text-left rtl:text-right">
+                      <p class="font-black text-slate-900">{{ 'SETTINGS.TIME_24H' | translate }}</p>
+                      <p class="text-xs text-slate-400 font-bold">14:30</p>
+                    </div>
+                  </div>
+                  @if (timeFormat() === '24h') {
+                    <div class="w-6 h-6 bg-[#0a8f96] text-white rounded-full flex items-center justify-center shadow-sm shadow-[#0a8f96]/20">
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3.5" d="M5 13l4 4L19 7"/></svg>
+                    </div>
+                  }
+                </button>
+
+                <button (click)="setTimeFormat('12h')" 
+                        [class.border-[#0a8f96]]="timeFormat() === '12h'" 
+                        [class.bg-[#0a8f96]/5]="timeFormat() === '12h'"
+                        [class.border-slate-100]="timeFormat() !== '12h'"
+                        class="flex items-center justify-between p-5 border-2 rounded-3xl transition-all hover:border-[#0a8f96]/30 group cursor-pointer">
+                  <div class="flex items-center gap-4">
+                    <div class="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-600">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    </div>
+                    <div class="ltr:text-left rtl:text-right">
+                      <p class="font-black text-slate-900">{{ 'SETTINGS.TIME_12H' | translate }}</p>
+                      <p class="text-xs text-slate-400 font-bold">2:30 PM</p>
+                    </div>
+                  </div>
+                  @if (timeFormat() === '12h') {
+                    <div class="w-6 h-6 bg-[#0a8f96] text-white rounded-full flex items-center justify-center shadow-sm shadow-[#0a8f96]/20">
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3.5" d="M5 13l4 4L19 7"/></svg>
+                    </div>
+                  }
+                </button>
+              </div>
+            </div>
+          </div>
     </div>
   `,
 })
@@ -360,8 +412,10 @@ export class SettingsComponent implements OnInit {
   private languageService = inject(LanguageService);
   private toast = inject(ToastService);
   private translate = inject(TranslateService);
+  private timeFormatService = inject(TimeFormatService);
 
   lang = this.languageService.currentLang;
+  timeFormat = computed(() => this.timeFormatService.format);
   saved = signal(false);
   prefs: NotificationPreferences = { ...DEFAULT_PREFS };
 
@@ -385,6 +439,12 @@ export class SettingsComponent implements OnInit {
 
   changeLang(newLang: string) {
     this.languageService.setLanguage(newLang as any);
+  }
+
+  setTimeFormat(format: '12h' | '24h') {
+    this.timeFormatService.toggleFormat();
+    this.saved.set(true);
+    setTimeout(() => this.saved.set(false), 2000);
   }
 
   loadPrefs() {

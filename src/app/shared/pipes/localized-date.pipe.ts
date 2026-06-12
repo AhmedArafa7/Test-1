@@ -1,6 +1,7 @@
 import { Pipe, PipeTransform, inject } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { LanguageService } from '../../core/services/language.service';
+import { getTimeFormat } from '../../core/services/time-format.service';
 
 @Pipe({
   name: 'localizedDate',
@@ -9,14 +10,23 @@ import { LanguageService } from '../../core/services/language.service';
 })
 export class LocalizedDatePipe implements PipeTransform {
   private languageService = inject(LanguageService);
-  private datePipe = new DatePipe('en-US');
 
   transform(value: any, format: string = 'mediumDate'): any {
     if (!value) return null;
     
-    // Use the current language from LanguageService as the locale
     const currentLang = this.languageService.currentLang();
+    const is24Hour = getTimeFormat() === '24h';
     
-    return this.datePipe.transform(value, format, '', currentLang);
+    let effectiveFormat = format;
+    
+    if (format === 'shortTime' || format === 'mediumTime' || format === 'longTime') {
+      effectiveFormat = is24Hour ? 'HH:mm' : 'h:mm a';
+    } else if (format === 'short') {
+      effectiveFormat = is24Hour ? 'yyyy/MM/dd, HH:mm' : 'yyyy/MM/dd, h:mm a';
+    } else if (format === 'medium') {
+      effectiveFormat = is24Hour ? 'yyyy/MM/dd, HH:mm:ss' : 'yyyy/MM/dd, h:mm:ss a';
+    }
+    
+    return new DatePipe(currentLang).transform(value, effectiveFormat, '', currentLang);
   }
 }

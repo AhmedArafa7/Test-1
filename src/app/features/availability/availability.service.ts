@@ -6,7 +6,7 @@ import { CreateAvailabilityRuleRequest, AvailabilityRuleDto, TimeSlotDto } from 
 @Injectable({ providedIn: 'root' })
 export class AvailabilityService {
   private http = inject(HttpClient);
-  private url = `${environment.apiUrl}/Availability`;
+  private url = `${environment.apiUrl}/availability`;
 
   getRules() {
     return this.http.get<AvailabilityRuleDto[]>(`${this.url}/rules`);
@@ -21,7 +21,13 @@ export class AvailabilityService {
   }
 
   getPropertyAvailability(propertyId: string, startDate: string, endDate: string) {
-    return this.http.get<TimeSlotDto[]>(`${environment.apiUrl}/Properties/${propertyId}/availability`, {
+    return this.http.get<TimeSlotDto[]>(`${environment.apiUrl}/properties/${propertyId}/availability`, {
+      params: { startDate, endDate }
+    });
+  }
+
+  getAgentSlots(startDate: string, endDate: string) {
+    return this.http.get<TimeSlotDto[]>(`${this.url}/slots`, {
       params: { startDate, endDate }
     });
   }

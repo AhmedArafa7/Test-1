@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { lastValueFrom, firstValueFrom } from 'rxjs';
+import { lastValueFrom } from 'rxjs';
 import { environment } from '../../../../environments/environment';
-import { AgentDetail, PaginatedList } from '../../../core/models';
+import { AgentDetail, PropertyListItem, PaginatedList } from '../../../core/models';
 
 @Injectable({
   providedIn: 'root'
@@ -12,17 +12,23 @@ export class AgentService {
 
   constructor(private http: HttpClient) {}
 
-  async getAll(params: { city?: string; district?: string; page?: number; size?: number } = {}): Promise<PaginatedList<AgentDetail>> {
-    let httpParams = new HttpParams();
-    if (params.city) httpParams = httpParams.set('city', params.city);
-    if (params.district) httpParams = httpParams.set('district', params.district);
-    if (params.page) httpParams = httpParams.set('pageNumber', params.page.toString());
-    if (params.size) httpParams = httpParams.set('pageSize', params.size.toString());
-
-    return firstValueFrom(this.http.get<PaginatedList<AgentDetail>>(this.apiUrl, { params: httpParams }));
-  }
-
   async getById(userId: string): Promise<AgentDetail> {
     return lastValueFrom(this.http.get<AgentDetail>(`${this.apiUrl}/${userId}`));
+  }
+
+  async getTopAgents(limit: number = 5): Promise<AgentDetail[]> {
+    return lastValueFrom(this.http.get<AgentDetail[]>(`${this.apiUrl}/top`, {
+      params: { limit: limit.toString() }
+    }));
+  }
+
+  async search(searchTerm: string, limit: number = 10): Promise<AgentDetail[]> {
+    return lastValueFrom(this.http.get<AgentDetail[]>(`${this.apiUrl}/search`, {
+      params: { searchTerm, limit: limit.toString() }
+    }));
+  }
+
+  async getAgentProperties(agentUserId: string): Promise<PaginatedList<PropertyListItem>> {
+    return lastValueFrom(this.http.get<PaginatedList<PropertyListItem>>(`${this.apiUrl}/${agentUserId}/properties`));
   }
 }

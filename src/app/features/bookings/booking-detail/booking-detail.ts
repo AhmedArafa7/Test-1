@@ -74,7 +74,7 @@ import { ProfileService } from '../../profile/services/profile.service';
 
               <button (click)="contactOtherParty()" class="flex-1 md:flex-none px-8 py-4.5 bg-[#0a8f96] text-white rounded-[20px] text-xs font-black shadow-lg shadow-[#0a8f96]/20 transition-all flex items-center justify-center gap-3 active:scale-95">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
-                {{ (auth.userId() === b.agentUserId ? 'BOOKINGS.DETAIL.BUYER_DATA' : 'BOOKINGS.DETAIL.CONTACT_AGENT') | translate }}
+                {{ (auth.userId() === b.agentUserId ? 'BOOKINGS.DETAIL.CONTACT_BUYER' : 'BOOKINGS.DETAIL.CONTACT_AGENT') | translate }}
               </button>
               
               @if (b.status === 'Cancelled' && b.paymentId && !auth.isAgent()) {
@@ -326,7 +326,11 @@ import { ProfileService } from '../../profile/services/profile.service';
                   </div>
                   <div class="flex justify-between items-center">
                     <span class="text-[11px] font-black text-gray-400 uppercase tracking-widest">{{ 'BOOKINGS.DETAIL.COMMISSION' | translate:{ rate: (b.commissionRate * 100) | number:'1.0-2' } }}</span>
-                    <span class="text-lg font-black text-[#0a8f96]" dir="rtl">+{{ (b.amount * b.commissionRate) | currencyEgp:2 }}</span>
+                    <span class="text-lg font-black text-[#0a8f96]" dir="rtl">+{{ b.commission | currencyEgp:2 }}</span>
+                  </div>
+                  <div class="flex justify-between items-center pt-4 border-t border-gray-50">
+                    <span class="text-[11px] font-black text-gray-400 uppercase tracking-widest">{{ 'BOOKINGS.DETAIL.NET_AMOUNT' | translate }}</span>
+                    <span class="text-lg font-black text-emerald-600" dir="rtl">{{ b.netAmount | currencyEgp:2 }}</span>
                   </div>
                   @if (b.paymentId) {
                     <div class="flex justify-between items-center pt-4 border-t border-gray-50">
@@ -340,7 +344,7 @@ import { ProfileService } from '../../profile/services/profile.service';
                   <div class="absolute inset-0 opacity-[0.03]" style="background-image: radial-gradient(circle at 1px 1px, white 1px, transparent 0); background-size: 16px 16px;"></div>
                   <div class="relative z-10">
                   <p class="text-[10px] font-black uppercase tracking-[0.4em] text-gray-500 mb-4">{{ (b.status === 'Paid' || b.status === 'Confirmed' ? 'BOOKINGS.DETAIL.TOTAL_PAID' : 'BOOKINGS.DETAIL.TOTAL_VALUE') | translate }}</p>
-                  <p class="text-5xl font-black text-[#0a8f96] tracking-tighter">{{ (b.amount + (b.amount * b.commissionRate)) | currencyEgp:2 }}</p>
+                  <p class="text-5xl font-black text-[#0a8f96] tracking-tighter">{{ (b.amount + b.commission) | currencyEgp:2 }}</p>
                   <p class="text-[10px] font-black text-white/40 mt-4 uppercase tracking-widest">{{ 'BOOKINGS.DETAIL.TAX_INCLUDED' | translate }}</p>
                   </div>
                 </div>
@@ -558,10 +562,18 @@ export class BookingDetailComponent implements OnInit {
     if (!b) return;
 
     if (this.auth.userId() === b.agentUserId) {
-      this.router.navigate(['/profile', b.userId]);
+      // Agent wants to start conversation with buyer
+      try {
+        this.toast.info(this.translate.instant('BOOKINGS.DETAIL.MESSAGES.CHAT_OPENING'));
+        const res = await this.conversationService.createWithBuyer(b.propertyId, b.userId);
+        this.router.navigate(['/conversations', res.conversationId], { queryParams: { propertyId: b.propertyId } });
+      } catch {
+        this.toast.error(this.translate.instant('BOOKINGS.DETAIL.MESSAGES.CHAT_ERROR'));
+      }
       return;
     }
 
+    // Buyer contacts agent (existing behavior)
     try {
       this.toast.info(this.translate.instant('BOOKINGS.DETAIL.MESSAGES.CHAT_OPENING'));
       const res = await this.conversationService.create(b.propertyId);

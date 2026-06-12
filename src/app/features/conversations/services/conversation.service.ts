@@ -44,6 +44,26 @@ export class ConversationService {
     }
   }
 
+  /**
+   * Create a conversation as an agent with a specific buyer.
+   * POST /api/v1/conversations with { propertyId, buyerUserId }
+   */
+  async createWithBuyer(propertyId: string, buyerUserId: string): Promise<{ conversationId: string }> {
+    try {
+      return await firstValueFrom(this.http.post<{ conversationId: string }>(this.url, { propertyId, buyerUserId }));
+    } catch (error) {
+      if (error instanceof HttpErrorResponse && error.status === 409) {
+        // Conversation already exists — find it from the list
+        const conversations = await this.getAll();
+        const existing = conversations.find(c => c.propertyId === propertyId && c.buyerUserId === buyerUserId);
+        if (existing) {
+          return { conversationId: existing.id };
+        }
+      }
+      throw error;
+    }
+  }
+
   async sendMessage(id: string, request: SendMessageRequest): Promise<{ messageId: string }> {
     return firstValueFrom(this.http.post<{ messageId: string }>(`${this.url}/${id}/messages`, request));
   }

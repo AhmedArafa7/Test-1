@@ -7,6 +7,8 @@ import { PropertyService } from '../properties/services/property.service';
 import { PropertyListItem } from '../../core/models';
 import { AuthService } from '../../core/auth/auth.service';
 import { AiService } from '../ai/services/ai.service';
+import { AgentService } from '../agents/services/agent.service';
+import { AgentDetail } from '../../core/models/profile.models';
 import { CurrencyEgpPipe } from '../../shared/pipes/currency-egp.pipe';
 import { LocalImageService } from '../../core/services/local-image.service';
 import { resolveBackendAssetUrl, getPropertyImageUrl, buildPropertyPlaceholder } from '../../core/utils/media';
@@ -369,6 +371,146 @@ import { EGYPT_REGIONS, Governorate, City } from '../../core/constants/egypt-reg
         </section>
       }
 
+      <!-- Top Agents -->
+      <section class="py-24 bg-white">
+        <div class="max-w-[1400px] mx-auto px-6 md:px-10">
+          <div class="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
+            <div class="max-w-xl">
+              <div class="flex items-center gap-2 mb-4">
+                <span class="w-2 h-2 rounded-full bg-[#0a8f96]"></span>
+                <span class="text-[10px] font-black text-[#0a8f96] uppercase tracking-[0.3em]">{{ 'HOME.AGENTS_BADGE' | translate }}</span>
+              </div>
+              <h2 class="text-4xl md:text-5xl font-black text-gray-900 mb-4 tracking-tighter leading-tight">{{ 'HOME.AGENTS_TITLE' | translate | slice:0:9 }} <span class="text-[#0a8f96]">{{ 'HOME.AGENTS_TITLE' | translate | slice:9 }}</span></h2>
+              <p class="text-gray-400 font-bold text-sm leading-relaxed">{{ 'HOME.AGENTS_DESC' | translate }}</p>
+            </div>
+
+            <!-- Agent Search -->
+            <div class="relative w-full md:w-80">
+              <input type="text"
+                     [placeholder]="'HOME.AGENTS_SEARCH_PLACEHOLDER' | translate"
+                     [ngModel]="agentSearchQuery()"
+                     (ngModelChange)="onAgentSearch($event)"
+                     class="w-full bg-gray-50 border border-gray-200 rounded-2xl px-5 py-3.5 pr-12 text-sm font-bold focus:bg-white focus:border-[#0a8f96] outline-none transition-all">
+              <svg class="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+              </svg>
+            </div>
+          </div>
+
+          @if (searchingAgents()) {
+            <div class="flex justify-center py-16">
+              <div class="w-10 h-10 border-4 border-[#0a8f96] border-t-transparent rounded-full animate-spin"></div>
+            </div>
+          } @else if (displayedAgents().length === 0) {
+            <div class="text-center py-16">
+              <svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+              </svg>
+              <p class="text-gray-400 font-bold text-sm">{{ 'HOME.AGENTS_NO_RESULTS' | translate }}</p>
+            </div>
+          } @else {
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+              @for (agent of displayedAgents(); track agent.userId) {
+                <a [routerLink]="['/agents', agent.userId]" class="group block bg-white rounded-[20px] overflow-hidden border border-gray-100/80 hover:shadow-[0_16px_48px_rgba(10,143,150,0.1)] hover:-translate-y-1 transition-all duration-500 shadow-sm p-6 text-center">
+                  <div class="w-20 h-20 rounded-full overflow-hidden bg-gray-100 mx-auto mb-4 ring-4 ring-[#0a8f96]/10 group-hover:ring-[#0a8f96]/30 transition-all">
+                    @if (agent.avatarUrl) {
+                      <img [src]="agent.avatarUrl" [alt]="agent.displayName" class="w-full h-full object-cover">
+                    } @else {
+                      <div class="w-full h-full flex items-center justify-center text-[#0a8f96] text-2xl font-black bg-[#0a8f96]/10">
+                        {{ agent.displayName?.charAt(0) || 'W' }}
+                      </div>
+                    }
+                  </div>
+                  <h4 class="text-base font-black text-gray-900 mb-1 group-hover:text-[#0a8f96] transition-colors">{{ agent.displayName }}</h4>
+                  @if (agent.agencyName) {
+                    <p class="text-xs font-bold text-gray-400 mb-3">{{ agent.agencyName }}</p>
+                  }
+                  <div class="flex items-center justify-center gap-1 mb-3">
+                    <svg class="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                    <span class="text-sm font-black text-gray-900">{{ agent.rating | number:'1.1-1' }}</span>
+                    <span class="text-xs font-bold text-gray-400">({{ agent.reviewCount }})</span>
+                  </div>
+                  @if (agent.isVerified) {
+                    <span class="inline-flex items-center gap-1 px-3 py-1 bg-[#0a8f96]/10 text-[#0a8f96] rounded-full text-[10px] font-black uppercase tracking-wider">
+                      <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="verify"/></svg>
+                      {{ 'HOME.VERIFIED' | translate }}
+                    </span>
+                  }
+                </a>
+              }
+            </div>
+          }
+        </div>
+      </section>
+
+      <!-- Recently Sold Properties -->
+      <section class="py-32 bg-white">
+        <div class="max-w-[1400px] mx-auto px-6 md:px-10">
+          <div class="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
+            <div class="max-w-xl">
+              <div class="flex items-center gap-2 mb-4">
+                <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                <span class="text-[10px] font-black text-emerald-500 uppercase tracking-[0.3em]">{{ 'HOME.SOLD_BADGE' | translate }}</span>
+              </div>
+              <h2 class="text-4xl md:text-5xl font-black text-gray-900 mb-4 tracking-tighter leading-tight">{{ 'HOME.SOLD_TITLE' | translate | slice:0:9 }} <span class="text-emerald-500">{{ 'HOME.SOLD_TITLE' | translate | slice:9 }}</span></h2>
+              <p class="text-gray-400 font-bold text-sm leading-relaxed">{{ 'HOME.SOLD_DESC' | translate }}</p>
+            </div>
+            <a routerLink="/properties" [queryParams]="{ status: 'Sold' }" class="group flex items-center gap-3 px-8 py-4 bg-gray-50 rounded-2xl text-sm font-black text-gray-900 hover:bg-emerald-50 hover:text-emerald-600 transition-all shadow-sm">
+              {{ 'COMMON.VIEW_ALL' | translate }}
+              <svg class="w-5 h-5 transition-transform rtl:rotate-180 group-hover:translate-x-2 ltr:group-hover:translate-x-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+            </a>
+          </div>
+
+          @if (loadingSold()) {
+            <div class="flex flex-col items-center justify-center py-20 gap-4">
+              <div class="w-12 h-12 border-2 border-gray-100 border-t-emerald-500 rounded-full animate-spin"></div>
+              <p class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] animate-pulse">{{ 'HOME.LOADING_SOLD' | translate }}</p>
+            </div>
+          } @else if (soldProperties().length === 0) {
+            <div class="text-center py-16">
+              <svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+              </svg>
+              <p class="text-gray-400 font-bold text-sm">{{ 'HOME.SOLD_NO_RESULTS' | translate }}</p>
+            </div>
+          } @else {
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+              @for (property of soldProperties(); track property.id) {
+                <a [routerLink]="['/properties', property.id]" class="group block bg-white rounded-[20px] overflow-hidden border border-gray-100/80 hover:shadow-[0_16px_48px_rgba(16,185,129,0.1)] hover:-translate-y-1 transition-all duration-500 shadow-sm">
+                  <div class="relative h-48 overflow-hidden bg-gray-50">
+                    @let soldImg = property.primaryImageUrl || localImagesMap().get(property.id);
+                    @if (soldImg) {
+                      <img [src]="soldImg" (error)="onImageError($event, property)" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
+                    } @else {
+                      <div class="w-full h-full flex items-center justify-center text-gray-100">
+                        <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                      </div>
+                    }
+                    <div class="absolute top-4 right-4">
+                      <span class="bg-emerald-500 text-white text-[9px] font-black px-3 py-1.5 rounded-lg uppercase tracking-widest shadow-lg">{{ 'HOME.SOLD_LABEL' | translate }}</span>
+                    </div>
+                  </div>
+                  <div class="p-6">
+                    <h4 class="text-base font-black text-gray-900 mb-2 truncate">{{ property.title }}</h4>
+                    <p class="text-xs font-bold text-gray-400 mb-4 flex items-center gap-1">
+                      <svg class="w-3.5 h-3.5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/></svg>
+                      {{ getDistrictLabel(property.district) }}{{ property.district && property.city ? ', ' : '' }}{{ property.city ? getCityLabel(property.city) : '' }}
+                    </p>
+                    <div class="flex items-center justify-between">
+                      <span class="text-lg font-black text-emerald-500">{{ property.price | currencyEgp }}</span>
+                      <div class="flex items-center gap-3 text-[10px] font-bold text-gray-400">
+                        @if (property.bedrooms) { <span>{{ property.bedrooms }} {{ 'PROPERTY_DETAIL.BEDROOMS' | translate }}</span> }
+                        @if (property.area) { <span>{{ property.area | number:'1.0-0' }} {{ 'PROPERTY.AREA_UNIT' | translate }}</span> }
+                      </div>
+                    </div>
+                  </div>
+                </a>
+              }
+            </div>
+          }
+        </div>
+      </section>
+
       <!-- The Difference -->
       <section class="py-32 bg-sky-50 relative overflow-hidden">
         <div class="absolute inset-0 opacity-[0.03]" style="background-image: radial-gradient(circle at 1px 1px, white 1px, transparent 0); background-size: 32px 32px;"></div>
@@ -417,7 +559,20 @@ import { EGYPT_REGIONS, Governorate, City } from '../../core/constants/egypt-reg
 export class HomeComponent implements OnInit, OnDestroy {
   featured = signal<PropertyListItem[]>([]);
   recommendedProperties = signal<PropertyListItem[]>([]);
+  topAgents = signal<AgentDetail[]>([]);
+  agentSearchQuery = signal('');
+  searchingAgents = signal(false);
+  displayedAgents = computed(() => {
+    const q = this.agentSearchQuery().trim().toLowerCase();
+    if (!q) return this.topAgents();
+    return this.topAgents().filter(a =>
+      (a.displayName || '').toLowerCase().includes(q) ||
+      (a.agencyName || '').toLowerCase().includes(q)
+    );
+  });
   loadingRecommendations = signal(false);
+  soldProperties = signal<PropertyListItem[]>([]);
+  loadingSold = signal(false);
   localImagesMap = signal<Map<string, string>>(new Map());
   aiRequestId = '';
   private destroyed = false;
@@ -557,6 +712,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     private propertyService: PropertyService, 
     public auth: AuthService, 
     private aiService: AiService,
+    private agentService: AgentService,
     private localImageService: LocalImageService,
     public translate: TranslateService
   ) {}
@@ -680,6 +836,29 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.showTypeDropdown.set(false);
   }
 
+  private agentSearchTimeout: any;
+  async onAgentSearch(query: string) {
+    this.agentSearchQuery.set(query);
+    clearTimeout(this.agentSearchTimeout);
+    if (query.trim().length >= 2) {
+      this.searchingAgents.set(true);
+      this.agentSearchTimeout = setTimeout(async () => {
+        try {
+          const results = await this.agentService.search(query.trim(), 8);
+          this.topAgents.set(results);
+        } catch {}
+        this.searchingAgents.set(false);
+      }, 400);
+    } else if (query.trim().length === 0) {
+      this.searchingAgents.set(true);
+      try {
+        const agents = await this.agentService.getTopAgents(4);
+        this.topAgents.set(agents);
+      } catch {}
+      this.searchingAgents.set(false);
+    }
+  }
+
   async ngOnInit() {
     try {
       const result = await this.propertyService.getAll({ pageSize: 8 });
@@ -687,9 +866,31 @@ export class HomeComponent implements OnInit, OnDestroy {
       this.loadLocalImages(result.items);
     } catch { /* ignore on homepage */ }
 
+    // Load top agents
+    try {
+      const agents = await this.agentService.getTopAgents(4);
+      this.topAgents.set(agents);
+    } catch { /* ignore */ }
+
+    // Load sold properties
+    this.loadSoldProperties();
+
     // Load personalized recommendations for authenticated buyers
     if (this.auth.isAuthenticated() && (this.auth.isBuyer() || this.auth.isAdmin())) {
       this.loadRecommendations();
+    }
+  }
+
+  private async loadSoldProperties() {
+    this.loadingSold.set(true);
+    try {
+      const result = await this.propertyService.getAll({ status: 'Sold', pageSize: 8 });
+      this.soldProperties.set(result.items);
+      this.loadLocalImages(result.items);
+    } catch {
+      // Silently fail — sold properties are non-critical
+    } finally {
+      this.loadingSold.set(false);
     }
   }
 
