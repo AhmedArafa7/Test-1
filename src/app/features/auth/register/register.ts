@@ -4,12 +4,11 @@ import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../core/auth/auth.service';
 import { ToastService } from '../../../core/services/toast.service';
-import { NgxIntlTelInputModule, SearchCountryField, CountryISO } from 'ngx-intl-tel-input';
 
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [FormsModule, RouterLink, TranslateModule, NgxIntlTelInputModule],
+  imports: [FormsModule, RouterLink, TranslateModule],
   template: `
     <div class="min-h-screen relative flex items-center justify-center overflow-hidden font-sans selection:bg-[#0c7379]/20 bg-slate-900">
 
@@ -110,7 +109,8 @@ import { NgxIntlTelInputModule, SearchCountryField, CountryISO } from 'ngx-intl-
             <div class="space-y-2">
               <label class="block text-[11px] font-black text-slate-400 uppercase tracking-wider">{{ 'AUTH.REGISTER.EMAIL' | translate }} <span class="text-red-500">*</span></label>
               <input type="email" [ngModel]="email()" (ngModelChange)="email.set($event); emailTouched.set(true)" (blur)="emailTouched.set(true)" name="email"
-                     autocomplete="email"
+                     id="email"
+                     autocomplete="username email"
                      [class]="emailFieldClass()"
                      [placeholder]="'AUTH.REGISTER.EMAIL_PLACEHOLDER' | translate">
               <div [class]="emailHintClass()">
@@ -125,26 +125,20 @@ import { NgxIntlTelInputModule, SearchCountryField, CountryISO } from 'ngx-intl-
 
             <div class="space-y-2">
               <label class="block text-[11px] font-black text-slate-400 uppercase tracking-wider">{{ 'AUTH.REGISTER.PHONE' | translate }} <span class="text-red-500">*</span></label>
-              <ngx-intl-tel-input
-                [ngModel]="phone()"
-                (ngModelChange)="phone.set($event); phoneTouched.set(true)"
-                (blur)="phoneTouched.set(true)"
-                [preferredCountries]="['eg']"
-                [enableAutoCountrySelect]="true"
-                [enablePlaceholder]="true"
-                [searchCountryFlag]="true"
-                [searchCountryField]="[SearchCountryField.Iso2, SearchCountryField.Name, SearchCountryField.DialCode]"
-                [selectFirstCountry]="false"
-                [selectedCountryISO]="CountryISO.Egypt"
-                [maxLength]="15"
-                name="phone"
-                [cssClass]="'input-field ' + phoneFieldClass()">
-              </ngx-intl-tel-input>
+              <div class="relative">
+                <span class="absolute ltr:left-4 rtl:right-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold ltr:border-r rtl:border-l border-slate-200/60 ltr:pr-3 rtl:pl-3">+20</span>
+                <input type="tel" [ngModel]="phone()" (ngModelChange)="phone.set($event); phoneTouched.set(true)" (blur)="phoneTouched.set(true)" name="phone"
+                       id="phone"
+                       dir="ltr"
+                       autocomplete="tel"
+                       [class]="phoneFieldClass() + ' ltr:pl-16 rtl:pr-16'"
+                       placeholder="10xxxxxxxxx">
+              </div>
               <div [class]="phoneHintClass()">
                 @if (phoneTouched() && phoneError()) {
                   <svg class="icon" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
-                  <span>{{ 'AUTH.REGISTER.PHONE_REQUIRED' | translate }}</span>
-                } @else if (phoneTouched() && !phoneError() && phone()?.number) {
+                  <span>{{ phoneError() === 'invalid' ? ('AUTH.LOGIN.PHONE_INVALID' | translate) : ('AUTH.REGISTER.PHONE_REQUIRED' | translate) }}</span>
+                } @else if (phoneTouched() && !phoneError() && phone()) {
                   <svg class="icon" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 010 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
                   <span>{{ 'AUTH.REGISTER.PHONE_HINT' | translate }}</span>
                 } @else {
@@ -156,6 +150,7 @@ import { NgxIntlTelInputModule, SearchCountryField, CountryISO } from 'ngx-intl-
             <div class="space-y-2">
               <label class="block text-[11px] font-black text-slate-400 uppercase tracking-wider">{{ 'AUTH.REGISTER.PASSWORD' | translate }} <span class="text-red-500">*</span></label>
               <div class="relative">
+                <input type="text" autocomplete="username" class="hidden" style="display:none" aria-hidden="true" tabindex="-1">
                 <input [type]="showPassword() ? 'text' : 'password'" [ngModel]="password()" (ngModelChange)="password.set($event); onPasswordInput($event); passwordTouched.set(true)" (blur)="passwordTouched.set(true)" name="password"
                        (paste)="$event.preventDefault()" (copy)="$event.preventDefault()" (cut)="$event.preventDefault()"
                        autocomplete="new-password"
@@ -262,12 +257,10 @@ import { NgxIntlTelInputModule, SearchCountryField, CountryISO } from 'ngx-intl-
 })
 export class RegisterComponent {
   private translate = inject(TranslateService);
-  SearchCountryField = SearchCountryField;
-  CountryISO = CountryISO;
   firstName = signal('');
   lastName = signal('');
   email = signal('');
-  phone = signal<{ number: string; dialCode: string; iso2: string } | null>({ number: '', dialCode: '+20', iso2: 'eg' });
+  phone = signal('');
   password = signal('');
   role = 'Buyer';
   showPassword = signal(false);
@@ -317,9 +310,9 @@ export class RegisterComponent {
     return null;
   });
   readonly phoneError = computed<string | null>(() => {
-    const p = this.phone();
-    if (!p || !p.number) return 'required';
-    // The ngx-intl-tel-input handles validation internally
+    const p = this.phone().trim();
+    if (!p) return 'required';
+    if (!/^[0-9]{10,15}$/.test(p)) return 'invalid';
     return null;
   });
 
@@ -372,12 +365,12 @@ export class RegisterComponent {
   readonly phoneFieldClass = computed<string>(() => {
     const base = 'input-field';
     if (this.phoneTouched() && this.phoneError()) return `${base} is-invalid`;
-    if (this.phoneTouched() && !this.phoneError() && this.phone()?.number) return `${base} is-valid`;
+    if (this.phoneTouched() && !this.phoneError() && this.phone()) return `${base} is-valid`;
     return base;
   });
   readonly phoneHintClass = computed<string>(() => {
     if (this.phoneTouched() && this.phoneError()) return 'field-hint is-error';
-    if (this.phoneTouched() && !this.phoneError() && this.phone()?.number) return 'field-hint is-success';
+    if (this.phoneTouched() && !this.phoneError() && this.phone()) return 'field-hint is-success';
     return 'field-hint is-neutral';
   });
 
@@ -454,8 +447,8 @@ export class RegisterComponent {
     this.loading.set(true);
     try {
       const displayName = `${this.firstName()} ${this.lastName()}`.trim();
-      const phone = this.phone();
-      const phoneNumber = phone ? ((phone.dialCode || '') + (phone.number || '')) : '';
+      const phoneVal = this.phone().trim();
+      const phoneNumber = phoneVal ? `+20${phoneVal}` : '';
       const response = await this.auth.register({
         email: this.email(),
         password: this.password(),
@@ -473,7 +466,9 @@ export class RegisterComponent {
     } catch (e: any) {
       console.error('Registration error full details:', e);
       let translationKey = '';
-      if (e?.error?.detail) {
+      if (typeof e?.error === 'string') {
+        translationKey = e.error;
+      } else if (e?.error?.detail) {
         translationKey = e.error.detail;
       } else if (e?.error?.errors) {
         const firstErrorKey = Object.keys(e.error.errors)[0];
@@ -483,22 +478,26 @@ export class RegisterComponent {
         translationKey = e.error.code;
       } else if (e?.error?.title) {
         translationKey = e.error.title;
+      } else if (e?.message) {
+        translationKey = e.message;
       }
 
-      let errorMessage = '';
-      if (translationKey) {
-        const isValidKey = /^[A-Za-z0-9_.]+$/.test(translationKey);
-        if (isValidKey) {
-          const translated = this.translate.instant('VALIDATION.' + translationKey);
-          if (translated !== 'VALIDATION.' + translationKey) {
-            errorMessage = translated;
+      let errorMessage = translationKey;
+      if (errorMessage) {
+        const lowerMsg = errorMessage.toLowerCase();
+        if (lowerMsg.includes('already taken') || lowerMsg.includes('duplicate')) {
+          if (lowerMsg.includes('email') || lowerMsg.includes('user name')) {
+            errorMessage = 'عذراً، هذا البريد الإلكتروني مسجل بالفعل!';
+          } else if (lowerMsg.includes('phone')) {
+            errorMessage = 'عذراً، رقم الهاتف هذا مستخدم بالفعل!';
+          } else {
+            errorMessage = 'عذراً، هذه البيانات مسجلة مسبقاً!';
           }
-        }
-        if (!errorMessage) {
-          errorMessage = this.translate.instant('AUTH.REGISTER.ERROR');
+        } else if (lowerMsg.includes('password')) {
+          errorMessage = 'كلمة المرور ضعيفة أو غير مطابقة للشروط.';
         }
       } else {
-        errorMessage = this.translate.instant('AUTH.REGISTER.ERROR');
+        errorMessage = 'حدث خطأ غير معروف أثناء التسجيل. حاول مرة أخرى.';
       }
 
       if (e?.error?.instance) {
