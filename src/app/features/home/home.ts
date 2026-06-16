@@ -30,47 +30,87 @@ import { EGYPT_REGIONS, Governorate, City } from '../../core/constants/egypt-reg
         </div>
 
         <div class="relative z-10 max-w-[1400px] mx-auto px-8 flex flex-col justify-center items-center text-center">
-          <!-- Animated Badge -->
-          <div class="mb-4 opacity-0 animate-[fadeInUp_0.8s_ease_forwards]">
-            <span class="bg-gray-900/40 backdrop-blur-md border border-white/10 text-white text-[10px] font-black tracking-[0.3em] uppercase px-6 py-2.5 rounded-full shadow-2xl">
-              {{ 'HOME.HERO_BADGE' | translate }}
-            </span>
-          </div>
-
-          <!-- Minimalist Luxury Headline -->
-          <div class="mb-6 max-w-5xl opacity-0 animate-[fadeInUp_1s_0.2s_ease_forwards]">
-            <h1 class="text-white tracking-tight">
-              <span class="block text-5xl md:text-7xl font-medium mb-4 leading-tight">
-                {{ 'HOME.HERO_TITLE_1' | translate }} <span class="font-extralight opacity-60 italic">{{ 'HOME.HERO_TITLE_2' | translate }}</span> {{ 'HOME.HERO_TITLE_3' | translate }}.
+          <!-- Agent View -->
+          @if (auth.isAgent()) {
+            <!-- Agent Badge -->
+            <div class="mb-4 opacity-0 animate-[fadeInUp_0.8s_ease_forwards]">
+              <span class="bg-emerald-500/20 backdrop-blur-md border border-emerald-400/30 text-emerald-300 text-[10px] font-black tracking-[0.3em] uppercase px-6 py-2.5 rounded-full shadow-2xl">
+                {{ 'HOME.AGENT_HERO_BADGE' | translate }}
               </span>
-              <div class="flex items-center justify-center gap-4 mb-4">
-                <div class="h-px w-12 bg-white/20"></div>
-                <span class="text-lg md:text-xl font-light tracking-[0.2em] text-white/50 uppercase">{{ 'HOME.HERO_TITLE_SUB' | translate }}</span>
-                <div class="h-px w-12 bg-white/20"></div>
-              </div>
-            </h1>
-          </div>
+            </div>
 
-          <!-- Subtext -->
-          <p class="text-lg md:text-xl text-white/60 font-medium max-w-2xl mb-8 leading-loose opacity-0 animate-[fadeInUp_1s_0.4s_ease_forwards]">
-            {{ 'HOME.HERO_DESC' | translate }}
-          </p>
-
-          <!-- Refined Search Bar -->
-          <div class="mt-8 w-full max-w-5xl opacity-0 animate-[fadeInUp_1s_0.6s_ease_forwards]">
-            <div class="bg-white/10 backdrop-blur-3xl border border-white/20 p-2 rounded-[32px] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.5)] flex flex-col md:flex-row items-center gap-2">
-              
-              <!-- City Search -->
-              <div class="flex-1 w-full relative z-52" (click)="$event.stopPropagation()">
-                <div class="flex items-center px-8 py-4 gap-4 border-b md:border-b-0 md:border-l border-white/10 cursor-text" (click)="cityInput.focus()">
-                  <svg class="w-6 h-6 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                  <input #cityInput type="text"
-                         [ngModel]="citySearchQuery()"
-                         (ngModelChange)="onCityQueryChange($event)"
-                         (focus)="showCityDropdown.set(true)"
-                         [placeholder]="'HOME.SEARCH_CITY' | translate" 
-                         class="w-full bg-transparent text-white placeholder:text-white/40 text-lg outline-none font-medium text-inherit cursor-text">
+            <!-- Agent Headline -->
+            <div class="mb-6 max-w-5xl opacity-0 animate-[fadeInUp_1s_0.2s_ease_forwards]">
+              <h1 class="text-white tracking-tight">
+                <span class="block text-5xl md:text-7xl font-medium mb-4 leading-tight">
+                  {{ 'HOME.AGENT_HERO_TITLE_1' | translate }} <span class="font-extralight opacity-60 italic">{{ 'HOME.AGENT_HERO_TITLE_2' | translate }}</span> {{ 'HOME.AGENT_HERO_TITLE_3' | translate }}.
+                </span>
+                <div class="flex items-center justify-center gap-4 mb-4">
+                  <div class="h-px w-12 bg-emerald-400/30"></div>
+                  <span class="text-lg md:text-xl font-light tracking-[0.2em] text-emerald-300 uppercase">{{ 'HOME.AGENT_HERO_TITLE_SUB' | translate }}</span>
+                  <div class="h-px w-12 bg-emerald-400/30"></div>
                 </div>
+              </h1>
+            </div>
+
+            <!-- Agent Subtext -->
+            <p class="text-lg md:text-xl text-emerald-200/80 font-medium max-w-2xl mb-8 leading-loose opacity-0 animate-[fadeInUp_1s_0.4s_ease_forwards]">
+              {{ 'HOME.AGENT_HERO_DESC' | translate }}
+            </p>
+
+            <!-- Agent CTA -->
+            <div class="mt-8 opacity-0 animate-[fadeInUp_1s_0.6s_ease_forwards]">
+              <a routerLink="/agent/dashboard"
+                 class="w-full md:w-auto bg-emerald-500 hover:bg-emerald-600 text-white font-black px-12 py-5 rounded-[32px] transition-all flex items-center justify-center gap-3 shadow-xl active:scale-95">
+                {{ 'HOME.AGENT_HERO_CTA' | translate }}
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+              </a>
+            </div>
+          }
+
+          <!-- Buyer View (Default) -->
+          @else {
+            <!-- Animated Badge -->
+            <div class="mb-4 opacity-0 animate-[fadeInUp_0.8s_ease_forwards]">
+              <span class="bg-gray-900/40 backdrop-blur-md border border-white/10 text-white text-[10px] font-black tracking-[0.3em] uppercase px-6 py-2.5 rounded-full shadow-2xl">
+                {{ 'HOME.HERO_BADGE' | translate }}
+              </span>
+            </div>
+
+            <!-- Minimalist Luxury Headline -->
+            <div class="mb-6 max-w-5xl opacity-0 animate-[fadeInUp_1s_0.2s_ease_forwards]">
+              <h1 class="text-white tracking-tight">
+                <span class="block text-5xl md:text-7xl font-medium mb-4 leading-tight">
+                  {{ 'HOME.HERO_TITLE_1' | translate }} <span class="font-extralight opacity-60 italic">{{ 'HOME.HERO_TITLE_2' | translate }}</span> {{ 'HOME.HERO_TITLE_3' | translate }}.
+                </span>
+                <div class="flex items-center justify-center gap-4 mb-4">
+                  <div class="h-px w-12 bg-white/20"></div>
+                  <span class="text-lg md:text-xl font-light tracking-[0.2em] text-white/50 uppercase">{{ 'HOME.HERO_TITLE_SUB' | translate }}</span>
+                  <div class="h-px w-12 bg-white/20"></div>
+                </div>
+              </h1>
+            </div>
+
+            <!-- Subtext -->
+            <p class="text-lg md:text-xl text-white/60 font-medium max-w-2xl mb-8 leading-loose opacity-0 animate-[fadeInUp_1s_0.4s_ease_forwards]">
+              {{ 'HOME.HERO_DESC' | translate }}
+            </p>
+
+            <!-- Refined Search Bar -->
+            <div class="mt-8 w-full max-w-5xl opacity-0 animate-[fadeInUp_1s_0.6s_ease_forwards]">
+              <div class="bg-white/10 backdrop-blur-3xl border border-white/20 p-2 rounded-[32px] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.5)] flex flex-col md:flex-row items-center gap-2">
+                
+                <!-- City Search -->
+                <div class="flex-1 w-full relative z-52" (click)="$event.stopPropagation()">
+                  <div class="flex items-center px-8 py-4 gap-4 border-b md:border-b-0 md:border-l border-white/10 cursor-text" (click)="cityInput.focus()">
+                    <svg class="w-6 h-6 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                    <input #cityInput type="text"
+                           [ngModel]="citySearchQuery()"
+                           (ngModelChange)="onCityQueryChange($event)"
+                           (focus)="showCityDropdown.set(true)"
+                           [placeholder]="'HOME.SEARCH_CITY' | translate" 
+                           class="w-full bg-transparent text-white placeholder:text-white/40 text-lg outline-none font-medium text-inherit cursor-text">
+                  </div>
                 
                 @if (showCityDropdown()) {
                   <div class="absolute top-full left-0 right-0 mt-4 bg-white/90 dark:bg-slate-900/90 backdrop-blur-3xl rounded-[24px] shadow-[0_24px_50px_-12px_rgba(0,0,0,0.18)] border border-slate-200/50 dark:border-slate-800/80 overflow-hidden z-50 animate-slide-up md:w-[600px] md:mx-auto">
@@ -222,10 +262,11 @@ import { EGYPT_REGIONS, Governorate, City } from '../../core/constants/egypt-reg
               </button>
             </div>
           </div>
-        </div>
-      </section>
+      } <!-- close @else -->
+    </div> <!-- close z-10 container -->
+  </section>
 
-      <!-- Featured Exclusives -->
+  <!-- Featured Exclusives -->
       <section class="py-32 bg-white">
         <div class="max-w-[1400px] mx-auto px-6 md:px-10">
           <div class="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">

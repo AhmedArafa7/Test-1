@@ -191,7 +191,7 @@ export class LoginComponent implements OnInit {
   readonly passwordError = computed<string | null>(() => {
     const v = this.password();
     if (!v) return 'required';
-    if (v.length < 6) return 'minLength';
+    if (v.length < 8) return 'minLength';
     return null;
   });
 

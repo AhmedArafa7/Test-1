@@ -42,7 +42,7 @@ export const routes: Routes = [
       { path: 'profile/:id', loadComponent: () => import('./features/profile/user-profile/user-profile').then(m => m.UserProfileComponent), data: { title: 'NAV.PROFILE' } },
       { path: 'saved', canActivate: [roleGuard('Buyer')], loadComponent: () => import('./features/properties/saved-properties/saved-properties').then(m => m.SavedPropertiesComponent), data: { title: 'NAV.SAVED' } },
       { path: 'bookings', canActivate: [roleGuard('Buyer', 'Agent')], loadComponent: () => import('./features/bookings/booking-list/booking-list').then(m => m.BookingListComponent), data: { title: 'NAV.BOOKINGS' } },
-      { path: 'bookings/new', canActivate: [roleGuard('Buyer')], loadComponent: () => import('./features/bookings/create-booking/create-booking').then(m => m.CreateBookingComponent), data: { title: 'BOOKINGS.CREATE.TITLE' } },
+      { path: 'bookings/new', canActivate: [roleGuard('Buyer')], loadComponent: () => import('./features/bookings/create-booking/create-booking').then(m => m.CreateBookingComponent), data: { title: 'BOOKINGS.CREATE_TITLE' } },
       { path: 'bookings/:id', canActivate: [roleGuard('Buyer', 'Agent')], loadComponent: () => import('./features/bookings/booking-detail/booking-detail').then(m => m.BookingDetailComponent), data: { title: 'BOOKINGS.DETAIL.TITLE' } },
       { path: 'conversations', canActivate: [roleGuard('Buyer', 'Agent')], loadComponent: () => import('./features/conversations/chat-room/chat-room').then(m => m.ChatRoomComponent), data: { title: 'NAV.MESSAGES' } },
       { path: 'conversations/:id', canActivate: [roleGuard('Buyer', 'Agent')], loadComponent: () => import('./features/conversations/chat-room/chat-room').then(m => m.ChatRoomComponent) },

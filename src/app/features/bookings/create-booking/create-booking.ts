@@ -744,6 +744,9 @@ export class CreateBookingComponent implements OnInit {
       notes: this.notes() || undefined,
     };
 
+    console.log('[Booking] Payload:', JSON.stringify(payload, null, 2));
+    console.log('[Booking] Property:', this.property()?.id, '| Status:', this.property()?.status);
+
     this.submitting.set(true);
     try {
       // If rescheduling, cancel the old booking first to free up the dates
@@ -763,33 +766,64 @@ export class CreateBookingComponent implements OnInit {
       }
     } catch (e: any) {
       console.error('Booking creation error:', e);
-      let translationKey = '';
-      if (e?.error?.detail) {
-        translationKey = e.error.detail;
-      } else if (e?.error?.errors) {
-        const firstErrorKey = Object.keys(e.error.errors)[0];
-        const firstErrorMessages = e.error.errors[firstErrorKey];
-        translationKey = Array.isArray(firstErrorMessages) ? firstErrorMessages[0] : firstErrorMessages;
-      } else if (e?.error?.code) {
-        translationKey = e.error.code;
-      } else if (e?.error?.title) {
-        translationKey = e.error.title;
-      }
+      console.error('Error status:', e?.status);
+      console.error('Error body:', e?.error);
 
-      let errorMessage = '';
-      if (translationKey) {
-        const isValidKey = /^[A-Za-z0-9_.]+$/.test(translationKey);
-        if (isValidKey) {
-          const translated = this.translate.instant('VALIDATION.' + translationKey);
-          if (translated !== 'VALIDATION.' + translationKey) {
+      let errorMessage = this.translate.instant('BOOKINGS.MESSAGES.CREATE_ERROR');
+
+      if (e?.status === 409) {
+        const detail = e?.error?.detail || e?.error?.title || '';
+        if (detail.includes('Conflict') || detail.includes('conflict') || detail.includes('overlap') || detail.includes('Overlap')) {
+          errorMessage = this.translate.instant('BOOKINGS.MESSAGES.CONFLICT_ERROR');
+        } else {
+          errorMessage = this.translate.instant('BOOKINGS.MESSAGES.DUPLICATE_ERROR');
+        }
+      } else if (e?.status === 400) {
+        const detail = e?.error?.detail || '';
+        const errors = e?.error?.errors;
+        let validationMsg = '';
+        if (errors) {
+          const firstKey = Object.keys(errors)[0];
+          const firstVal = errors[firstKey];
+          validationMsg = Array.isArray(firstVal) ? firstVal[0] : firstVal;
+        }
+        const code = e?.error?.code || validationMsg || detail;
+        if (code) {
+          const isValidKey = /^[A-Za-z0-9_.]+$/.test(code);
+          if (isValidKey) {
+            const translated = this.translate.instant('VALIDATION.' + code);
+            if (translated !== 'VALIDATION.' + code) {
+              errorMessage = translated;
+            }
+          }
+        }
+      } else if (e?.status === 500) {
+        const detail = e?.error?.detail || e?.error?.title || '';
+        const isValidDetail = detail && /^[A-Za-z0-9_.]+$/.test(detail);
+        if (isValidDetail) {
+          const translated = this.translate.instant('VALIDATION.' + detail);
+          if (translated !== 'VALIDATION.' + detail) {
             errorMessage = translated;
           }
         }
-        if (!errorMessage) {
-          errorMessage = this.translate.instant('BOOKINGS.MESSAGES.CREATE_ERROR');
+      } else if (e?.error?.detail) {
+        const code = e.error.detail;
+        const isValidKey = /^[A-Za-z0-9_.]+$/.test(code);
+        if (isValidKey) {
+          const translated = this.translate.instant('VALIDATION.' + code);
+          if (translated !== 'VALIDATION.' + code) {
+            errorMessage = translated;
+          }
         }
-      } else {
-        errorMessage = this.translate.instant('BOOKINGS.MESSAGES.CREATE_ERROR');
+      } else if (e?.error?.code) {
+        const code = e.error.code;
+        const isValidKey = /^[A-Za-z0-9_.]+$/.test(code);
+        if (isValidKey) {
+          const translated = this.translate.instant('VALIDATION.' + code);
+          if (translated !== 'VALIDATION.' + code) {
+            errorMessage = translated;
+          }
+        }
       }
 
       this.toast.error(errorMessage);

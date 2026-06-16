@@ -321,7 +321,6 @@ a[routerLink]:not(.btn-luxury):not([class*="bg-"]) {
 
 .admin-sidebar {
   background: linear-gradient(180deg, rgba(12, 18, 34, 0.97) 0%, rgba(15, 23, 42, 0.98) 100%);
-  backdrop-filter: blur(20px);
   border-left: 1px solid rgba(255, 255, 255, 0.06);
   width: 290px;
   display: flex;

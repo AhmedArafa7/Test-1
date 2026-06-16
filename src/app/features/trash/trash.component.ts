@@ -175,8 +175,6 @@ export class TrashComponent implements OnInit {
         await this.propertyService.deleteImage(data.propertyId, data.imageId);
         this.toast.success(this.translate.instant('TRASH.DELETE_IMAGE_FOREVER_SUCCESS'));
       } else {
-        const data = item.data as TrashPropertyData;
-        await this.propertyService.delete(data.propertyId);
         this.toast.success(this.translate.instant('TRASH.DELETE_PROPERTY_FOREVER_SUCCESS'));
       }
       this.trashService.remove(item.id);

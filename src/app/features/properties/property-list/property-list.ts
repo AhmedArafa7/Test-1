@@ -909,12 +909,21 @@ export class PropertyListComponent implements OnInit, AfterViewInit {
         viewType: full.amenity?.viewType as any,
         imageUrls: full.images?.map(i => i.url) ?? [],
       };
-      await this.propertyService.delete(item.id);
       this.trashService.addProperty(item.id, item.title, item.primaryImageUrl, createRequest);
+      await this.propertyService.delete(item.id);
       this.toast.success(this.translate.instant('PROPERTY_LIST.MESSAGES.MOVED_TO_TRASH'));
       this.search();
-    } catch {
-      this.toast.error(this.translate.instant('TRASH.DELETE_ERROR'));
+    } catch (err: any) {
+      const status = err?.status ?? err?.statusCode;
+      if (status === 409) {
+        this.toast.error(this.translate.instant('TRASH.DELETE_HAS_RELATED'));
+      } else if (status === 403) {
+        this.toast.error(this.translate.instant('TRASH.DELETE_ACCESS_DENIED'));
+      } else if (status === 404) {
+        this.toast.error(this.translate.instant('TRASH.DELETE_NOT_FOUND'));
+      } else {
+        this.toast.error(this.translate.instant('TRASH.DELETE_ERROR'));
+      }
     }
   }
 

@@ -1,4 +1,4 @@
-{
+﻿{
     "CITIES":  {
                    "Cairo":  "القاهرة",
                    "Alexandria":  "الإسكندرية",
@@ -212,8 +212,15 @@
                   "SOLD_DESC":  "استكشف العقارات التي تم بيعها بنجاح.",
                   "SOLD_LABEL":  "مُباع",
                   "LOADING_SOLD":  "جاري تحميل العقارات المباعة...",
-                  "SOLD_NO_RESULTS":  "لم يتم العثور على عقارات مباعة."
-              },
+"SOLD_NO_RESULTS":  "لم يتم العثور على عقارات مباعة.",
+                      "AGENT_HERO_BADGE":  "لوحة تحكم الوكلاء",
+                      "AGENT_HERO_TITLE_1":  "أدرِ",
+                      "AGENT_HERO_TITLE_2":  "عقاراتك",
+                      "AGENT_HERO_TITLE_3":  "بسهولة",
+                      "AGENT_HERO_TITLE_SUB":  "منصة إدارة عقارية ذكية",
+                      "AGENT_HERO_DESC":  "أضف عقاراتك، توفرك، وتابع حجوزاتك من لوحة تحكم واحدة. وفّر الوقت وركّز على الإغلاق.",
+                      "AGENT_HERO_CTA":  "الذهاب للوحة التحكم"
+               },
     "STATS":  {
                   "PROPERTIES":  "عقارات",
                   "AGENTS":  "الوكلاء النشطين",
@@ -321,8 +328,8 @@
                                "ERROR_FACEBOOK_CANCEL":  "تم إلغاء تسجيل الدخول عبر فيسبوك.",
                                "EMAIL_HINT":  "أدخل بريدك الإلكتروني (مثال: user@example.com)",
                                "EMAIL_INVALID":  "البريد الإلكتروني غير صحيح — يجب أن يحتوي على @ و domain",
-                               "PASSWORD_MIN":  "كلمة المرور يجب أن تكون 6 أحرف على الأقل",
-                               "PASSWORD_HINT":  "6 أحرف على الأقل",
+                               "PASSWORD_MIN":  "كلمة المرور يجب أن تكون 8 أحرف على الأقل",
+                               "PASSWORD_HINT":  "8 أحرف على الأقل",
                                "SAVE_DISABLED_HINT":  "أكمل البريد الإلكتروني وكلمة المرور بشكل صحيح لتسجيل الدخول",
                                "REMEMBER_ME":  "تذكر تسجيل دخولي في هذا المتصفح",
                                "WELCOME_BACK":  "مرحباً بعودتك",
@@ -3298,11 +3305,14 @@
                   "RESTORE_PROPERTY_SUCCESS":  "تمت استعادة العقار",
                   "RESTORE_ERROR":  "فشلت استعادة العنصر",
                   "DELETE_IMAGE_FOREVER_CONFIRM":  "هل أنت متأكد من حذف هذه الصورة نهائياً؟ لا يمكن التراجع عن هذا الإجراء.",
-                  "DELETE_PROPERTY_FOREVER_CONFIRM":  "هل أنت متأكد من حذف هذا العقار نهائياً؟ سيتم إرسال طلب الحذف للخادم.",
-                  "DELETE_IMAGE_FOREVER_SUCCESS":  "تم حذف الصورة نهائياً",
-                  "DELETE_PROPERTY_FOREVER_SUCCESS":  "تم حذف العقار نهائياً",
-                  "DELETE_ERROR":  "فشل الحذف من الخادم",
-                  "DELETED_AT":  "محذوف في",
+                                     "DELETE_PROPERTY_FOREVER_CONFIRM":  "هل أنت متأكد من حذف هذا العقار نهائياً من سلة المهملات؟",
+                   "DELETE_IMAGE_FOREVER_SUCCESS":  "تم حذف الصورة نهائياً",
+                   "DELETE_PROPERTY_FOREVER_SUCCESS":  "تم حذف العقار من سلة المهملات",
+                   "DELETE_HAS_RELATED":  "لا يمكن حذف هذا العقار لوجود حجوزات أو مدفوعات أو تقييمات مرتبطة به.",
+                   "DELETE_ACCESS_DENIED":  "ليس لديك صلاحية حذف هذا العقار.",
+                   "DELETE_NOT_FOUND":  "العقار غير موجود. ربما تم حذفه مسبقاً.",
+                   "DELETE_ERROR":  "فشل الحذف من الخادم",
+                   "DELETED_AT":  "محذوف في",
                   "EXPIRES_IN":  "ينتهي خلال",
                   "DAYS":  "يوم"
               },
@@ -3375,19 +3385,22 @@
                      "FEE_HELP":  "رسوم الجولة ثابتة ولا تُعاد عند الإلغاء.",
                      "TOTAL_PRICE_LABEL":  "سعر العقار",
                      "SAVE_DISABLED_HINT":  "يرجى ملء جميع الحقول المطلوبة",
-                     "CREATE":  {
-                                    "CONTACT_INFO_TITLE":  "معلومات الاتصال",
-                                    "FULL_NAME":  "الاسم الكامل",
-                                    "NAME_PLACEHOLDER":  "أدخل اسمك الكامل",
-                                    "EMAIL":  "البريد الإلكتروني",
-                                    "PHONE":  "رقم الهاتف",
-                                    "PHONE_HINT":  "أدخل رقم هاتفك",
-                                    "REQUIRED":  "هذا الحقل مطلوب",
-                                    "NAME_MIN":  "الاسم يجب أن يكون على الأقل حرفين"
-                                },
+"CREATE":  {
+                                     "CONTACT_INFO_TITLE":  "معلومات الاتصال",
+                                     "FULL_NAME":  "الاسم الكامل",
+                                     "NAME_PLACEHOLDER":  "أدخل اسمك الكامل",
+                                     "NAME_HINT":  "أدخل الاسم كما يظهر في الهوية",
+                                     "EMAIL":  "البريد الإلكتروني",
+                                     "PHONE":  "رقم الهاتف",
+                                     "PHONE_HINT":  "أدخل رقم هاتفك",
+                                     "REQUIRED":  "هذا الحقل مطلوب",
+                                     "NAME_MIN":  "الاسم يجب أن يكون على الأقل حرفين"
+                                 },
                      "MESSAGES":  {
                                      "CREATE_SUCCESS":  "تم إنشاء الحجز بنجاح",
                                      "CREATE_ERROR":  "فشل إنشاء الحجز. يرجى المحاولة مرة أخرى.",
+                                      "CONFLICT_ERROR": "الموعد المختار متداخل مع حجز آخر. يرجى اختيار وقت آخر.",
+                                      "DUPLICATE_ERROR": "هذا الحجز موجود بالفعل أو تم حجز هذا العقار في نفس الفترة.",
                                      "REQUIRED_DATES":  "يرجى اختيار تاريخ الجولة",
                                      "UNAVAILABLE":  "هذا العقار غير متاح لحجوزات جديدة",
                                      "CHAT_OPENING":  "جاري فتح المحادثة...",

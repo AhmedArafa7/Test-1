@@ -404,6 +404,13 @@ export class ChatRoomComponent implements OnInit, OnDestroy {
             if (prev.some(m => m.id === msg.id)) return prev;
             return [...prev, msg];
           });
+          
+          // Also update lastViewed using the incoming message's backend time
+          const lvRaw = localStorage.getItem('baytology_last_viewed') || '{}';
+          const lv = JSON.parse(lvRaw);
+          lv[this.conversationId] = msg.sentAt;
+          localStorage.setItem('baytology_last_viewed', JSON.stringify(lv));
+
           setTimeout(() => this.scrollToBottom(), 50);
         }
       }
@@ -445,7 +452,14 @@ export class ChatRoomComponent implements OnInit, OnDestroy {
         // Save last viewed timestamp to synthesize unread status for historical messages
         const lastViewedRaw = localStorage.getItem('baytology_last_viewed') || '{}';
         const lastViewed = JSON.parse(lastViewedRaw);
-        lastViewed[this.conversationId] = new Date().toISOString();
+        
+        // Use existing conversation's lastMessageAt if available to avoid clock drift between BROWSER and SERVER.
+        const currentConv = this.conversations().find(c => c.id === this.conversationId);
+        if (currentConv && currentConv.lastMessageAt) {
+          lastViewed[this.conversationId] = currentConv.lastMessageAt;
+        } else {
+          lastViewed[this.conversationId] = new Date().toISOString();
+        }
         localStorage.setItem('baytology_last_viewed', JSON.stringify(lastViewed));
 
         this.conversations.update(list => 
@@ -586,6 +600,16 @@ export class ChatRoomComponent implements OnInit, OnDestroy {
       ]);
       
       this.messages.set(msgs);
+      
+      // Update last viewed using the LATEST conversation data from backend to ensure clock drift is handled
+      const current = convs.find(c => c.id === this.conversationId);
+      if (current && current.lastMessageAt) {
+        const lvRaw = localStorage.getItem('baytology_last_viewed') || '{}';
+        const lv = JSON.parse(lvRaw);
+        lv[this.conversationId] = current.lastMessageAt;
+        localStorage.setItem('baytology_last_viewed', JSON.stringify(lv));
+      }
+      
       const mappedConvs = this.mapConversationsWithUnread(convs);
       this.conversations.set(mappedConvs);
       
@@ -595,7 +619,6 @@ export class ChatRoomComponent implements OnInit, OnDestroy {
         this.conversationService.markRead(m.id).catch(() => {});
       }); */
 
-      const current = convs.find(c => c.id === this.conversationId);
       if (current) {
         this.activeConversation.set(current);
         this.recipientName.set(this.auth.userId() === current.buyerUserId 

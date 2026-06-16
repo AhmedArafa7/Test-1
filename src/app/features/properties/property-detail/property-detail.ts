@@ -996,12 +996,21 @@ export class PropertyDetailComponent implements OnInit {
         viewType: property.amenity?.viewType as any,
         imageUrls: property.images?.map(i => i.url) ?? [],
       };
-      await this.propertyService.delete(property.id);
       this.trashService.addProperty(property.id, property.title, property.images?.[0]?.url, createRequest);
+      await this.propertyService.delete(property.id);
       this.toast.success(this.translate.instant('PROPERTY_DETAIL.MESSAGES.MOVED_TO_TRASH'));
       this.router.navigate(['/properties']);
-    } catch {
-      this.toast.error(this.translate.instant('TRASH.DELETE_ERROR'));
+    } catch (err: any) {
+      const status = err?.status ?? err?.statusCode;
+      if (status === 409) {
+        this.toast.error(this.translate.instant('TRASH.DELETE_HAS_RELATED'));
+      } else if (status === 403) {
+        this.toast.error(this.translate.instant('TRASH.DELETE_ACCESS_DENIED'));
+      } else if (status === 404) {
+        this.toast.error(this.translate.instant('TRASH.DELETE_NOT_FOUND'));
+      } else {
+        this.toast.error(this.translate.instant('TRASH.DELETE_ERROR'));
+      }
     }
   }
 
