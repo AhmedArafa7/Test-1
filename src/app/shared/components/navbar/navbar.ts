@@ -308,6 +308,17 @@ export class NavbarComponent implements OnInit, OnDestroy {
         const isIncoming = msg.senderId !== this.auth.userId();
         if (isIncoming) {
           this.showMessagePopup(msg);
+          
+          // Update unread count in localStorage if we are NOT on the conversations page
+          const currentRoute = window.location.pathname;
+          if (!currentRoute.includes('/conversations')) {
+            try {
+              const unreadCountsRaw = localStorage.getItem('baytology_unread_counts') || '{}';
+              const unreadCounts = JSON.parse(unreadCountsRaw);
+              unreadCounts[msg.conversationId] = (unreadCounts[msg.conversationId] || 0) + 1;
+              localStorage.setItem('baytology_unread_counts', JSON.stringify(unreadCounts));
+            } catch (err) {}
+          }
         }
         setTimeout(() => this.updateUnreadStatus(), 150);
       }
@@ -355,18 +366,12 @@ export class NavbarComponent implements OnInit, OnDestroy {
           const viewMs = new Date(lastViewTime).getTime();
           if (lastMsgMs > viewMs + 2000) {
             total++;
-            const key = conv.agentUserId === this.auth.userId()
-              ? `buyer_${conv.buyerUserId}`
-              : `agent_${conv.agentUserId}`;
-            counts[key] = (counts[key] || 0) + 1;
+            counts[conv.id] = (counts[conv.id] || 0) + 1;
           }
         } else {
           // Never viewed this conversation before AND it has content → unread
           total++;
-          const key = conv.agentUserId === this.auth.userId()
-            ? `buyer_${conv.buyerUserId}`
-            : `agent_${conv.agentUserId}`;
-          counts[key] = (counts[key] || 0) + 1;
+          counts[conv.id] = (counts[conv.id] || 0) + 1;
         }
       }
 
@@ -383,6 +388,15 @@ export class NavbarComponent implements OnInit, OnDestroy {
     try {
       const unreadCountsRaw = localStorage.getItem('baytology_unread_counts') || '{}';
       const unreadCounts = JSON.parse(unreadCountsRaw);
+
+      // Self-healing: if we find legacy keys, clear them and rebuild
+      const hasLegacyKeys = Object.keys(unreadCounts).some(key => key.startsWith('buyer_') || key.startsWith('agent_'));
+      if (hasLegacyKeys) {
+        localStorage.setItem('baytology_unread_counts', '{}');
+        this.loadUnreadConversationsCount();
+        return;
+      }
+
       const total = Object.values(unreadCounts).reduce((a: any, b: any) => a + b, 0) as number;
       
       const currentRoute = window.location.pathname;

@@ -465,39 +465,45 @@ export class RegisterComponent {
       this.router.navigate(['/auth/login'], { queryParams: { email: this.email() } });
     } catch (e: any) {
       console.error('Registration error full details:', e);
-      let translationKey = '';
-      if (typeof e?.error === 'string') {
-        translationKey = e.error;
-      } else if (e?.error?.detail) {
-        translationKey = e.error.detail;
-      } else if (e?.error?.errors) {
-        const firstErrorKey = Object.keys(e.error.errors)[0];
-        const firstErrorMessages = e.error.errors[firstErrorKey];
-        translationKey = Array.isArray(firstErrorMessages) ? firstErrorMessages[0] : firstErrorMessages;
-      } else if (e?.error?.code) {
-        translationKey = e.error.code;
-      } else if (e?.error?.title) {
-        translationKey = e.error.title;
-      } else if (e?.message) {
-        translationKey = e.message;
-      }
+      let errorMessage = '';
 
-      let errorMessage = translationKey;
-      if (errorMessage) {
-        const lowerMsg = errorMessage.toLowerCase();
-        if (lowerMsg.includes('already taken') || lowerMsg.includes('duplicate')) {
-          if (lowerMsg.includes('email') || lowerMsg.includes('user name')) {
-            errorMessage = 'عذراً، هذا البريد الإلكتروني مسجل بالفعل!';
-          } else if (lowerMsg.includes('phone')) {
-            errorMessage = 'عذراً، رقم الهاتف هذا مستخدم بالفعل!';
-          } else {
-            errorMessage = 'عذراً، هذه البيانات مسجلة مسبقاً!';
-          }
-        } else if (lowerMsg.includes('password')) {
-          errorMessage = 'كلمة المرور ضعيفة أو غير مطابقة للشروط.';
-        }
+      if (e?.status === 0) {
+        errorMessage = this.translate.instant('AUTH.REGISTER.SERVER_OFFLINE');
       } else {
-        errorMessage = 'حدث خطأ غير معروف أثناء التسجيل. حاول مرة أخرى.';
+        let translationKey = '';
+        if (typeof e?.error === 'string') {
+          translationKey = e.error;
+        } else if (e?.error?.detail) {
+          translationKey = e.error.detail;
+        } else if (e?.error?.errors) {
+          const firstErrorKey = Object.keys(e.error.errors)[0];
+          const firstErrorMessages = e.error.errors[firstErrorKey];
+          translationKey = Array.isArray(firstErrorMessages) ? firstErrorMessages[0] : firstErrorMessages;
+        } else if (e?.error?.code) {
+          translationKey = e.error.code;
+        } else if (e?.error?.title) {
+          translationKey = e.error.title;
+        } else if (e?.message) {
+          translationKey = e.message;
+        }
+
+        errorMessage = translationKey;
+        if (errorMessage) {
+          const lowerMsg = errorMessage.toLowerCase();
+          if (lowerMsg.includes('already taken') || lowerMsg.includes('duplicate')) {
+            if (lowerMsg.includes('email') || lowerMsg.includes('user name')) {
+              errorMessage = 'عذراً، هذا البريد الإلكتروني مسجل بالفعل!';
+            } else if (lowerMsg.includes('phone')) {
+              errorMessage = 'عذراً، رقم الهاتف هذا مستخدم بالفعل!';
+            } else {
+              errorMessage = 'عذراً، هذه البيانات مسجلة مسبقاً!';
+            }
+          } else if (lowerMsg.includes('password')) {
+            errorMessage = 'كلمة المرور ضعيفة أو غير مطابقة للشروط.';
+          }
+        } else {
+          errorMessage = 'حدث خطأ غير معروف أثناء التسجيل. حاول مرة أخرى.';
+        }
       }
 
       if (e?.error?.instance) {

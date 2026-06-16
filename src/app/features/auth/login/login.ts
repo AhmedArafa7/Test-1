@@ -274,7 +274,9 @@ export class LoginComponent implements OnInit {
     } catch (e: any) {
       let errorMessage = this.translate.instant('AUTH.LOGIN.ERROR');
 
-      if (e?.error?.detail) {
+      if (e?.status === 0) {
+        errorMessage = this.translate.instant('AUTH.LOGIN.SERVER_OFFLINE');
+      } else if (e?.error?.detail) {
         const detail = e.error.detail.toLowerCase();
         if (detail.includes('email') && detail.includes('password')) {
           errorMessage = this.translate.instant('AUTH.LOGIN.INVALID_CREDENTIALS');

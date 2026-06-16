@@ -316,7 +316,7 @@ export class ChatRoomComponent implements OnInit, OnDestroy {
 
   unreadMessagesCount = computed(() => {
     const list = this.conversations();
-    return list.filter(c => (c.unreadCount ?? 0) > 0).length;
+    return list.reduce((sum, c) => sum + (c.unreadCount ?? 0), 0);
   });
 
   getOtherName(c: Conversation): string {
