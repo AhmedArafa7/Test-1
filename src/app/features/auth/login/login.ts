@@ -263,9 +263,17 @@ export class LoginComponent implements OnInit {
     try {
       await this.auth.login({ email: this.email(), password: this.password() }, this.rememberMe());
       const user = this.auth.currentUser();
+      const userId = this.auth.userId();
       const name = user?.displayName?.trim() || user?.email || '';
-      const msg = this.translate.instant('AUTH.LOGIN.WELCOME_BACK', { name });
-      this.toast.success(msg);
+      
+      const newUserKey = `baytology_welcome_new_${userId}`;
+      const isNewUser = localStorage.getItem(newUserKey);
+
+      if (!isNewUser) {
+        const msg = this.translate.instant('AUTH.LOGIN.WELCOME_BACK', { name });
+        this.toast.success(msg);
+      }
+
       if (this.auth.isAdmin()) {
         this.router.navigate(['/admin']);
       } else {
@@ -340,8 +348,14 @@ export class LoginComponent implements OnInit {
       const response = await this.auth.externalLogin({ provider, idToken });
       const user = this.auth.currentUser();
       const name = user?.displayName?.trim() || user?.email || '';
-      const msg = this.translate.instant('AUTH.LOGIN.WELCOME_BACK', { name });
-      this.toast.success(msg);
+      
+      if (response.isNewUser) {
+        localStorage.setItem(`baytology_welcome_new_${response.userId}`, name);
+      } else {
+        const msg = this.translate.instant('AUTH.LOGIN.WELCOME_BACK', { name });
+        this.toast.success(msg);
+      }
+
       if (this.auth.isAdmin()) {
         await this.router.navigate(['/admin']);
       } else {

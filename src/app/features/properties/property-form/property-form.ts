@@ -1,9 +1,9 @@
-import { Component, OnInit, signal, computed, inject, ChangeDetectorRef } from '@angular/core';
-import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { Component, OnInit, signal, computed, inject, ChangeDetectorRef, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import * as L from 'leaflet';
 import { PropertyService } from '../services/property.service';
 import { CreatePropertyRequest, FurnishingStatus, ListingType, PropertyType, ViewType, PropertyImage } from '../../../core/models';
 import { ToastService } from '../../../core/services/toast.service';
@@ -186,14 +186,14 @@ import { firstValueFrom } from 'rxjs';
                   <!-- Bedrooms, Bathrooms, Floor & Total Floors Row -->
                   <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
                     <div class="space-y-3">
-                      <label class="block text-xs font-black text-gray-800 mb-1 px-1">{{ 'PROPERTY_FORM.LABEL_BEDROOMS' | translate }} <span class="text-red-500">*</span></label>
-                       <input type="number" [(ngModel)]="form.bedrooms" name="bedrooms" id="bedrooms" min="1" [placeholder]="'PROPERTY_FORM.PLACEHOLDER_BEDROOMS' | translate"
+                      <label class="block text-xs font-black text-gray-800 mb-1 px-1">{{ 'PROPERTY_FORM.LABEL_BEDROOMS' | translate }} <span class="text-red-500"></span></label>
+                       <input type="number" [(ngModel)]="form.bedrooms" name="bedrooms" id="bedrooms" min="0" [placeholder]="'PROPERTY_FORM.PLACEHOLDER_BEDROOMS' | translate"
                              class="w-full bg-gray-50 border border-transparent focus:bg-white focus:border-[#0a8f96] focus:ring-4 focus:ring-[#0a8f96]/5 outline-none rounded-2xl px-6 py-4 text-sm font-bold transition-all shadow-inner text-center">
                     </div>
 
                     <div class="space-y-3">
-                      <label class="block text-xs font-black text-gray-800 mb-1 px-1">{{ 'PROPERTY_FORM.LABEL_BATHROOMS' | translate }} <span class="text-red-500">*</span></label>
-                       <input type="number" [(ngModel)]="form.bathrooms" name="bathrooms" id="bathrooms" min="1" [placeholder]="'PROPERTY_FORM.PLACEHOLDER_BATHROOMS' | translate"
+                      <label class="block text-xs font-black text-gray-800 mb-1 px-1">{{ 'PROPERTY_FORM.LABEL_BATHROOMS' | translate }} <span class="text-red-500"></span></label>
+                       <input type="number" [(ngModel)]="form.bathrooms" name="bathrooms" id="bathrooms" min="0" [placeholder]="'PROPERTY_FORM.PLACEHOLDER_BATHROOMS' | translate"
                              class="w-full bg-gray-50 border border-transparent focus:bg-white focus:border-[#0a8f96] focus:ring-4 focus:ring-[#0a8f96]/5 outline-none rounded-2xl px-6 py-4 text-sm font-bold transition-all shadow-inner text-center">
                     </div>
 
@@ -460,13 +460,35 @@ import { firstValueFrom } from 'rxjs';
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8 ltr:text-left rtl:text-right">
                   
-                  <!-- Smart Geocoding search input -->
-                  <div class="space-y-3 md:col-span-2">
+                  <!-- Smart Geocoding search input with autocomplete -->
+                  <div class="space-y-3 md:col-span-2 relative">
                     <label class="block text-[11px] font-black text-[#0a8f96] uppercase tracking-wider mb-1 px-1">{{ 'PROPERTY_FORM.GEO_SEARCH_LABEL' | translate }}</label>
                     <div class="relative flex gap-2">
-                      <input type="text" #geoSearchInput (keyup.enter)="searchLocation(geoSearchInput.value)"
-                             [placeholder]="'PROPERTY_FORM.GEO_SEARCH_PLACEHOLDER' | translate"
-                             class="w-full bg-slate-50 border border-gray-100 rounded-2xl px-6 py-4 text-gray-900 placeholder:text-gray-300 focus:bg-white focus:border-[#0a8f96] focus:ring-4 focus:ring-[#0a8f96]/5 outline-none transition-all font-bold shadow-sm">
+                      <div class="relative flex-1">
+                        <input type="text" #geoSearchInput
+                               (input)="onGeoSearchInput(geoSearchInput.value)"
+                               (keyup.enter)="searchLocation(geoSearchInput.value)"
+                               (focus)="showSearchResults.set(searchResults().length > 0)"
+                               (blur)="scheduleCloseResults()"
+                               [placeholder]="'PROPERTY_FORM.GEO_SEARCH_PLACEHOLDER' | translate"
+                               class="w-full bg-slate-50 border border-gray-100 rounded-2xl px-6 py-4 text-gray-900 placeholder:text-gray-300 focus:bg-white focus:border-[#0a8f96] focus:ring-4 focus:ring-[#0a8f96]/5 outline-none transition-all font-bold shadow-sm"
+                               autocomplete="off">
+                        @if (showSearchResults() && searchResults().length > 0) {
+                          <div class="absolute z-50 top-full left-0 right-0 mt-1 bg-white border border-gray-100 rounded-2xl shadow-xl max-h-72 overflow-y-auto">
+                            @for (result of searchResults(); track result.place_id; let i = $index) {
+                              <button type="button"
+                                      (mousedown)="selectSearchResult(result)"
+                                      class="w-full text-right px-4 py-3 hover:bg-[#0a8f96]/5 transition-colors border-b border-gray-50 last:border-b-0 cursor-pointer"
+                                      [class.bg-[#0a8f96]/10]="i === selectedSearchIndex()">
+                                <div class="text-sm font-bold text-gray-800">{{ result.display_name }}</div>
+                                <div class="text-[11px] text-gray-400 mt-0.5">
+                                  {{ ('PROPERTY_FORM.GEO_RESULT_TYPE' | translate) + ': ' + result.type }}
+                                </div>
+                              </button>
+                            }
+                          </div>
+                        }
+                      </div>
                       <button type="button" (click)="searchLocation(geoSearchInput.value)"
                               class="bg-[#0a8f96] hover:bg-[#076b70] text-white text-xs font-black px-6 py-4 rounded-2xl transition-all active:scale-95 cursor-pointer shrink-0">
                         {{ 'PROPERTY_FORM.GEO_SEARCH_BTN' | translate }}
@@ -567,14 +589,18 @@ import { firstValueFrom } from 'rxjs';
                     </div>
                   </div>
                   @if (form.latitude && form.longitude) {
-                    <div class="mt-6 rounded-2xl overflow-hidden border border-gray-100 shadow-sm h-[200px]">
-                      <iframe
-                        [src]="getMapUrl()"
-                        class="w-full h-full border-0"
-                        loading="lazy"
-                        referrerpolicy="no-referrer-when-downgrade"
-                        allowfullscreen>
-                      </iframe>
+                    <div class="mt-6 rounded-2xl overflow-hidden border border-gray-100 shadow-sm h-[220px] relative group" #mapContainer></div>
+                    <div class="mt-3 flex gap-2">
+                      <button type="button" (click)="openInGoogleMaps()"
+                              class="flex items-center gap-2 bg-white hover:bg-gray-50 text-gray-700 text-xs font-black px-4 py-2.5 rounded-2xl border border-gray-200 transition-all active:scale-95 ltr:flex-row rtl:flex-row-reverse">
+                        <svg class="w-4 h-4 text-red-500" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+                        <span>{{ 'PROPERTY_FORM.OPEN_IN_GOOGLE_MAPS' | translate }}</span>
+                      </button>
+                      <button type="button" (click)="resetMapLocation()"
+                              class="flex items-center gap-2 bg-white hover:bg-red-50 text-red-600 text-xs font-black px-4 py-2.5 rounded-2xl border border-red-200 transition-all active:scale-95 ltr:flex-row rtl:flex-row-reverse">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                        <span>{{ 'PROPERTY_FORM.CLEAR_COORDINATES' | translate }}</span>
+                      </button>
                     </div>
                   }
                   <p class="text-[10px] text-gray-400 font-bold mt-3 ltr:text-left rtl:text-right">{{ 'PROPERTY_FORM.COORDINATES_HELP' | translate }}</p>
@@ -664,7 +690,7 @@ import { firstValueFrom } from 'rxjs';
     </style>
   `,
 })
-export class PropertyFormComponent implements OnInit {
+export class PropertyFormComponent implements OnInit, AfterViewInit {
   readonly propertyTypeOptions = Object.values(PropertyType);
   readonly listingTypeOptions = Object.values(ListingType);
   readonly furnishingStatusOptions = Object.values(FurnishingStatus);
@@ -735,6 +761,14 @@ export class PropertyFormComponent implements OnInit {
   initialDescriptionHtml = '';
   uploadProgressList = signal<{ id: string, preview: string, index: number, progress: number, status: 'pending' | 'uploading' | 'success' | 'error' }[]>([]);
 
+  searchResults = signal<any[]>([]);
+  showSearchResults = signal(false);
+  selectedSearchIndex = signal(-1);
+  private searchDebounce: any = null;
+  private _leafletMap: L.Map | null = null;
+  private _leafletMarker: L.Marker | null = null;
+  @ViewChild('mapContainer') mapContainer!: ElementRef<HTMLDivElement>;
+
 
   form: CreatePropertyRequest = {
     title: '', description: '', propertyType: PropertyType.Apartment, listingType: ListingType.Sale,
@@ -758,8 +792,7 @@ export class PropertyFormComponent implements OnInit {
     private toast: ToastService,
     private confirmService: ConfirmService,
     private localImageService: LocalImageService,
-    private cloudinary: CloudinaryService,
-    private sanitizer: DomSanitizer
+    private cloudinary: CloudinaryService
   ) {}
 
   async ngOnInit() {
@@ -814,6 +847,11 @@ export class PropertyFormComponent implements OnInit {
           .map(image => image.url.trim())
           .filter(url => url.length > 0)
       );
+
+      if (this.form.latitude && this.form.longitude) {
+        this.cdr.detectChanges();
+        this.initLeafletMap();
+      }
       // NOTE: In edit mode we do NOT pre-fill localImages from local storage.
       // Those are already-uploaded Cloudinary URLs and must NOT be re-uploaded.
       // The user can add genuinely new images (data: URIs) via the file picker.
@@ -821,6 +859,10 @@ export class PropertyFormComponent implements OnInit {
     } catch {
       this.toast.error(this.translate.instant('PROPERTY_FORM.MESSAGES.LOAD_FAILED'));
     }
+  }
+
+  ngAfterViewInit() {
+    this.initLeafletMap();
   }
 
   getCityKeyFromValue(value: string | undefined): string {
@@ -858,7 +900,7 @@ export class PropertyFormComponent implements OnInit {
     const step = this.currentStep();
     if (step <= 1) return missing;
 
-    if (!this.form.title || this.form.title.trim().length < 2) {
+    if (!this.form.title || this.form.title.trim().length < 3) {
       missing.push({ id: 'title', labelKey: 'PROPERTY_FORM.LABEL_TITLE', step: 1 });
     }
     if (!this.form.price || this.form.price <= 0) {
@@ -880,13 +922,13 @@ export class PropertyFormComponent implements OnInit {
 
   // Per-step validity for the Next button + visual indicators
   isStep1Valid(): boolean {
-    return !!(this.form.title && this.form.title.trim().length >= 2 && this.form.title.trim().length <= 500) &&
+    return !!(this.form.title && this.form.title.trim().length >= 3 && this.form.title.trim().length <= 500) &&
            !!(this.form.price && this.form.price >= 1000 && this.form.price <= 999999999.99) &&
            !!(this.form.area && this.form.area >= 10 && this.form.area <= 100000) &&
-           (this.form.bedrooms === undefined || this.form.bedrooms === null || (this.form.bedrooms >= 1 && this.form.bedrooms <= 100)) &&
-           (this.form.bathrooms === undefined || this.form.bathrooms === null || (this.form.bathrooms >= 1 && this.form.bathrooms <= 100)) &&
-           (this.form.floor === undefined || this.form.floor === null || (this.form.floor >= 0 && this.form.floor <= 149 && (!this.form.totalFloors || this.form.floor <= this.form.totalFloors))) &&
-           (this.form.totalFloors === undefined || this.form.totalFloors === null || (this.form.totalFloors >= 1 && this.form.totalFloors <= 150)) &&
+           (this.form.bedrooms === undefined || this.form.bedrooms === null || (this.form.bedrooms >= 0 && this.form.bedrooms <= 100)) &&
+           (this.form.bathrooms === undefined || this.form.bathrooms === null || (this.form.bathrooms >= 0 && this.form.bathrooms <= 100)) &&
+           (this.form.floor === undefined || this.form.floor === null || (this.form.floor >= 0 && this.form.floor <= 999 && (!this.form.totalFloors || this.form.floor <= this.form.totalFloors))) &&
+           (this.form.totalFloors === undefined || this.form.totalFloors === null || (this.form.totalFloors >= 1 && this.form.totalFloors <= 999)) &&
            (!this.form.description || this.form.description.length <= 10000);
   }
   isStep2Valid(): boolean {
@@ -928,7 +970,7 @@ export class PropertyFormComponent implements OnInit {
   getFieldError(id: string): string | null {
     if (id === 'title') {
       if (!this.form.title || !this.form.title.trim()) return 'required';
-      if (this.form.title.trim().length < 2) return 'minLength';
+      if (this.form.title.trim().length < 3) return 'minLength';
       if (this.form.title.trim().length > 500) return 'maxLength';
       return null;
     }
@@ -964,26 +1006,26 @@ export class PropertyFormComponent implements OnInit {
     }
     if (id === 'bedrooms') {
       if (this.form.bedrooms !== undefined && this.form.bedrooms !== null) {
-        if (this.form.bedrooms < 1 || this.form.bedrooms > 100) return 'invalid';
+        if (this.form.bedrooms < 0 || this.form.bedrooms > 100) return 'invalid';
       }
       return null;
     }
     if (id === 'bathrooms') {
       if (this.form.bathrooms !== undefined && this.form.bathrooms !== null) {
-        if (this.form.bathrooms < 1 || this.form.bathrooms > 100) return 'invalid';
+        if (this.form.bathrooms < 0 || this.form.bathrooms > 100) return 'invalid';
       }
       return null;
     }
     if (id === 'floor') {
       if (this.form.floor !== undefined && this.form.floor !== null) {
-        if (this.form.floor < 0 || this.form.floor > 149) return 'invalid';
+        if (this.form.floor < 0 || this.form.floor > 999) return 'invalid';
         if (this.form.totalFloors && this.form.floor > this.form.totalFloors) return 'floorExceedsTotal';
       }
       return null;
     }
     if (id === 'totalFloors') {
       if (this.form.totalFloors !== undefined && this.form.totalFloors !== null) {
-        if (this.form.totalFloors < 1 || this.form.totalFloors > 150) return 'invalid';
+        if (this.form.totalFloors < 1 || this.form.totalFloors > 999) return 'invalid';
       }
       return null;
     }
@@ -1242,7 +1284,7 @@ export class PropertyFormComponent implements OnInit {
       }, 150);
     };
 
-    if (!this.form.title || this.form.title.length < 2) {
+    if (!this.form.title || this.form.title.length < 3) {
       this.toast.error(this.translate.instant('PROPERTY_FORM.VALIDATION.TITLE_REQUIRED'));
       scrollToError('title', 1);
       return;
@@ -1272,22 +1314,22 @@ export class PropertyFormComponent implements OnInit {
       scrollToError('area', 1);
       return;
     }
-    if (this.form.bedrooms !== undefined && this.form.bedrooms !== null && (this.form.bedrooms < 1 || this.form.bedrooms > 100)) {
+    if (this.form.bedrooms !== undefined && this.form.bedrooms !== null && (this.form.bedrooms < 0 || this.form.bedrooms > 100)) {
       this.toast.error(this.translate.instant('VALIDATION.Property_BedroomsTooMany'));
       scrollToError('bedrooms', 1);
       return;
     }
-    if (this.form.bathrooms !== undefined && this.form.bathrooms !== null && (this.form.bathrooms < 1 || this.form.bathrooms > 100)) {
+    if (this.form.bathrooms !== undefined && this.form.bathrooms !== null && (this.form.bathrooms < 0 || this.form.bathrooms > 100)) {
       this.toast.error(this.translate.instant('VALIDATION.Property_BathroomsTooMany'));
       scrollToError('bathrooms', 1);
       return;
     }
-    if (this.form.floor !== undefined && this.form.floor !== null && (this.form.floor < 0 || this.form.floor > 149)) {
+    if (this.form.floor !== undefined && this.form.floor !== null && (this.form.floor < 0 || this.form.floor > 999)) {
       this.toast.error(this.translate.instant('VALIDATION.Property_FloorTooHigh'));
       scrollToError('floor', 1);
       return;
     }
-    if (this.form.totalFloors !== undefined && this.form.totalFloors !== null && (this.form.totalFloors < 1 || this.form.totalFloors > 150)) {
+    if (this.form.totalFloors !== undefined && this.form.totalFloors !== null && (this.form.totalFloors < 1 || this.form.totalFloors > 999)) {
       this.toast.error(this.translate.instant('VALIDATION.Property_TotalFloorsTooHigh'));
       scrollToError('totalFloors', 1);
       return;
@@ -1561,6 +1603,7 @@ export class PropertyFormComponent implements OnInit {
     if (lat < -90 || lat > 90 || lng < -180 || lng > 180) return;
     if (this._isReverseGeocoding) return;
 
+    this.initLeafletMap();
     clearTimeout(this.geocodeTimeout);
     this.geocodeTimeout = setTimeout(() => this.reverseGeocode(lat, lng), 600);
   }
@@ -1573,6 +1616,7 @@ export class PropertyFormComponent implements OnInit {
     if (isNaN(lat) || isNaN(lng)) return;
     if (lat < -90 || lat > 90 || lng < -180 || lng > 180) return;
 
+    this.initLeafletMap();
     clearTimeout(this.geocodeTimeout);
     this.reverseGeocode(lat, lng);
   }
@@ -1583,7 +1627,8 @@ export class PropertyFormComponent implements OnInit {
     try {
       const lang = this.translate.currentLang || 'ar';
       const response = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1&accept-language=${lang}`
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1&accept-language=${lang}`,
+        { headers: { 'User-Agent': 'BaytologyApp/1.0 (property form reverse geocode)' } }
       );
       const data = await response.json();
       if (data && data.address) {
@@ -1617,7 +1662,8 @@ export class PropertyFormComponent implements OnInit {
         try {
           const lang = this.translate.currentLang || 'ar';
           const response = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1&accept-language=${lang}`
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1&accept-language=${lang}`,
+            { headers: { 'User-Agent': 'BaytologyApp/1.0 (property form get current location)' } }
           );
           const data = await response.json();
           if (data && data.address) {
@@ -1629,6 +1675,7 @@ export class PropertyFormComponent implements OnInit {
 
         this.locating = false;
         this._isReverseGeocoding = false;
+        this.initLeafletMap();
         this.triggerDraftSave();
         this.toast.success(this.translate.instant('PROPERTY_FORM.MESSAGES.GEO_SUCCESS'));
         this.cdr.detectChanges();
@@ -1655,11 +1702,91 @@ export class PropertyFormComponent implements OnInit {
     );
   }
 
-  getMapUrl(): SafeResourceUrl {
-    const lat = this.form.latitude || 30.0444;
-    const lng = this.form.longitude || 31.2357;
-    const url = `https://www.openstreetmap.org/export/embed.html?bbox=${lng - 0.005},${lat - 0.005},${lng + 0.005},${lat + 0.005}&layer=mapnik&marker=${lat},${lng}`;
-    return this.sanitizer.bypassSecurityTrustResourceUrl(url);
+  // --- Leaflet Interactive Map ---
+  private _createPinIcon() {
+    return L.divIcon({
+      className: '',
+      html: `<div style="
+        width: 28px; height: 28px; position: relative;
+        display: flex; align-items: flex-start; justify-content: center;
+      ">
+        <div style="
+          width: 24px; height: 24px; background: #0a8f96; border-radius: 50% 50% 50% 0;
+          transform: rotate(-45deg); border: 3px solid white;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        "></div>
+        <div style="
+          position: absolute; top: 6px; left: 50%; transform: translateX(-50%) rotate(45deg);
+          width: 6px; height: 6px; background: white; border-radius: 50%;
+        "></div>
+      </div>`,
+      iconSize: [28, 34],
+      iconAnchor: [14, 30],
+      popupAnchor: [0, -30]
+    });
+  }
+
+  scheduleCloseResults() {
+    window.setTimeout(() => this.showSearchResults.set(false), 200);
+  }
+
+  private initLeafletMap(retries = 5) {
+    const lat = this.form.latitude;
+    const lng = this.form.longitude;
+    if (!lat || !lng) return;
+    window.setTimeout(() => {
+      try {
+        const container = this.mapContainer?.nativeElement;
+        if (!container) {
+          if (retries > 0) {
+            window.setTimeout(() => this.initLeafletMap(retries - 1), 100);
+          }
+          return;
+        }
+        if (this._leafletMap) {
+          this._leafletMarker!.setLatLng([lat, lng]);
+          this._leafletMap.setView([lat, lng], 17);
+          return;
+        }
+        this._leafletMap = L.map(container, {
+          center: [lat, lng],
+          zoom: 17,
+          zoomControl: false
+        });
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          maxZoom: 19,
+          attribution: '&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>'
+        }).addTo(this._leafletMap);
+        this._leafletMarker = L.marker([lat, lng], { icon: this._createPinIcon(), draggable: true }).addTo(this._leafletMap);
+        this._leafletMarker.on('dragend', () => {
+          const pos = this._leafletMarker!.getLatLng();
+          this.form.latitude = parseFloat(pos.lat.toFixed(7));
+          this.form.longitude = parseFloat(pos.lng.toFixed(7));
+          this.reverseGeocode(this.form.latitude, this.form.longitude);
+          this.cdr.detectChanges();
+        });
+        window.setTimeout(() => this._leafletMap!.invalidateSize(), 100);
+      } catch (err) {
+        console.error('Leaflet map init failed:', err);
+      }
+    }, 0);
+  }
+
+  openInGoogleMaps() {
+    if (!this.form.latitude || !this.form.longitude) return;
+    const url = `https://www.google.com/maps?q=${this.form.latitude},${this.form.longitude}`;
+    window.open(url, '_blank');
+  }
+
+  resetMapLocation() {
+    this.form.latitude = undefined as unknown as number;
+    this.form.longitude = undefined as unknown as number;
+    if (this._leafletMap) {
+      this._leafletMap.remove();
+      this._leafletMap = null;
+      this._leafletMarker = null;
+    }
+    this.cdr.detectChanges();
   }
 
   // --- 4. Custom Rich Text WYSIWYG Editor Methods ---
@@ -1673,29 +1800,69 @@ export class PropertyFormComponent implements OnInit {
   }
 
   // --- 3. Smart Nominatim OpenStreetMap Geocoding ---
+  onGeoSearchInput(query: string) {
+    clearTimeout(this.searchDebounce);
+    if (!query || query.trim().length < 2) {
+      this.searchResults.set([]);
+      this.showSearchResults.set(false);
+      return;
+    }
+    this.searchDebounce = setTimeout(async () => {
+      try {
+        const lang = this.translate.currentLang || 'ar';
+        const response = await fetch(
+          `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&addressdetails=1&accept-language=${lang}`,
+          { headers: { 'User-Agent': 'BaytologyApp/1.0 (property form autocomplete)' } }
+        );
+        const data = await response.json();
+        this.searchResults.set(data && data.length > 0 ? data : []);
+        this.showSearchResults.set(data && data.length > 0);
+        this.selectedSearchIndex.set(-1);
+        this.cdr.detectChanges();
+      } catch (err) {
+        console.error('Autocomplete search failed:', err);
+      }
+    }, 400);
+  }
+
+  selectSearchResult(result: any) {
+    this.showSearchResults.set(false);
+    const lat = parseFloat(result.lat);
+    const lon = parseFloat(result.lon);
+    this.form.latitude = parseFloat(lat.toFixed(7));
+    this.form.longitude = parseFloat(lon.toFixed(7));
+    if (result.address) {
+      this.fillAddressFromGeocode(result.address);
+    }
+    this.triggerDraftSave();
+    this.initLeafletMap();
+    this.cdr.detectChanges();
+  }
+
   async searchLocation(query: string) {
     if (!query || query.trim().length < 3) {
       this.toast.error(this.translate.instant('PROPERTY_FORM.MESSAGES.GEO_MIN_LENGTH'));
       return;
     }
 
+    this.showSearchResults.set(false);
     this.locating = true;
     this._isReverseGeocoding = true;
     try {
-      const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1&addressdetails=1`);
+      const lang = this.translate.currentLang || 'ar';
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&addressdetails=1&accept-language=${lang}`,
+        { headers: { 'User-Agent': 'BaytologyApp/1.0 (property form search)' } }
+      );
       const data = await response.json();
       if (data && data.length > 0) {
-        const lat = parseFloat(data[0].lat);
-        const lon = parseFloat(data[0].lon);
-        this.form.latitude = parseFloat(lat.toFixed(7));
-        this.form.longitude = parseFloat(lon.toFixed(7));
-        
-        if (data[0].address) {
-          this.fillAddressFromGeocode(data[0].address);
+        this.searchResults.set(data);
+        if (data.length === 1) {
+          this.selectSearchResult(data[0]);
+        } else {
+          this.showSearchResults.set(true);
+          this.toast.info(this.translate.instant('PROPERTY_FORM.MESSAGES.GEO_MULTIPLE_RESULTS'));
         }
-        
-        this.triggerDraftSave();
-        this.toast.success(this.translate.instant('PROPERTY_FORM.MESSAGES.GEO_UPDATED'));
       } else {
         this.toast.error(this.translate.instant('PROPERTY_FORM.MESSAGES.GEO_NOT_FOUND'));
       }
@@ -1713,43 +1880,82 @@ export class PropertyFormComponent implements OnInit {
 
     const lang = this.translate.currentLang || 'ar';
 
-    // 1. City extraction and matching
+    // 1. City extraction and matching (improved with Arabic aliases)
     const rawCity = address.city || address.town || address.village || address.governorate || address.state || address.county || '';
     let matchedCityKey = '';
-    
+
+    // Arabic aliases for common cities (more flexible matching)
+    const cityAliases: Record<string, string[]> = {
+      'Cairo': ['القاهرة', 'cairo', 'qahira', 'qāhirah'],
+      'Alexandria': ['الإسكندرية', 'alexandria', 'iskandaria', 'اسكندرية', 'alex'],
+      'Giza': ['الجيزة', 'giza', 'gīzah'],
+      'Mansoura': ['المنصورة', 'mansoura', 'mansura', 'el-mansoura'],
+      'Tanta': ['طنطا', 'tanta', 'tanda'],
+      'Mahalla': ['المحلة', 'المحلة الكبرى', 'mahalla', 'el-mahalla', 'mahalla el-kubra'],
+      'PortSaid': ['بورسعيد', 'بور سعيد', 'port said', 'port-said'],
+      'Suez': ['السويس', 'suez', 'el-suez'],
+      'Ismailia': ['الإسماعيلية', 'ismailia', 'el-ismailia'],
+      'Fayoum': ['الفيوم', 'fayoum', 'fayum'],
+      'Zagazig': ['الزقازيق', 'zagazig', 'el-zagazig'],
+      'Aswan': ['أسوان', 'aswan'],
+      'Luxor': ['الأقصر', 'luxor', 'el-quesna', 'el-uxor'],
+      'Damietta': ['دمياط', 'damietta', 'dumyat'],
+      'Damanhour': ['دمنهور', 'damanhour'],
+      'Minya': ['المنيا', 'minya', 'el-minya'],
+      'BeniSuef': ['بني سويف', 'bani suef', 'beni suef'],
+      'Qena': ['قنا', 'qena', 'qina'],
+      'Sohag': ['سوهاج', 'sohag', 'suhaj'],
+      'Asyut': ['أسيوط', 'asyut', 'assiut'],
+      'Hurghada': ['الغردقة', 'hurghada', 'el-gharqada', 'ghardaqa'],
+      'SharmElSheikh': ['شرم الشيخ', 'sharm el sheikh', 'sharm'],
+      'MarsaMatrouh': ['مرسى مطروح', 'marsa matrouh', 'matrouh', 'mersa matruh'],
+      'October': ['6 أكتوبر', '6 october', 'sixth of october', 'sadsat oktober'],
+      'Zayed': ['الشيخ زايد', 'sheikh zayed', 'shiekh zayed', 'zayed']
+    };
+
     if (rawCity) {
       const cleanCity = rawCity.toLowerCase().replace('governorate', '').replace('محافظة', '').trim();
-      
-      // Find in cityMap (keys or values)
+
+      // Check against cityMap keys
       const foundKey = Object.keys(this.cityMap).find(key => {
         const engMatch = key.toLowerCase() === cleanCity;
-        const arMatch = this.cityMap[key].toLowerCase() === cleanCity || 
-                        cleanCity.includes(this.cityMap[key].toLowerCase()) || 
+        const arMatch = this.cityMap[key].toLowerCase() === cleanCity ||
+                        cleanCity.includes(this.cityMap[key].toLowerCase()) ||
                         this.cityMap[key].toLowerCase().includes(cleanCity);
         return engMatch || arMatch;
       });
-      
+
       if (foundKey) {
         matchedCityKey = foundKey;
         const translated = this.translate.instant('CITIES.' + foundKey);
         this.form.city = translated !== ('CITIES.' + foundKey) ? translated : (lang === 'ar' ? this.cityMap[foundKey] : foundKey);
       } else {
-        this.form.city = rawCity;
+        // Check aliases
+        const aliasKey = Object.keys(cityAliases).find(key =>
+          cityAliases[key].some(alias => cleanCity.includes(alias.toLowerCase()) || alias.toLowerCase().includes(cleanCity))
+        );
+        if (aliasKey) {
+          matchedCityKey = aliasKey;
+          const translated = this.translate.instant('CITIES.' + aliasKey);
+          this.form.city = translated !== ('CITIES.' + aliasKey) ? translated : (lang === 'ar' ? this.cityMap[aliasKey] : aliasKey);
+        } else {
+          this.form.city = rawCity;
+        }
       }
     }
 
-    // 2. District extraction and matching
+    // 2. District extraction and matching (improved)
     const rawDistrict = address.suburb || address.neighbourhood || address.city_district || address.quarter || address.state_district || address.county || '';
     if (rawDistrict) {
       const cleanDistrict = rawDistrict.toLowerCase().trim();
       const foundKey = Object.keys(this.districtMap).find(key => {
         const engMatch = key.toLowerCase() === cleanDistrict;
-        const arMatch = this.districtMap[key].toLowerCase() === cleanDistrict || 
-                        cleanDistrict.includes(this.districtMap[key].toLowerCase()) || 
+        const arMatch = this.districtMap[key].toLowerCase() === cleanDistrict ||
+                        cleanDistrict.includes(this.districtMap[key].toLowerCase()) ||
                         this.districtMap[key].toLowerCase().includes(cleanDistrict);
         return engMatch || arMatch;
       });
-      
+
       if (foundKey) {
         const translated = this.translate.instant('DISTRICTS.' + foundKey);
         this.form.district = translated !== ('DISTRICTS.' + foundKey) ? translated : (lang === 'ar' ? this.districtMap[foundKey] : foundKey);
@@ -1767,8 +1973,10 @@ export class PropertyFormComponent implements OnInit {
     // 3. Zip Code
     this.form.zipCode = address.postcode || '';
 
-    // 4. Detailed Address
+    // 4. Detailed Address (richer with building, house_number, amenity)
     const parts = [];
+    if (address.house_number) parts.push(address.house_number);
+    if (address.amenity || address.building) parts.push(address.amenity || address.building);
     if (address.road) parts.push(address.road);
     if (rawDistrict && rawDistrict !== rawCity) parts.push(rawDistrict);
     if (rawCity) parts.push(rawCity);

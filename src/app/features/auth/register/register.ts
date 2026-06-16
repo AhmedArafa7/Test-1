@@ -124,30 +124,6 @@ import { ToastService } from '../../../core/services/toast.service';
             </div>
 
             <div class="space-y-2">
-              <label class="block text-[11px] font-black text-slate-400 uppercase tracking-wider">{{ 'AUTH.REGISTER.PHONE' | translate }} <span class="text-red-500">*</span></label>
-              <div class="relative">
-                <span class="absolute ltr:left-4 rtl:right-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold ltr:border-r rtl:border-l border-slate-200/60 ltr:pr-3 rtl:pl-3">+20</span>
-                <input type="tel" [ngModel]="phone()" (ngModelChange)="phone.set($event); phoneTouched.set(true)" (blur)="phoneTouched.set(true)" name="phone"
-                       id="phone"
-                       dir="ltr"
-                       autocomplete="tel"
-                       [class]="phoneFieldClass() + ' ltr:pl-16 rtl:pr-16'"
-                       placeholder="10xxxxxxxxx">
-              </div>
-              <div [class]="phoneHintClass()">
-                @if (phoneTouched() && phoneError()) {
-                  <svg class="icon" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
-                  <span>{{ phoneError() === 'invalid' ? ('AUTH.LOGIN.PHONE_INVALID' | translate) : ('AUTH.REGISTER.PHONE_REQUIRED' | translate) }}</span>
-                } @else if (phoneTouched() && !phoneError() && phone()) {
-                  <svg class="icon" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 010 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
-                  <span>{{ 'AUTH.REGISTER.PHONE_HINT' | translate }}</span>
-                } @else {
-                  <span>{{ 'AUTH.REGISTER.PHONE_HINT' | translate }}</span>
-                }
-              </div>
-            </div>
-
-            <div class="space-y-2">
               <label class="block text-[11px] font-black text-slate-400 uppercase tracking-wider">{{ 'AUTH.REGISTER.PASSWORD' | translate }} <span class="text-red-500">*</span></label>
               <div class="relative">
                 <input type="text" autocomplete="username" class="hidden" style="display:none" aria-hidden="true" tabindex="-1">
@@ -224,6 +200,32 @@ import { ToastService } from '../../../core/services/toast.service';
                   </div>
                 </div>
               }
+            </div>
+
+            <div class="space-y-2">
+              <label class="block text-[11px] font-black text-slate-400 uppercase tracking-wider">{{ 'AUTH.REGISTER.PHONE' | translate }} <span class="text-red-500">*</span></label>
+              <div class="relative">
+                <span class="absolute ltr:left-4 rtl:right-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold ltr:border-r rtl:border-l border-slate-200/60 ltr:pr-3 rtl:pl-3">+20</span>
+                <input type="tel" [ngModel]="phone()" (ngModelChange)="phone.set($event); phoneTouched.set(true)" (blur)="phoneTouched.set(true)" name="phone"
+                       id="phone"
+                       dir="ltr"
+                       inputmode="numeric"
+                       pattern="[0-9]*"
+                       autocomplete="tel"
+                       [class]="phoneFieldClass() + ' ltr:pl-16 rtl:pr-16'"
+                       placeholder="10xxxxxxxxx">
+              </div>
+              <div [class]="phoneHintClass()">
+                @if (phoneTouched() && phoneError()) {
+                  <svg class="icon" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                  <span>{{ phoneError() === 'invalid' ? ('AUTH.LOGIN.PHONE_INVALID' | translate) : ('AUTH.REGISTER.PHONE_REQUIRED' | translate) }}</span>
+                } @else if (phoneTouched() && !phoneError() && phone()) {
+                  <svg class="icon" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 010 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                  <span>{{ 'AUTH.REGISTER.PHONE_HINT' | translate }}</span>
+                } @else {
+                  <span>{{ 'AUTH.REGISTER.PHONE_HINT' | translate }}</span>
+                }
+              </div>
             </div>
 
             <div class="space-y-2">

@@ -267,87 +267,179 @@ import { EGYPT_REGIONS, Governorate, City } from '../../core/constants/egypt-reg
   </section>
 
   <!-- Featured Exclusives -->
-      <section class="py-32 bg-white">
-        <div class="max-w-[1400px] mx-auto px-6 md:px-10">
-          <div class="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
-            <div class="max-w-xl">
-              <h2 class="text-4xl md:text-5xl font-black text-gray-900 mb-4 tracking-tighter leading-tight">{{ 'HOME.FEATURED_TITLE' | translate | slice:0:6 }} <span class="text-[#0a8f96]">{{ 'HOME.FEATURED_TITLE' | translate | slice:6 }}</span></h2>
-              <p class="text-gray-400 font-bold text-sm uppercase tracking-widest">{{ 'HOME.FEATURED_SUB' | translate }}</p>
-            </div>
-            <a routerLink="/properties" class="group flex items-center gap-3 px-8 py-4 bg-gray-50 rounded-2xl text-sm font-black text-gray-900 hover:bg-[#0a8f96] hover:text-white transition-all shadow-sm">
-              {{ 'COMMON.VIEW_ALL' | translate }}
-              <svg class="w-5 h-5 transition-transform rtl:rotate-180 group-hover:translate-x-2 ltr:group-hover:translate-x-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
-            </a>
-          </div>
-
-          <!-- 1 Large, 2 Stacked Grid -->
-          <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            @if (featured().length > 0) {
-              <!-- Right Large Card (RTL) -->
-              <a [routerLink]="['/properties', featured()[0].id]" class="lg:col-span-2 relative group cursor-pointer overflow-hidden rounded-[32px] h-[500px] lg:h-[650px] shadow-2xl block bg-gray-100">
-                @let mainImg = featured()[0].primaryImageUrl || localImagesMap().get(featured()[0].id);
-                @if (mainImg) {
-                  <img [src]="mainImg" (error)="onImageError($event, featured()[0])" class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110">
-                } @else {
-                  <div class="w-full h-full flex items-center justify-center text-gray-200">
-                    <svg class="w-32 h-32" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
-                  </div>
-                }
-                <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent"></div>
-                
-                <div class="absolute top-10 right-10 flex gap-3">
-                  <span class="bg-[#0a8f96] text-white text-[10px] font-black px-4 py-2 rounded-xl uppercase tracking-widest shadow-lg">{{ 'PROPERTY_DETAIL.EXCLUSIVE_PRICE' | translate }}</span>
-                  <span class="bg-white/20 backdrop-blur-xl text-white text-[10px] font-black px-4 py-2 rounded-xl uppercase tracking-widest border border-white/20">{{ 'PROPERTY.LISTING_TYPES.' + featured()[0].listingType | translate }}</span>
-                </div>
-
-                <div class="absolute bottom-12 right-12 left-12 flex flex-col md:flex-row justify-between items-end gap-8">
-                  <div class="flex-1">
-                    <div class="flex items-center gap-3 text-white/60 text-xs font-bold mb-4">
-                      <svg class="w-4 h-4 text-[#0a8f96]" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>
-                      {{ getDistrictLabel(featured()[0].district) }}{{ featured()[0].city ? ', ' + getCityLabel(featured()[0].city) : '' }}
-                    </div>
-                    <h3 class="text-4xl md:text-5xl font-black text-white mb-6 leading-tight">{{ featured()[0].title }}</h3>
-                    <div class="flex flex-wrap items-center gap-8 text-white text-sm font-bold">
-                      <span class="flex items-center gap-3"><svg class="w-5 h-5 text-[#0a8f96]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg> {{ featured()[0].bedrooms }} {{ 'PROPERTY_DETAIL.BEDROOMS' | translate }}</span>
-                      <span class="flex items-center gap-3"><svg class="w-5 h-5 text-[#0a8f96]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg> {{ featured()[0].bathrooms }} {{ 'PROPERTY_DETAIL.BATHROOMS' | translate }}</span>
-                      <span class="flex items-center gap-3"><svg class="w-5 h-5 text-[#0a8f96]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 4l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5v-4m0 4h-4m4 0l-5-5"/></svg> {{ featured()[0].area | number }} {{ 'PROPERTY.AREA_UNIT' | translate }}</span>
-                    </div>
-                  </div>
-                  <div class="text-right shrink-0 bg-white/10 backdrop-blur-3xl p-6 rounded-[32px] border border-white/20 ltr:text-left rtl:text-right">
-                    <p class="text-[10px] font-black uppercase tracking-[0.2em] text-white/50 mb-2">{{ 'PROPERTY.ASKING_PRICE' | translate }}</p>
-                    <p class="text-3xl font-black text-white leading-none">{{ featured()[0].price | currencyEgp }}</p>
-                  </div>
-                </div>
+      @if (!auth.isAgent()) {
+        <section class="py-32 bg-white">
+          <div class="max-w-[1400px] mx-auto px-6 md:px-10">
+            <div class="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
+              <div class="max-w-xl">
+                <h2 class="text-4xl md:text-5xl font-black text-gray-900 mb-4 tracking-tighter leading-tight">{{ 'HOME.FEATURED_TITLE' | translate | slice:0:6 }} <span class="text-[#0a8f96]">{{ 'HOME.FEATURED_TITLE' | translate | slice:6 }}</span></h2>
+                <p class="text-gray-400 font-bold text-sm uppercase tracking-widest">{{ 'HOME.FEATURED_SUB' | translate }}</p>
+              </div>
+              <a routerLink="/properties" class="group flex items-center gap-3 px-8 py-4 bg-gray-50 rounded-2xl text-sm font-black text-gray-900 hover:bg-[#0a8f96] hover:text-white transition-all shadow-sm">
+                {{ 'COMMON.VIEW_ALL' | translate }}
+                <svg class="w-5 h-5 transition-transform rtl:rotate-180 group-hover:translate-x-2 ltr:group-hover:translate-x-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
               </a>
+            </div>
 
-              <!-- Left 2 Stacked Cards (RTL) -->
-              <div class="flex flex-col gap-8">
-                @for (property of featured().slice(1, 3); track property.id) {
-                  <a [routerLink]="['/properties', property.id]" class="flex-1 relative group cursor-pointer overflow-hidden rounded-[32px] shadow-xl min-h-[250px] block bg-gray-50">
-                    @let stackImg = property.primaryImageUrl || localImagesMap().get(property.id);
-                    @if (stackImg) {
-                      <img [src]="stackImg" (error)="onImageError($event, property)" class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110">
-                    } @else {
-                      <div class="w-full h-full flex items-center justify-center text-gray-200">
-                        <svg class="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
-                      </div>
-                    }
-                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
-                    <div class="absolute top-6 right-6">
-                      <span class="bg-white/90 backdrop-blur-md text-gray-900 text-[9px] font-black px-3 py-1.5 rounded-lg uppercase tracking-widest shadow-lg">{{ 'RELATIVE_TIME.JUST_NOW' | translate }}</span>
+            <!-- 1 Large, 2 Stacked Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              @if (featured().length > 0) {
+                <!-- Right Large Card (RTL) -->
+                <a [routerLink]="['/properties', featured()[0].id]" class="lg:col-span-2 relative group cursor-pointer overflow-hidden rounded-[32px] h-[500px] lg:h-[650px] shadow-2xl block bg-gray-100">
+                  @let mainImg = featured()[0].primaryImageUrl || localImagesMap().get(featured()[0].id);
+                  @if (mainImg) {
+                    <img [src]="mainImg" (error)="onImageError($event, featured()[0])" class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110">
+                  } @else {
+                    <div class="w-full h-full flex items-center justify-center text-gray-200">
+                      <svg class="w-32 h-32" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
                     </div>
-                    <div class="absolute bottom-8 right-8 left-8">
-                      <p class="text-[11px] font-bold text-white/60 mb-2">{{ 'CITIES.' + getCityKeyFromValue(property.city) | translate }}</p>
-                      <h4 class="text-xl font-black text-white mb-3">{{ property.title }}</h4>
-                      <p class="text-xl font-black text-[#0a8f96] bg-white/95 backdrop-blur-xl inline-block px-4 py-2 rounded-xl shadow-xl">{{ property.price | currencyEgp }}</p>
+                  }
+                  <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent"></div>
+                  
+                  <div class="absolute top-10 right-10 flex gap-3">
+                    <span class="bg-[#0a8f96] text-white text-[10px] font-black px-4 py-2 rounded-xl uppercase tracking-widest shadow-lg">{{ 'PROPERTY_DETAIL.EXCLUSIVE_PRICE' | translate }}</span>
+                    <span class="bg-white/20 backdrop-blur-xl text-white text-[10px] font-black px-4 py-2 rounded-xl uppercase tracking-widest border border-white/20">{{ 'PROPERTY.LISTING_TYPES.' + featured()[0].listingType | translate }}</span>
+                  </div>
+
+                  <div class="absolute bottom-12 right-12 left-12 flex flex-col md:flex-row justify-between items-end gap-8">
+                    <div class="flex-1">
+                      <div class="flex items-center gap-3 text-white/60 text-xs font-bold mb-4">
+                        <svg class="w-4 h-4 text-[#0a8f96]" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>
+                        {{ getDistrictLabel(featured()[0].district) }}{{ featured()[0].city ? ', ' + getCityLabel(featured()[0].city) : '' }}
+                      </div>
+                      <h3 class="text-4xl md:text-5xl font-black text-white mb-6 leading-tight">{{ featured()[0].title }}</h3>
+                      <div class="flex flex-wrap items-center gap-8 text-white text-sm font-bold">
+                        <span class="flex items-center gap-3"><svg class="w-5 h-5 text-[#0a8f96]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg> {{ featured()[0].bedrooms }} {{ 'PROPERTY_DETAIL.BEDROOMS' | translate }}</span>
+                        <span class="flex items-center gap-3"><svg class="w-5 h-5 text-[#0a8f96]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg> {{ featured()[0].bathrooms }} {{ 'PROPERTY_DETAIL.BATHROOMS' | translate }}</span>
+                        <span class="flex items-center gap-3"><svg class="w-5 h-5 text-[#0a8f96]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 4l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5v-4m0 4h-4m4 0l-5-5"/></svg> {{ featured()[0].area | number }} {{ 'PROPERTY.AREA_UNIT' | translate }}</span>
+                      </div>
+                    </div>
+                    <div class="text-right shrink-0 bg-white/10 backdrop-blur-3xl p-6 rounded-[32px] border border-white/20 ltr:text-left rtl:text-right">
+                      <p class="text-[10px] font-black uppercase tracking-[0.2em] text-white/50 mb-2">{{ 'PROPERTY.ASKING_PRICE' | translate }}</p>
+                      <p class="text-3xl font-black text-white leading-none">{{ featured()[0].price | currencyEgp }}</p>
+                    </div>
+                  </div>
+                </a>
+
+                <!-- Left 2 Stacked Cards (RTL) -->
+                <div class="flex flex-col gap-8">
+                  @for (property of featured().slice(1, 3); track property.id) {
+                    <a [routerLink]="['/properties', property.id]" class="flex-1 relative group cursor-pointer overflow-hidden rounded-[32px] shadow-xl min-h-[250px] block bg-gray-50">
+                      @let stackImg = property.primaryImageUrl || localImagesMap().get(property.id);
+                      @if (stackImg) {
+                        <img [src]="stackImg" (error)="onImageError($event, property)" class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110">
+                      } @else {
+                        <div class="w-full h-full flex items-center justify-center text-gray-200">
+                          <svg class="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                        </div>
+                      }
+                      <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+                      <div class="absolute top-6 right-6">
+                        <span class="bg-white/90 backdrop-blur-md text-gray-900 text-[9px] font-black px-3 py-1.5 rounded-lg uppercase tracking-widest shadow-lg">{{ 'RELATIVE_TIME.JUST_NOW' | translate }}</span>
+                      </div>
+                      <div class="absolute bottom-8 right-8 left-8">
+                        <p class="text-[11px] font-bold text-white/60 mb-2">{{ 'CITIES.' + getCityKeyFromValue(property.city) | translate }}</p>
+                        <h4 class="text-xl font-black text-white mb-3">{{ property.title }}</h4>
+                        <p class="text-xl font-black text-[#0a8f96] bg-white/95 backdrop-blur-xl inline-block px-4 py-2 rounded-xl shadow-xl">{{ property.price | currencyEgp }}</p>
+                      </div>
+                    </a>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+        </section>
+      }
+
+      <!-- Agent Properties Section -->
+      @if (auth.isAuthenticated() && auth.isAgent()) {
+        <section class="py-32 bg-white">
+          <div class="max-w-[1400px] mx-auto px-6 md:px-10">
+            <div class="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
+              <div class="max-w-xl">
+                <h2 class="text-4xl md:text-5xl font-black text-gray-900 mb-4 tracking-tighter leading-tight">
+                  {{ 'HOME.AGENT_PROPERTIES_TITLE' | translate | slice:0:7 }} <span class="text-[#0a8f96]">{{ 'HOME.AGENT_PROPERTIES_TITLE' | translate | slice:7 }}</span>
+                </h2>
+                <p class="text-gray-400 font-bold text-sm uppercase tracking-widest">{{ 'HOME.AGENT_PROPERTIES_SUB' | translate }}</p>
+              </div>
+              <div class="flex items-center gap-4">
+                <a routerLink="/properties/new" class="group flex items-center gap-3 px-8 py-4 bg-emerald-50 hover:bg-emerald-500 hover:text-white rounded-2xl text-sm font-black text-emerald-600 transition-all shadow-sm">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+                  {{ 'HOME.AGENT_PROPERTIES_ADD_BTN' | translate }}
+                </a>
+                <a routerLink="/properties" [queryParams]="{ agentUserId: auth.userId() }" class="group flex items-center gap-3 px-8 py-4 bg-gray-50 rounded-2xl text-sm font-black text-gray-900 hover:bg-[#0a8f96] hover:text-white transition-all shadow-sm">
+                  {{ 'COMMON.VIEW_ALL' | translate }}
+                  <svg class="w-5 h-5 transition-transform rtl:rotate-180 group-hover:translate-x-2 ltr:group-hover:translate-x-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                </a>
+              </div>
+            </div>
+
+            @if (loadingAgentProperties()) {
+              <div class="flex flex-col items-center justify-center py-20 gap-4">
+                <div class="w-12 h-12 border-2 border-gray-100 border-t-[#0a8f96] rounded-full animate-spin"></div>
+                <p class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] animate-pulse">{{ 'COMMON.LOADING' | translate }}</p>
+              </div>
+            } @else if (agentProperties().length === 0) {
+              <!-- Premium Empty State -->
+              <div class="text-center py-20 bg-gray-50/50 rounded-[32px] border border-dashed border-gray-200 max-w-3xl mx-auto px-6">
+                <div class="w-20 h-20 bg-emerald-50 rounded-3xl flex items-center justify-center text-emerald-500 mx-auto mb-6 shadow-inner animate-pulse-slow">
+                  <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                  </svg>
+                </div>
+                <h3 class="text-2xl font-black text-gray-900 mb-3">{{ 'HOME.AGENT_PROPERTIES_EMPTY_TITLE' | translate }}</h3>
+                <p class="text-gray-500 text-sm mb-8 max-w-md mx-auto leading-relaxed">{{ 'HOME.AGENT_PROPERTIES_EMPTY_DESC' | translate }}</p>
+                <a routerLink="/properties/new" class="inline-flex items-center gap-3 bg-emerald-500 hover:bg-emerald-600 text-white font-black px-10 py-4.5 rounded-2xl transition-all shadow-lg shadow-emerald-500/20 active:scale-95">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+                  {{ 'HOME.AGENT_PROPERTIES_ADD_BTN' | translate }}
+                </a>
+              </div>
+            } @else {
+              <!-- Properties Grid -->
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                @for (p of agentProperties(); track p.id) {
+                  <a [routerLink]="['/properties', p.id]" class="group block bg-white rounded-[20px] overflow-hidden border border-gray-100/80 hover:shadow-[0_16px_48px_rgba(10,143,150,0.1)] hover:-translate-y-1 transition-all duration-500 shadow-sm">
+                    <div class="relative h-48 overflow-hidden bg-gray-50">
+                      @let pImg = p.primaryImageUrl || localImagesMap().get(p.id);
+                      @if (pImg) {
+                        <img [src]="pImg" (error)="onImageError($event, p)" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
+                      } @else {
+                        <div class="w-full h-full flex items-center justify-center text-gray-100">
+                          <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                        </div>
+                      }
+                      <div class="absolute top-4 right-4 flex gap-2">
+                        @if (p.status === 'Sold') {
+                          <span class="bg-emerald-500 text-white text-[9px] font-black px-3 py-1.5 rounded-lg uppercase tracking-widest shadow-lg">{{ 'PROPERTY.STATUSES.Sold' | translate }}</span>
+                        } @else if (p.status === 'Pending') {
+                          <span class="bg-amber-500 text-white text-[9px] font-black px-3 py-1.5 rounded-lg uppercase tracking-widest shadow-lg">{{ 'PROPERTY.STATUSES.Pending' | translate }}</span>
+                        } @else {
+                          <span class="bg-[#0a8f96] text-white text-[9px] font-black px-3 py-1.5 rounded-lg uppercase tracking-widest shadow-lg">{{ 'PROPERTY.STATUSES.' + p.status | translate }}</span>
+                        }
+                        <span class="bg-white/90 backdrop-blur-md text-gray-900 text-[9px] font-black px-3 py-1.5 rounded-lg uppercase tracking-widest shadow-lg border border-white/20">{{ 'PROPERTY.LISTING_TYPES.' + p.listingType | translate }}</span>
+                      </div>
+                    </div>
+                    <div class="p-6">
+                      <h4 class="text-base font-black text-gray-900 mb-2 truncate">{{ p.title }}</h4>
+                      <p class="text-xs font-bold text-gray-400 mb-4 flex items-center gap-1">
+                        <svg class="w-3.5 h-3.5 text-[#0a8f96]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/></svg>
+                        {{ getDistrictLabel(p.district) }}{{ p.district && p.city ? ', ' : '' }}{{ p.city ? getCityLabel(p.city) : '' }}
+                      </p>
+                      <div class="flex items-center justify-between">
+                        <span class="text-lg font-black text-[#0a8f96]">{{ p.price | currencyEgp }}</span>
+                        <div class="flex items-center gap-3 text-[10px] font-bold text-gray-400">
+                          @if (p.bedrooms) { <span>{{ p.bedrooms }} {{ 'PROPERTY_DETAIL.BEDROOMS' | translate }}</span> }
+                          @if (p.area) { <span>{{ p.area | number:'1.0-0' }} {{ 'PROPERTY.AREA_UNIT' | translate }}</span> }
+                        </div>
+                      </div>
                     </div>
                   </a>
                 }
               </div>
             }
           </div>
-        </div>
-      </section>
+        </section>
+      }
 
       <!-- Recommended for You -->
       @if (auth.isAuthenticated() && (recommendedProperties().length > 0 || loadingRecommendations())) {
@@ -600,6 +692,8 @@ import { EGYPT_REGIONS, Governorate, City } from '../../core/constants/egypt-reg
 export class HomeComponent implements OnInit, OnDestroy {
   featured = signal<PropertyListItem[]>([]);
   recommendedProperties = signal<PropertyListItem[]>([]);
+  agentProperties = signal<PropertyListItem[]>([]);
+  loadingAgentProperties = signal(false);
   topAgents = signal<AgentDetail[]>([]);
   agentSearchQuery = signal('');
   searchingAgents = signal(false);
@@ -920,6 +1014,11 @@ export class HomeComponent implements OnInit, OnDestroy {
     if (this.auth.isAuthenticated() && (this.auth.isBuyer() || this.auth.isAdmin())) {
       this.loadRecommendations();
     }
+
+    // Load agent properties if logged in as an agent
+    if (this.auth.isAuthenticated() && this.auth.isAgent()) {
+      this.loadAgentProperties();
+    }
   }
 
   private async loadSoldProperties() {
@@ -932,6 +1031,19 @@ export class HomeComponent implements OnInit, OnDestroy {
       // Silently fail — sold properties are non-critical
     } finally {
       this.loadingSold.set(false);
+    }
+  }
+
+  private async loadAgentProperties() {
+    this.loadingAgentProperties.set(true);
+    try {
+      const result = await this.propertyService.getAll({ agentUserId: this.auth.userId() || '', pageSize: 8 });
+      this.agentProperties.set(result.items);
+      this.loadLocalImages(result.items);
+    } catch {
+      // Silently fail
+    } finally {
+      this.loadingAgentProperties.set(false);
     }
   }
 

@@ -347,37 +347,38 @@ export class NavbarComponent implements OnInit, OnDestroy {
       let total = 0;
       const counts: Record<string, number> = {};
 
-      // Read last viewed timestamps (same key structure as chat-room.ts)
       const lastViewedRaw = localStorage.getItem('baytology_last_viewed') || '{}';
       const lastViewed: Record<string, string> = JSON.parse(lastViewedRaw);
 
+      const cachedSendersRaw = localStorage.getItem('baytology_last_message_senders') || '{}';
+      const cachedSenders = JSON.parse(cachedSendersRaw);
+
       for (const conv of conversations) {
-        // Skip conversations where I am the last sender (my own messages are not "unread")
-        const effectiveSenderId = conv.lastMessageSenderId;
-        if (effectiveSenderId === this.auth.userId()) continue;
+        let count = 0;
+        const effectiveSenderId = conv.lastMessageSenderId || cachedSenders[conv.id];
 
-        // Must have content to be considered unread
-        if (!conv.lastMessageContent) continue;
-
-        const lastViewTime = lastViewed[conv.id];
-        if (lastViewTime) {
-          // User has viewed this conversation before — check timestamps
-          const lastMsgMs = new Date(conv.lastMessageAt || 0).getTime();
-          const viewMs = new Date(lastViewTime).getTime();
-          if (lastMsgMs > viewMs + 2000) {
-            total++;
-            counts[conv.id] = (counts[conv.id] || 0) + 1;
+        if (effectiveSenderId === this.auth.userId()) {
+          count = 0;
+        } else if (conv.lastMessageAt) {
+          const lastViewTime = lastViewed[conv.id];
+          if (lastViewTime) {
+            const lastMsgMs = new Date(conv.lastMessageAt).getTime();
+            const viewMs = new Date(lastViewTime).getTime();
+            if (lastMsgMs > viewMs + 2000) {
+              count = 1;
+            }
+          } else if (conv.lastMessageContent) {
+            count = 1;
           }
-        } else {
-          // Never viewed this conversation before AND it has content → unread
-          total++;
-          counts[conv.id] = (counts[conv.id] || 0) + 1;
+        }
+
+        if (count > 0) {
+          counts[conv.id] = count;
+          total += count;
         }
       }
 
-      if (total > 0) {
-        localStorage.setItem('baytology_unread_counts', JSON.stringify(counts));
-      }
+      localStorage.setItem('baytology_unread_counts', JSON.stringify(counts));
       this.updateUnreadStatus();
     } catch {
       // Silent fallback
@@ -389,9 +390,11 @@ export class NavbarComponent implements OnInit, OnDestroy {
       const unreadCountsRaw = localStorage.getItem('baytology_unread_counts') || '{}';
       const unreadCounts = JSON.parse(unreadCountsRaw);
 
-      // Self-healing: if we find legacy keys, clear them and rebuild
+      // Self-healing: if we find legacy keys or haven't migrated to v2, clear them and rebuild
       const hasLegacyKeys = Object.keys(unreadCounts).some(key => key.startsWith('buyer_') || key.startsWith('agent_'));
-      if (hasLegacyKeys) {
+      const isMigrated = localStorage.getItem('baytology_unread_counts_v2') === 'true';
+      if (hasLegacyKeys || !isMigrated) {
+        localStorage.setItem('baytology_unread_counts_v2', 'true');
         localStorage.setItem('baytology_unread_counts', '{}');
         this.loadUnreadConversationsCount();
         return;
