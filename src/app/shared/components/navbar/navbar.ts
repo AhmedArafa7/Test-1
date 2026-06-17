@@ -1,6 +1,6 @@
 import { Component, HostListener, computed, signal, effect, inject, OnInit, OnDestroy } from '@angular/core';
 import { RouterLink, RouterLinkActive, Router, NavigationEnd } from '@angular/router';
-import { filter } from 'rxjs';
+import { filter, firstValueFrom, take } from 'rxjs';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { AuthService } from '../../../core/auth/auth.service';
@@ -9,6 +9,7 @@ import { LanguageService } from '../../../core/services/language.service';
 import { ChatSignalRService } from '../../../core/services/chat-signalr.service';
 import { ConversationService } from '../../../features/conversations/services/conversation.service';
 import { ProfileService } from '../../../features/profile/services/profile.service';
+import { AvailabilityService } from '../../../features/availability/availability.service';
 import { Conversation } from '../../../core/models';
 
 @Component({
@@ -234,6 +235,29 @@ import { Conversation } from '../../../core/models';
       </div>
     </nav>
 
+    <!-- Persistent Availability Warning Banner (site-wide) -->
+    @if (noAvailabilityRules()) {
+      <div class="bg-gradient-to-r from-amber-400 via-amber-500 to-orange-400 shadow-lg">
+        <div class="max-w-[1400px] mx-auto px-4 md:px-8">
+          <div class="flex items-center justify-between gap-4 py-2.5 md:py-3">
+            <div class="flex items-center gap-3 min-w-0">
+              <span class="hidden md:flex w-8 h-8 rounded-full bg-white/25 flex items-center justify-center shrink-0">
+                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+              </span>
+              <p class="text-white text-xs md:text-sm font-bold leading-tight truncate">
+                {{ 'NAV.NO_AVAILABILITY' | translate }}
+              </p>
+            </div>
+            <a routerLink="/availability" 
+               class="shrink-0 px-4 py-1.5 md:px-5 md:py-2 bg-white text-amber-700 rounded-xl text-xs md:text-sm font-black shadow-sm hover:bg-amber-50 hover:shadow-md active:scale-95 transition-all cursor-pointer whitespace-nowrap">
+              {{ 'NAV.NO_AVAILABILITY_ACTION' | translate }}
+              <span class="ltr:ml-1 rtl:mr-1">→</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    }
+
     <!-- Message Notification Popup -->
     @if (messagePopup()) {
       <div class="fixed bottom-6 end-6 z-[200] animate-slide-up"
@@ -270,9 +294,11 @@ export class NavbarComponent implements OnInit, OnDestroy {
   messagePopup = signal<{ senderName: string; content: string; conversationId: string } | null>(null);
   private popupTimer: ReturnType<typeof setTimeout> | null = null;
   private conversationsCache = signal<Conversation[]>([]);
+  noAvailabilityRules = signal(false);
 
   private chatSignalR = inject(ChatSignalRService);
   private conversationService = inject(ConversationService);
+  private availabilityService = inject(AvailabilityService);
   private translate = inject(TranslateService);
   private router = inject(Router);
 
@@ -328,11 +354,27 @@ export class NavbarComponent implements OnInit, OnDestroy {
       this.fetchAvatar();
     }
 
+    if (this.auth.isAgent()) {
+      this.fetchAvailabilityStatus();
+    }
+
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
     ).subscribe(() => {
       this.updateUnreadStatus();
+      if (this.auth.isAgent()) {
+        this.fetchAvailabilityStatus();
+      }
     });
+  }
+
+  private async fetchAvailabilityStatus() {
+    try {
+      const rules = await firstValueFrom(this.availabilityService.getRules().pipe(take(1)));
+      this.noAvailabilityRules.set(rules.length === 0);
+    } catch {
+      // Silent — warning simply won't show
+    }
   }
 
   private async fetchAvatar() {

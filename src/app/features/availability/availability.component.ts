@@ -302,10 +302,6 @@ export class AvailabilityComponent implements OnInit {
     const sub = this.availabilityService.deleteRule(rule.id).subscribe({
       next: () => {
         this.toast.success(this.translate.instant('AVAILABILITY.DELETE_SUCCESS'));
-        // If this was the last rule, show persistent warning
-        if (this.rules().length === 1) {
-          this.toast.warning(this.translate.instant('AVAILABILITY.ALL_DELETED_WARNING'));
-        }
         this.loadRules();
       },
       error: (e: any) => {
