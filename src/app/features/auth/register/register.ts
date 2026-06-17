@@ -203,31 +203,7 @@ import { extractApiError } from '../../../core/utils/api-error';
               }
             </div>
 
-            <div class="space-y-2">
-              <label class="block text-[11px] font-black text-slate-400 uppercase tracking-wider">{{ 'AUTH.REGISTER.PHONE' | translate }} <span class="text-red-500">*</span></label>
-              <div class="relative">
-                <span class="absolute ltr:left-4 rtl:right-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold ltr:border-r rtl:border-l border-slate-200/60 ltr:pr-3 rtl:pl-3">+20</span>
-                <input type="tel" [ngModel]="phone()" (ngModelChange)="phone.set($event); phoneTouched.set(true)" (blur)="phoneTouched.set(true)" name="phone"
-                       id="phone"
-                       dir="ltr"
-                       inputmode="numeric"
-                       pattern="[0-9]*"
-                       autocomplete="tel"
-                       [class]="phoneFieldClass() + ' ltr:pl-16 rtl:pr-16'"
-                       placeholder="10xxxxxxxxx">
-              </div>
-              <div [class]="phoneHintClass()">
-                @if (phoneTouched() && phoneError()) {
-                  <svg class="icon" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
-                  <span>{{ phoneError() === 'invalid' ? ('AUTH.LOGIN.PHONE_INVALID' | translate) : ('AUTH.REGISTER.PHONE_REQUIRED' | translate) }}</span>
-                } @else if (phoneTouched() && !phoneError() && phone()) {
-                  <svg class="icon" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 010 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
-                  <span>{{ 'AUTH.REGISTER.PHONE_HINT' | translate }}</span>
-                } @else {
-                  <span>{{ 'AUTH.REGISTER.PHONE_HINT' | translate }}</span>
-                }
-              </div>
-            </div>
+
 
             <div class="space-y-2">
               <button type="submit" [disabled]="loading() || !isFormValid()" (click)="markAllTouched()"
@@ -263,7 +239,7 @@ export class RegisterComponent {
   firstName = signal('');
   lastName = signal('');
   email = signal('');
-  phone = signal('');
+
   password = signal('');
   role = 'Buyer';
   showPassword = signal(false);
@@ -274,7 +250,7 @@ export class RegisterComponent {
   firstNameTouched = signal(false);
   lastNameTouched = signal(false);
   emailTouched = signal(false);
-  phoneTouched = signal(false);
+
   passwordTouched = signal(false);
 
   // Validation: error code per field
@@ -312,18 +288,10 @@ export class RegisterComponent {
     if (!number || !uppercase || !lowercase || !special) return 'complex';
     return null;
   });
-  readonly phoneError = computed<string | null>(() => {
-    const p = this.phone().trim();
-    if (!p) return 'required';
-    if (!/^[0-9]{10,15}$/.test(p)) return 'invalid';
-    return null;
-  });
-
   readonly isFormValid = computed<boolean>(() => {
     if (this.firstNameError() !== null) return false;
     if (this.lastNameError() !== null) return false;
     if (this.emailError() !== null) return false;
-    if (this.phoneError() !== null) return false;
     if (this.passwordError() !== null) return false;
     return true;
   });
@@ -365,23 +333,12 @@ export class RegisterComponent {
     if (this.passwordTouched() && !this.passwordError() && this.password()) return `${base} is-valid`;
     return base;
   });
-  readonly phoneFieldClass = computed<string>(() => {
-    const base = 'input-field';
-    if (this.phoneTouched() && this.phoneError()) return `${base} is-invalid`;
-    if (this.phoneTouched() && !this.phoneError() && this.phone()) return `${base} is-valid`;
-    return base;
-  });
-  readonly phoneHintClass = computed<string>(() => {
-    if (this.phoneTouched() && this.phoneError()) return 'field-hint is-error';
-    if (this.phoneTouched() && !this.phoneError() && this.phone()) return 'field-hint is-success';
-    return 'field-hint is-neutral';
-  });
+
 
   markAllTouched() {
     this.firstNameTouched.set(true);
     this.lastNameTouched.set(true);
     this.emailTouched.set(true);
-    this.phoneTouched.set(true);
     this.passwordTouched.set(true);
   }
 
@@ -450,14 +407,11 @@ export class RegisterComponent {
     this.loading.set(true);
     try {
       const displayName = `${this.firstName()} ${this.lastName()}`.trim();
-      const phoneVal = this.phone().trim();
-      const phoneNumber = phoneVal ? `+20${phoneVal}` : '';
       const response = await this.auth.register({
         email: this.email(),
         password: this.password(),
         displayName: displayName || this.email(),
-        role: this.role,
-        phoneNumber: phoneNumber
+        role: this.role
       });
       // Store welcome flag so app.ts shows "Welcome to Baytology" on first login
       localStorage.setItem(

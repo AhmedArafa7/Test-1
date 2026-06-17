@@ -390,7 +390,7 @@ export class ChatRoomComponent implements OnInit, OnDestroy {
           });
           
           if (isIncoming) {
-            this.conversationService.markRead(msg.id).catch(() => {});
+            this.conversationService.markConversationAsRead(this.conversationId).catch(() => {});
           }
 
           setTimeout(() => this.scrollToBottom(), 50);
@@ -489,9 +489,10 @@ export class ChatRoomComponent implements OnInit, OnDestroy {
       this.conversations.set(convs);
       
       // Mark all unread messages as read
-      msgs.filter(m => !m.isRead && m.senderId !== this.auth.userId()).forEach(m => {
-        this.conversationService.markRead(m.id).catch(() => {});
-      });
+      const hasUnread = msgs.some(m => !m.isRead && m.senderId !== this.auth.userId());
+      if (hasUnread) {
+        this.conversationService.markConversationAsRead(this.conversationId).catch(() => {});
+      }
 
       const current = convs.find(c => c.id === this.conversationId);
       if (current) {

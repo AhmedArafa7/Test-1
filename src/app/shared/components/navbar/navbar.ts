@@ -236,7 +236,7 @@ import { Conversation } from '../../../core/models';
     </nav>
 
     <!-- Persistent Availability Warning Banner (site-wide) -->
-    @if (noAvailabilityRules()) {
+    @if (auth.isAgent() && availabilityService.hasNoRules()) {
       <div class="bg-gradient-to-r from-amber-400 via-amber-500 to-orange-400 shadow-lg">
         <div class="max-w-[1400px] mx-auto px-4 md:px-8">
           <div class="flex items-center justify-between gap-4 py-2.5 md:py-3">
@@ -294,11 +294,10 @@ export class NavbarComponent implements OnInit, OnDestroy {
   messagePopup = signal<{ senderName: string; content: string; conversationId: string } | null>(null);
   private popupTimer: ReturnType<typeof setTimeout> | null = null;
   private conversationsCache = signal<Conversation[]>([]);
-  noAvailabilityRules = signal(false);
 
   private chatSignalR = inject(ChatSignalRService);
   private conversationService = inject(ConversationService);
-  private availabilityService = inject(AvailabilityService);
+  public availabilityService = inject(AvailabilityService);
   private translate = inject(TranslateService);
   private router = inject(Router);
 
@@ -370,8 +369,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
   private async fetchAvailabilityStatus() {
     try {
-      const rules = await firstValueFrom(this.availabilityService.getRules().pipe(take(1)));
-      this.noAvailabilityRules.set(rules.length === 0);
+      await firstValueFrom(this.availabilityService.getRules().pipe(take(1)));
     } catch {
       // Silent — warning simply won't show
     }

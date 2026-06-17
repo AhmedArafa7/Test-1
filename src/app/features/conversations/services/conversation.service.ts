@@ -23,6 +23,11 @@ export class ConversationService {
     return firstValueFrom(this.http.patch<void>(`${this.url}/messages/${messageId}/read`, {}));
   }
 
+  // Backend: PATCH /conversations/{conversationId}/read
+  async markConversationAsRead(conversationId: string): Promise<number> {
+    return firstValueFrom(this.http.patch<number>(`${this.url}/${conversationId}/read`, {}));
+  }
+
   /**
    * Create a conversation for a property.
    * Handles 409 Conflict (conversation already exists) by finding the existing one.

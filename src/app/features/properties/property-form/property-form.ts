@@ -1872,7 +1872,7 @@ export class PropertyFormComponent implements OnInit, AfterViewInit {
   }
 
   onEditorInput(html: string) {
-    this.form.description = this.stripHtml(html);
+    this.form.description = html;
     this.triggerDraftSave();
   }
 
