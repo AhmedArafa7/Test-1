@@ -13,6 +13,7 @@ import { CloudinaryService } from '../../../core/services/cloudinary.service';
 import { TrashService } from '../../../core/services/trash.service';
 import { compressImage } from '../../../core/utils/media';
 import { firstValueFrom } from 'rxjs';
+import { AuthService } from '../../../core/auth/auth.service';
 import { AvailabilityService } from '../../availability/availability.service';
 
 @Component({
@@ -752,6 +753,7 @@ export class PropertyFormComponent implements OnInit, AfterViewInit {
   deletedImageIds = signal<string[]>([]);
   propertyId = '';
   imageUrlsText = '';
+  private auth = inject(AuthService);
   private translate = inject(TranslateService);
   private cdr = inject(ChangeDetectorRef);
   private trashService = inject(TrashService);
@@ -2062,7 +2064,10 @@ export class PropertyFormComponent implements OnInit, AfterViewInit {
   }
 
   // --- 1. Draft Autosave State Management (localStorage) ---
-  private readonly draftKey = 'baytology_property_form_draft';
+  private get draftKey(): string {
+    const userId = this.auth.userId() || 'anonymous';
+    return `baytology_property_form_draft_${userId}`;
+  }
 
   checkDraftAvailability() {
     try {

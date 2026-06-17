@@ -51,7 +51,7 @@ export const nonAdminGuard: CanActivateFn = async (route, state) => {
       await auth.loadCurrentUser();
     }
     if (auth.isAdmin()) {
-      const allowedPaths = ['/notifications', '/settings', '/faq', '/agents'];
+      const allowedPaths = ['/notifications', '/settings', '/faq', '/agents', '/bookings', '/conversations'];
       const isAllowed = allowedPaths.some(p => state.url.startsWith(p));
       if (!isAllowed) {
         return router.createUrlTree(['/admin']);
