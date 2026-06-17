@@ -8,6 +8,7 @@ import { NotificationSignalRService } from '../../../core/services/notification-
 import { LanguageService } from '../../../core/services/language.service';
 import { ChatSignalRService } from '../../../core/services/chat-signalr.service';
 import { ConversationService } from '../../../features/conversations/services/conversation.service';
+import { ProfileService } from '../../../features/profile/services/profile.service';
 import { Conversation } from '../../../core/models';
 
 @Component({
@@ -300,7 +301,8 @@ export class NavbarComponent implements OnInit, OnDestroy {
   constructor(
     public auth: AuthService,
     public notificationService: NotificationSignalRService,
-    public lang: LanguageService
+    public lang: LanguageService,
+    private profileService: ProfileService
   ) {
     effect(() => {
       const msg = this.chatSignalR.incomingMessage();
@@ -334,11 +336,27 @@ export class NavbarComponent implements OnInit, OnDestroy {
       this.loadUnreadConversationsCount();
     }
 
+    // Fetch avatar from profile if not cached
+    if (this.auth.isAuthenticated() && !this.auth.userAvatar()) {
+      this.fetchAvatar();
+    }
+
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
     ).subscribe(() => {
       this.updateUnreadStatus();
     });
+  }
+
+  private async fetchAvatar() {
+    try {
+      const profile = await this.profileService.getMyProfile();
+      if (profile?.avatarUrl) {
+        this.auth.updateAvatar(profile.avatarUrl);
+      }
+    } catch {
+      // Silent — avatar will show fallback icon
+    }
   }
 
   private async loadUnreadConversationsCount() {

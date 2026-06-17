@@ -689,7 +689,7 @@
         "COMPRESSING": "جاري معالجة وضغط الصور...",
         "COMPRESS_SUCCESS": "تمت معالجة الصور بنجاح",
         "COMPRESS_ERROR": "حدث خطأ أثناء معالجة الصور",
-        "UPLOADING": "جاري رفع {count} صورة إلى السحابة...",
+        "UPLOADING": "جاري رفع {{count}} صورة إلى السحابة...",
         "UPLOAD_SUCCESS": "تم رفع الصورة بنجاح وجاهزة للإرسال!",
         "SAVE_ERROR": "حدث خطأ أثناء حفظ البيانات",
         "GEO_NOT_SUPPORTED": "المتصفح لا يدعم تحديد الموقع الجغرافي",
@@ -978,8 +978,8 @@
             "COMPRESSING": "جاري معالجة وضغط الصور...",
             "COMPRESS_SUCCESS": "تمت معالجة الصور بنجاح",
             "COMPRESS_ERROR": "حدث خطأ أثناء معالجة الصور",
-            "UPLOADING": "جاري رفع {count} صورة إلى السحابة...",
-            "UPLOAD_SUCCESS": "تم رفع {count} صورة بنجاح!",
+            "UPLOADING": "جاري رفع {{count}} صورة إلى السحابة...",
+            "UPLOAD_SUCCESS": "تم رفع {{count}} صورة بنجاح!",
             "UPDATE_SUCCESS": "تم تحديث العقار بنجاح!",
             "CREATE_SUCCESS": "تم إدراج العقار بنجاح وصوره متاحة للجميع!",
             "SAVE_ERROR": "حدث خطأ أثناء حفظ البيانات",
@@ -1342,7 +1342,7 @@
             "DISCLAIMER": "قد يخطئ الذكاء الاصطناعي في بعض الأحيان. يرجى التحقق من المعلومات الهامة.",
             "ERROR_GENERIC": "عذراً، حدث خطأ في الاتصال بخدمة الذكاء الاصطناعي. يرجى المحاولة مرة أخرى لاحقاً.",
             "NO_ANSWER": "عذراً، لم أتمكن من الحصول على إجابة دقيقة حالياً.",
-            "FOUND_PROPERTIES": "تم العثور على {{count}} عقار.",
+            "FOUND_PROPERTIES": "تم العثور على {{{count}}} عقار.",
             "SEE_ALL": "تصفح الكل",
             "DETAILS": "التفاصيل",
             "BOOK": "حجز",
@@ -1421,7 +1421,7 @@
         "DISCLAIMER": "قد يخطئ الذكاء الاصطناعي في بعض الأحيان. يرجى التحقق من المعلومات الهامة.",
         "ERROR_GENERIC": "عذراً، حدث خطأ في الاتصال بخدمة الذكاء الاصطناعي. يرجى المحاولة مرة أخرى لاحقاً.",
         "NO_ANSWER": "عذراً، لم أتمكن من الحصول على إجابة دقيقة حالياً.",
-        "FOUND_PROPERTIES": "تم العثور على {{count}} عقار.",
+        "FOUND_PROPERTIES": "تم العثور على {{{count}}} عقار.",
         "SUBTITLE": "اسأل عن أي شيء يخص العقارات",
         "EMPTY": "ابدأ محادثة. اسألني عن العقارات أو الأسعار أو الأحياء السكنية!",
         "THINKING": "جاري التفكير...",
@@ -1833,7 +1833,7 @@
             "ACTIONS": {
                 "VERIFY": "تفعيل الوكيل"
             },
-            "PAGINATION_SHOW": "عرض {{count}} وكيل في المنصة",
+            "PAGINATION_SHOW": "عرض {{{count}}} وكيل في المنصة",
             "TOAST": {
                 "LOAD_ERROR": "فشل تحميل بيانات الوكلاء",
                 "VERIFY_SUCCESS": "تم توثيق الوكيل بنجاح",
@@ -1940,7 +1940,7 @@
                 "DELETED": "حذف"
             },
             "UNKNOWN_USER": "مجهول",
-            "PAGINATION_SHOW": "عرض {{count}} من أصل {{total}} سجل",
+            "PAGINATION_SHOW": "عرض {{{count}}} من أصل {{total}} سجل",
             "MODAL": {
                 "TITLE": "تفاصيل العملية",
                 "SUBTITLE": "مقارنة التغييرات وتتبع مصدر العملية",
@@ -1992,14 +1992,14 @@
                 "COMPLETED": "مكتمل",
                 "FAILED": "فشل"
             },
-            "RESULTS_COUNT": "{{count}} نتيجة",
-            "PAGINATION_SHOW": "عرض {{count}} من أصل {{total}} طلب بحث ذكي",
+            "RESULTS_COUNT": "{{{count}}} نتيجة",
+            "PAGINATION_SHOW": "عرض {{{count}}} من أصل {{total}} طلب بحث ذكي",
             "MODAL": {
                 "TITLE": "البيانات التقنية للاستعلام",
                 "SUBTITLE": "تتبع العمليات والمزامنة مع محرك الـ AI",
                 "CORRELATION_ID": "Correlation ID (معرف الربط)",
                 "OUTBOX_EVENTS": "أحداث الصندوق الصادر (Outbox Events)",
-                "EVENTS_COUNT": "{{count}} حدث متزامن",
+                "EVENTS_COUNT": "{{{count}}} حدث متزامن",
                 "RECEIVED_TIME": "وقت الاستلام",
                 "RESOLVED_TIME": "وقت المعالجة النهائية",
                 "PROCESSING": "قيد المعالجة",
@@ -2036,8 +2036,8 @@
                 "COMPLETED": "مكتمل",
                 "FAILED": "فشل"
             },
-            "RESULTS_REQUESTED": "{{count}} مطلوبة",
-            "PAGINATION_SHOW": "عرض {{count}} من أصل {{total}} طلب توصية ذكية",
+            "RESULTS_REQUESTED": "{{{count}}} مطلوبة",
+            "PAGINATION_SHOW": "عرض {{{count}}} من أصل {{total}} طلب توصية ذكية",
             "MODAL": {
                 "TITLE": "تفاصيل طلب التوصية",
                 "SUBTITLE": "تتبع سياق التوصية والارتباطات الفنية",
@@ -2047,7 +2047,7 @@
                 "CORRELATION_ID": "Correlation ID (معرف الربط)",
                 "TOTAL_SPEED": "سرعة التوليد الإجمالية",
                 "RECS_COUNT": "عدد الاقتراحات",
-                "ITEMS_REQUESTED": "{{count}} عنصر مطلوب",
+                "ITEMS_REQUESTED": "{{{count}}} عنصر مطلوب",
                 "CLOSE": "إغلاق"
             },
             "LAG": {
@@ -2090,7 +2090,7 @@
                 "REFUNDED": "مسترد",
                 "FAILED": "فشل"
             },
-            "PAGINATION_SHOW": "عرض {{count}} من أصل {{total}} معاملة",
+            "PAGINATION_SHOW": "عرض {{{count}}} من أصل {{total}} معاملة",
             "MODAL": {
                 "TITLE": "تفاصيل المعاملة المالية",
                 "SUBTITLE": "تتبع مراجع الدفع وهويات الأطراف",
@@ -2141,7 +2141,7 @@
                 "SUCCESS_REJECT": "تم الرفض بنجاح",
                 "FAILED": "فشلت العملية"
             },
-            "PAGINATION_SHOW": "عرض {{count}} طلب استرداد",
+            "PAGINATION_SHOW": "عرض {{{count}}} طلب استرداد",
             "MODAL": {
                 "TITLE": "تفاصيل طلب الاسترداد",
                 "SUBTITLE": "تتبع حالة المراجعة والارتباطات المالية",
@@ -2318,7 +2318,7 @@
         "ACTIONS": {
             "VERIFY": "تفعيل الوكيل"
         },
-        "PAGINATION_SHOW": "عرض {{count}} وكيل في المنصة",
+        "PAGINATION_SHOW": "عرض {{{count}}} وكيل في المنصة",
         "TOAST": {
             "LOAD_ERROR": "فشل تحميل بيانات الوكلاء",
             "VERIFY_SUCCESS": "تم توثيق الوكيل بنجاح",
@@ -2372,7 +2372,7 @@
             "SUCCESS_REJECT": "تم الرفض بنجاح",
             "FAILED": "فشلت العملية"
         },
-        "PAGINATION_SHOW": "عرض {{count}} طلب استرداد",
+        "PAGINATION_SHOW": "عرض {{{count}}} طلب استرداد",
         "MODAL": {
             "TITLE": "تفاصيل طلب الاسترداد",
             "SUBTITLE": "تتبع حالة المراجعة والارتباطات المالية",
@@ -2532,7 +2532,7 @@
             "DELETED": "حذف"
         },
         "UNKNOWN_USER": "مجهول",
-        "PAGINATION_SHOW": "عرض {{count}} من أصل {{total}} سجل",
+        "PAGINATION_SHOW": "عرض {{{count}}} من أصل {{total}} سجل",
         "MODAL": {
             "TITLE": "تفاصيل العملية",
             "SUBTITLE": "مقارنة التغييرات وتتبع مصدر العملية",
@@ -2565,7 +2565,7 @@
         "CLOSE": "إغلاق",
         "CORRELATION_ID": "Correlation ID (معرف الربط)",
         "OUTBOX_EVENTS": "أحداث الصندوق الصادر (Outbox Events)",
-        "EVENTS_COUNT": "{{count}} حدث متزامن",
+        "EVENTS_COUNT": "{{{count}}} حدث متزامن",
         "RECEIVED_TIME": "وقت الاستلام",
         "RESOLVED_TIME": "وقت المعالجة النهائية",
         "PROCESSING": "قيد المعالجة",
@@ -2574,7 +2574,7 @@
         "SOURCE_ID": "هوية الكيان المصدر (Source ID)",
         "SOURCE_TYPE": "نوع المصدر",
         "RECS_COUNT": "عدد الاقتراحات",
-        "ITEMS_REQUESTED": "{{count}} عنصر مطلوب",
+        "ITEMS_REQUESTED": "{{{count}}} عنصر مطلوب",
         "GATEWAY_REF": "مرجع بوابة الدفع",
         "NO_REF": "لا يوجد مرجع",
         "BANK_STATUS": "حالة المعاملة البنكية",
@@ -2626,14 +2626,14 @@
             "COMPLETED": "مكتمل",
             "FAILED": "فشل"
         },
-        "RESULTS_COUNT": "{{count}} نتيجة",
-        "PAGINATION_SHOW": "عرض {{count}} من أصل {{total}} طلب بحث ذكي",
+        "RESULTS_COUNT": "{{{count}}} نتيجة",
+        "PAGINATION_SHOW": "عرض {{{count}}} من أصل {{total}} طلب بحث ذكي",
         "MODAL": {
             "TITLE": "البيانات التقنية للاستعلام",
             "SUBTITLE": "تتبع العمليات والمزامنة مع محرك الـ AI",
             "CORRELATION_ID": "Correlation ID (معرف الربط)",
             "OUTBOX_EVENTS": "أحداث الصندوق الصادر (Outbox Events)",
-            "EVENTS_COUNT": "{{count}} حدث متزامن",
+            "EVENTS_COUNT": "{{{count}}} حدث متزامن",
             "RECEIVED_TIME": "وقت الاستلام",
             "RESOLVED_TIME": "وقت المعالجة النهائية",
             "PROCESSING": "قيد المعالجة",
@@ -2674,8 +2674,8 @@
             "COMPLETED": "مكتمل",
             "FAILED": "فشل"
         },
-        "RESULTS_REQUESTED": "{{count}} مطلوبة",
-        "PAGINATION_SHOW": "عرض {{count}} من أصل {{total}} طلب توصية ذكية",
+        "RESULTS_REQUESTED": "{{{count}}} مطلوبة",
+        "PAGINATION_SHOW": "عرض {{{count}}} من أصل {{total}} طلب توصية ذكية",
         "MODAL": {
             "TITLE": "تفاصيل طلب التوصية",
             "SUBTITLE": "تتبع سياق التوصية والارتباطات الفنية",
@@ -2685,7 +2685,7 @@
             "CORRELATION_ID": "Correlation ID (معرف الربط)",
             "TOTAL_SPEED": "سرعة التوليد الإجمالية",
             "RECS_COUNT": "عدد الاقتراحات",
-            "ITEMS_REQUESTED": "{{count}} عنصر مطلوب",
+            "ITEMS_REQUESTED": "{{{count}}} عنصر مطلوب",
             "CLOSE": "إغلاق"
         },
         "LAG": {
@@ -2729,7 +2729,7 @@
             "REFUNDED": "مسترد",
             "FAILED": "فشل"
         },
-        "PAGINATION_SHOW": "عرض {{count}} من أصل {{total}} معاملة",
+        "PAGINATION_SHOW": "عرض {{{count}}} من أصل {{total}} معاملة",
         "MODAL": {
             "TITLE": "تفاصيل المعاملة المالية",
             "SUBTITLE": "تتبع مراجع الدفع وهويات الأطراف",
@@ -2791,7 +2791,7 @@
             "URL_PLACEHOLDER": "https://domain.com/image.jpg",
             "ERROR_LARGE": "الصورة كبيرة جداً. الحد الأقصى 10 ميجابايت."
         },
-        "SEARCH_BTN": "بحث بالذكاء الاصطناعي",
+        "SEARCH_BTN": "البحث الذكى",
         "SEARCHING": "جاري البحث...",
         "STILL_PROCESSING": "البحث لا يزال قيد المعالجة. تحقق بعد قليل.",
         "MICROPHONE_ERROR": "لا يمكن الوصول للميكروفون. يرجى السماح بالصلاحيات.",
@@ -3335,8 +3335,8 @@
     "BOOKINGS": {
         "TITLE": "حجوزاتي",
         "AGENT_TITLE": "طلبات الحجز",
-        "AGENT_SUBTITLE": "{count} إجمالي الطلبات",
-        "SUBTITLE_COUNT": "{count} حجوزات إجمالي",
+        "AGENT_SUBTITLE": "{{count}} إجمالي الطلبات",
+        "SUBTITLE_COUNT": "{{count}} حجوزات إجمالي",
         "FILTER_ALL": "الكل",
         "STATUSES": {
             "Pending": "قيد الانتظار",
@@ -3506,7 +3506,7 @@
             "VIEW_PROFILE": "عرض الملف الشخصي"
         },
         "PENDING_ACTIONS": "إجراءات معلقة",
-        "PENDING_MSG": "لديك {count} طلب(طلبات) حجز في انتظار مراجعتك",
+        "PENDING_MSG": "لديك {{count}} طلب(طلبات) حجز في انتظار مراجعتك",
         "VIEW_PENDING": "عرض الطلبات المعلقة",
         "LOAD_ERROR": "فشل تحميل بيانات لوحة التحكم"
     }

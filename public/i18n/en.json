@@ -691,7 +691,7 @@
         "COMPRESSING": "Processing and compressing images...",
         "COMPRESS_SUCCESS": "Images processed successfully",
         "COMPRESS_ERROR": "An error occurred during image processing",
-        "UPLOADING": "Uploading {count} images to cloud...",
+        "UPLOADING": "Uploading {{count}} images to cloud...",
         "UPLOAD_SUCCESS": "Image uploaded successfully and ready to send!",
         "SAVE_ERROR": "An error occurred during data saving",
         "GEO_NOT_SUPPORTED": "Browser does not support geolocation",
@@ -980,8 +980,8 @@
             "COMPRESSING": "Processing and compressing images...",
             "COMPRESS_SUCCESS": "Images processed successfully",
             "COMPRESS_ERROR": "An error occurred during image processing",
-            "UPLOADING": "Uploading {count} images to cloud...",
-            "UPLOAD_SUCCESS": "{count} images uploaded successfully!",
+            "UPLOADING": "Uploading {{count}} images to cloud...",
+            "UPLOAD_SUCCESS": "{{count}} images uploaded successfully!",
             "UPDATE_SUCCESS": "Property updated successfully!",
             "CREATE_SUCCESS": "Property listed successfully and images are available to all!",
             "SAVE_ERROR": "An error occurred during data saving",
@@ -1344,7 +1344,7 @@
             "DISCLAIMER": "AI can sometimes make mistakes. Please verify important information.",
             "ERROR_GENERIC": "Sorry, an error occurred connecting to the AI service. Please try again later.",
             "NO_ANSWER": "Sorry, I couldn't get an accurate answer at the moment.",
-            "FOUND_PROPERTIES": "Found {{count}} properties.",
+            "FOUND_PROPERTIES": "Found {{{count}}} properties.",
             "SEE_ALL": "Browse all",
             "DETAILS": "Details",
             "BOOK": "Book",
@@ -1423,7 +1423,7 @@
         "DISCLAIMER": "AI can sometimes make mistakes. Please verify important information.",
         "ERROR_GENERIC": "Sorry, an error occurred connecting to the AI service. Please try again later.",
         "NO_ANSWER": "Sorry, I couldn't get an accurate answer at the moment.",
-        "FOUND_PROPERTIES": "Found {{count}} properties.",
+        "FOUND_PROPERTIES": "Found {{{count}}} properties.",
         "SUBTITLE": "Ask anything about real estate",
         "EMPTY": "Start a conversation. Ask me about properties, prices, or neighborhoods!",
         "THINKING": "Thinking...",
@@ -1835,7 +1835,7 @@
             "ACTIONS": {
                 "VERIFY": "Verify Agent"
             },
-            "PAGINATION_SHOW": "Showing {{count}} agents in platform",
+            "PAGINATION_SHOW": "Showing {{{count}}} agents in platform",
             "TOAST": {
                 "LOAD_ERROR": "Failed to load agent data",
                 "VERIFY_SUCCESS": "Agent verified successfully",
@@ -1942,7 +1942,7 @@
                 "DELETED": "Deleted"
             },
             "UNKNOWN_USER": "Unknown",
-            "PAGINATION_SHOW": "Showing {{count}} of {{total}} logs",
+            "PAGINATION_SHOW": "Showing {{{count}}} of {{total}} logs",
             "MODAL": {
                 "TITLE": "Operation Details",
                 "SUBTITLE": "Compare changes and track operation source",
@@ -1994,14 +1994,14 @@
                 "COMPLETED": "Completed",
                 "FAILED": "Failed"
             },
-            "RESULTS_COUNT": "{{count}} results",
-            "PAGINATION_SHOW": "Showing {{count}} of {{total}} smart search requests",
+            "RESULTS_COUNT": "{{{count}}} results",
+            "PAGINATION_SHOW": "Showing {{{count}}} of {{total}} smart search requests",
             "MODAL": {
                 "TITLE": "Query Technical Data",
                 "SUBTITLE": "Operation tracking and AI engine synchronization",
                 "CORRELATION_ID": "Correlation ID",
                 "OUTBOX_EVENTS": "Outbox Events",
-                "EVENTS_COUNT": "{{count}} sync events",
+                "EVENTS_COUNT": "{{{count}}} sync events",
                 "RECEIVED_TIME": "Received Time",
                 "RESOLVED_TIME": "Resolved Time",
                 "PROCESSING": "Processing",
@@ -2038,8 +2038,8 @@
                 "COMPLETED": "Completed",
                 "FAILED": "Failed"
             },
-            "RESULTS_REQUESTED": "{{count}} requested",
-            "PAGINATION_SHOW": "Showing {{count}} of {{total}} smart recommendation requests",
+            "RESULTS_REQUESTED": "{{{count}}} requested",
+            "PAGINATION_SHOW": "Showing {{{count}}} of {{total}} smart recommendation requests",
             "MODAL": {
                 "TITLE": "Recommendation Details",
                 "SUBTITLE": "Context tracking and technical links",
@@ -2049,7 +2049,7 @@
                 "CORRELATION_ID": "Correlation ID",
                 "TOTAL_SPEED": "Total Gen Speed",
                 "RECS_COUNT": "Recs Count",
-                "ITEMS_REQUESTED": "{{count}} items requested",
+                "ITEMS_REQUESTED": "{{{count}}} items requested",
                 "CLOSE": "Close"
             },
             "LAG": {
@@ -2092,7 +2092,7 @@
                 "REFUNDED": "Refunded",
                 "FAILED": "Failed"
             },
-            "PAGINATION_SHOW": "Showing {{count}} of {{total}} transactions",
+            "PAGINATION_SHOW": "Showing {{{count}}} of {{total}} transactions",
             "MODAL": {
                 "TITLE": "Payment Details",
                 "SUBTITLE": "Track payment references and party IDs",
@@ -2143,7 +2143,7 @@
                 "SUCCESS_REJECT": "Rejected successfully",
                 "FAILED": "Operation failed"
             },
-            "PAGINATION_SHOW": "Showing {{count}} refund requests",
+            "PAGINATION_SHOW": "Showing {{{count}}} refund requests",
             "MODAL": {
                 "TITLE": "Refund Details",
                 "SUBTITLE": "Track review status and financial links",
@@ -2320,7 +2320,7 @@
         "ACTIONS": {
             "VERIFY": "Verify Agent"
         },
-        "PAGINATION_SHOW": "Showing {{count}} agents in platform",
+        "PAGINATION_SHOW": "Showing {{{count}}} agents in platform",
         "TOAST": {
             "LOAD_ERROR": "Failed to load agent data",
             "VERIFY_SUCCESS": "Agent verified successfully",
@@ -2374,7 +2374,7 @@
             "SUCCESS_REJECT": "Rejected successfully",
             "FAILED": "Operation failed"
         },
-        "PAGINATION_SHOW": "Showing {{count}} refund requests",
+        "PAGINATION_SHOW": "Showing {{{count}}} refund requests",
         "MODAL": {
             "TITLE": "Refund Details",
             "SUBTITLE": "Track review status and financial links",
@@ -2534,7 +2534,7 @@
             "DELETED": "Deleted"
         },
         "UNKNOWN_USER": "Unknown",
-        "PAGINATION_SHOW": "Showing {{count}} of {{total}} logs",
+        "PAGINATION_SHOW": "Showing {{{count}}} of {{total}} logs",
         "MODAL": {
             "TITLE": "Operation Details",
             "SUBTITLE": "Compare changes and track operation source",
@@ -2567,7 +2567,7 @@
         "CLOSE": "Close",
         "CORRELATION_ID": "Correlation ID",
         "OUTBOX_EVENTS": "Outbox Events",
-        "EVENTS_COUNT": "{{count}} sync events",
+        "EVENTS_COUNT": "{{{count}}} sync events",
         "RECEIVED_TIME": "Received Time",
         "RESOLVED_TIME": "Resolved Time",
         "PROCESSING": "Processing",
@@ -2576,7 +2576,7 @@
         "SOURCE_ID": "Source Entity ID",
         "SOURCE_TYPE": "Source Type",
         "RECS_COUNT": "Recs Count",
-        "ITEMS_REQUESTED": "{{count}} items requested",
+        "ITEMS_REQUESTED": "{{{count}}} items requested",
         "GATEWAY_REF": "Gateway Reference",
         "NO_REF": "No Reference",
         "BANK_STATUS": "Bank Transaction Status",
@@ -2628,14 +2628,14 @@
             "COMPLETED": "Completed",
             "FAILED": "Failed"
         },
-        "RESULTS_COUNT": "{{count}} results",
-        "PAGINATION_SHOW": "Showing {{count}} of {{total}} smart search requests",
+        "RESULTS_COUNT": "{{{count}}} results",
+        "PAGINATION_SHOW": "Showing {{{count}}} of {{total}} smart search requests",
         "MODAL": {
             "TITLE": "Query Technical Data",
             "SUBTITLE": "Operation tracking and AI engine synchronization",
             "CORRELATION_ID": "Correlation ID",
             "OUTBOX_EVENTS": "Outbox Events",
-            "EVENTS_COUNT": "{{count}} sync events",
+            "EVENTS_COUNT": "{{{count}}} sync events",
             "RECEIVED_TIME": "Received Time",
             "RESOLVED_TIME": "Resolved Time",
             "PROCESSING": "Processing",
@@ -2676,8 +2676,8 @@
             "COMPLETED": "Completed",
             "FAILED": "Failed"
         },
-        "RESULTS_REQUESTED": "{{count}} requested",
-        "PAGINATION_SHOW": "Showing {{count}} of {{total}} smart recommendation requests",
+        "RESULTS_REQUESTED": "{{{count}}} requested",
+        "PAGINATION_SHOW": "Showing {{{count}}} of {{total}} smart recommendation requests",
         "MODAL": {
             "TITLE": "Recommendation Details",
             "SUBTITLE": "Context tracking and technical links",
@@ -2687,7 +2687,7 @@
             "CORRELATION_ID": "Correlation ID",
             "TOTAL_SPEED": "Total Gen Speed",
             "RECS_COUNT": "Recs Count",
-            "ITEMS_REQUESTED": "{{count}} items requested",
+            "ITEMS_REQUESTED": "{{{count}}} items requested",
             "CLOSE": "Close"
         },
         "LAG": {
@@ -2731,7 +2731,7 @@
             "REFUNDED": "Refunded",
             "FAILED": "Failed"
         },
-        "PAGINATION_SHOW": "Showing {{count}} of {{total}} transactions",
+        "PAGINATION_SHOW": "Showing {{{count}}} of {{total}} transactions",
         "MODAL": {
             "TITLE": "Payment Details",
             "SUBTITLE": "Track payment references and party IDs",
@@ -3337,8 +3337,8 @@
     "BOOKINGS": {
         "TITLE": "My Bookings",
         "AGENT_TITLE": "Booking Requests",
-        "AGENT_SUBTITLE": "{count} total requests",
-        "SUBTITLE_COUNT": "{count} bookings total",
+        "AGENT_SUBTITLE": "{{count}} total requests",
+        "SUBTITLE_COUNT": "{{count}} bookings total",
         "FILTER_ALL": "All",
         "STATUSES": {
             "Pending": "Pending",
@@ -3508,7 +3508,7 @@
             "VIEW_PROFILE": "View Profile"
         },
         "PENDING_ACTIONS": "Pending Actions",
-        "PENDING_MSG": "You have {count} booking request(s) waiting for your review",
+        "PENDING_MSG": "You have {{count}} booking request(s) waiting for your review",
         "VIEW_PENDING": "View Pending Requests",
         "LOAD_ERROR": "Failed to load dashboard data"
     }

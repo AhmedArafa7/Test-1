@@ -35,7 +35,7 @@ import { firstValueFrom } from 'rxjs';
         <!-- Stepper -->
         <div class="flex items-center justify-center gap-4 mb-12">
             @for (step of [1, 2, 3, 4]; track step) {
-                <div class="flex flex-col items-center cursor-pointer" (click)="currentStep.set(step)">
+                <div class="flex flex-col items-center cursor-pointer" (click)="navigateToStep(step)">
                     <div class="w-12 h-12 rounded-full flex items-center justify-center font-black text-lg mb-2 transition-colors"
                          [class]="currentStep() >= step ? 'bg-[#0a8f96] text-white' : 'bg-gray-200 text-gray-500'">{{step}}</div>
                     <span class="text-xs font-bold" [class]="currentStep() >= step ? 'text-gray-900' : 'text-gray-400'">
@@ -965,7 +965,22 @@ export class PropertyFormComponent implements OnInit, AfterViewInit {
     // When advancing to a new step, mark all fields of the current step as touched
     // so any errors are visible if user comes back.
     this.markAllFieldsTouched();
-    this.currentStep.set(this.currentStep() + 1);
+    this.navigateToStep(this.currentStep() + 1);
+  }
+
+  navigateToStep(step: number) {
+    this.currentStep.set(step);
+    if (step === 4) {
+      this.initMapIfReady();
+    }
+  }
+
+  /** Renders the Leaflet map using already-saved coordinates — zero API calls. */
+  private initMapIfReady() {
+    if (!this.form.latitude || !this.form.longitude) return;
+    // Give Angular time to render the @if block containing #mapContainer
+    this.cdr.detectChanges();
+    setTimeout(() => this.initLeafletMap(), 50);
   }
   getFieldError(id: string): string | null {
     if (id === 'title') {
@@ -1172,7 +1187,12 @@ export class PropertyFormComponent implements OnInit, AfterViewInit {
   async setPrimaryImage(image: PropertyImage) {
     if (image.isPrimary) return;
 
-    const reordered = [...this.existingImages()];
+    // Deep copy to prevent mutating the original objects during rollback
+    const previousImages = this.existingImages().map(img => ({ ...img }));
+    const previousUrls = [...this.existingImageUrls()];
+
+    // Create a new array of cloned objects for the optimistic update
+    const reordered = this.existingImages().map(img => ({ ...img }));
     const idx = reordered.findIndex(img => img.id === image.id);
     if (idx <= 0) return;
 
@@ -1185,8 +1205,30 @@ export class PropertyFormComponent implements OnInit, AfterViewInit {
     try {
       await this.propertyService.setPrimaryImage(this.propertyId, image.id);
       this.toast.success(this.translate.instant('PROPERTY_FORM.MESSAGES.SET_PRIMARY_SUCCESS'));
-    } catch {
-      this.toast.error(this.translate.instant('PROPERTY_FORM.MESSAGES.SET_PRIMARY_ERROR'));
+    } catch (e: any) {
+      // Rollback optimistic update
+      this.existingImages.set(previousImages);
+      this.existingImageUrls.set(previousUrls);
+
+      let translationKey = '';
+      if (e?.error?.detail) translationKey = e.error.detail;
+      else if (e?.error?.message) translationKey = e.error.message;
+      else if (typeof e?.error === 'string') translationKey = e.error;
+
+      let errorMessage = this.translate.instant('PROPERTY_FORM.MESSAGES.SET_PRIMARY_ERROR');
+      if (translationKey) {
+        if (!translationKey.includes(' ')) {
+          const translated = this.translate.instant('VALIDATION.' + translationKey);
+          if (translated !== 'VALIDATION.' + translationKey) {
+            errorMessage += ' - ' + translated;
+          } else {
+            errorMessage += ' (' + translationKey + ')';
+          }
+        } else {
+          errorMessage += ' - ' + translationKey;
+        }
+      }
+      this.toast.error(errorMessage);
     }
   }
 
@@ -1570,10 +1612,15 @@ export class PropertyFormComponent implements OnInit, AfterViewInit {
         translationKey = e.error.code;
       } else if (e?.error?.title) {
         translationKey = e.error.title;
+      } else if (e?.error?.message) {
+        translationKey = e.error.message;
+      } else if (typeof e?.error === 'string') {
+        translationKey = e.error;
       }
 
       let errorMessage = '';
       if (translationKey) {
+        // Try to translate it if it looks like a code or simple key (e.g., 'Property_TitleTooLong')
         const isValidKey = /^[A-Za-z0-9_.]+$/.test(translationKey);
         if (isValidKey) {
           const translated = this.translate.instant('VALIDATION.' + translationKey);
@@ -1581,8 +1628,15 @@ export class PropertyFormComponent implements OnInit, AfterViewInit {
             errorMessage = translated;
           }
         }
+        
+        // If we didn't get a translation, and it contains spaces (a descriptive sentence), show it directly
+        if (!errorMessage && translationKey.includes(' ')) {
+          errorMessage = translationKey;
+        }
+
+        // Fallback: show the generic error with the code/key appended so the user/developer knows why
         if (!errorMessage) {
-          errorMessage = this.translate.instant('PROPERTY_FORM.MESSAGES.SAVE_ERROR');
+          errorMessage = this.translate.instant('PROPERTY_FORM.MESSAGES.SAVE_ERROR') + ' (' + translationKey + ')';
         }
       } else {
         errorMessage = this.translate.instant('PROPERTY_FORM.MESSAGES.SAVE_ERROR');
@@ -1746,6 +1800,7 @@ export class PropertyFormComponent implements OnInit, AfterViewInit {
         if (this._leafletMap) {
           this._leafletMarker!.setLatLng([lat, lng]);
           this._leafletMap.setView([lat, lng], 17);
+          window.setTimeout(() => this._leafletMap!.invalidateSize(), 100);
           return;
         }
         this._leafletMap = L.map(container, {
@@ -1794,8 +1849,18 @@ export class PropertyFormComponent implements OnInit, AfterViewInit {
     document.execCommand(command, false, '');
   }
 
+  stripHtml(html: string): string {
+    if (!html) return '';
+    try {
+      const doc = new DOMParser().parseFromString(html, 'text/html');
+      return doc.body.textContent || '';
+    } catch {
+      return html.replace(/<[^>]*>/g, '');
+    }
+  }
+
   onEditorInput(html: string) {
-    this.form.description = html;
+    this.form.description = this.stripHtml(html);
     this.triggerDraftSave();
   }
 
@@ -2040,6 +2105,10 @@ export class PropertyFormComponent implements OnInit, AfterViewInit {
         
         this.initialDescriptionHtml = this.form.description || '';
         this.toast.success(this.translate.instant('PROPERTY_FORM.MESSAGES.DRAFT_RESTORED'));
+
+        // Render the map using saved coordinates — no API calls needed,
+        // the draft already has city/district/address from when it was first entered.
+        this.initMapIfReady();
       }
     } catch (e) {
       this.toast.error(this.translate.instant('PROPERTY_FORM.MESSAGES.DRAFT_RESTORE_FAILED'));
