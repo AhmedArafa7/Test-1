@@ -143,7 +143,10 @@
         "CONFIRM_DELETE_DESC": "Are you sure you want to delete? This action cannot be undone.",
         "CONFIRM_CLEAR_TITLE": "Confirm clear",
         "CONFIRM_CLEAR_DESC": "Are you sure you want to clear the entire conversation history?",
-        "LOCATION_SEPARATOR": ", "
+        "LOCATION_SEPARATOR": ", ",
+        "ANY": "Any",
+        "MIN": "Min",
+        "MAX": "Max"
     },
     "HOME": {
         "BADGE": "🤖 AI-Powered Platform",
@@ -3185,6 +3188,34 @@
     "PROPERTIES": {
         "LIST": {
             "LOGIN_REQUIRED_SAVE": "You must log in to save properties to favorites"
+        },
+        "BASIC_INFO": "Basic Info",
+        "PROPERTY_TYPE": "Property Type",
+        "LISTING_TYPE": "Listing Type",
+        "DISTRICT": "District",
+        "CITY": "City",
+        "PRICE": "Price",
+        "AREA_SQM": "Area (sqm)",
+        "BEDROOMS": "Bedrooms",
+        "BATHROOMS": "Bathrooms",
+        "FEATURES_AMENITIES": "Features & Amenities",
+        "VIEW_TYPE": "View Type",
+        "FURNISHING": "Furnishing",
+        "AMENITIES": {
+            "GYM": "Gym",
+            "POOL": "Pool",
+            "PARKING": "Parking",
+            "BALCONY": "Balcony",
+            "SECURITY": "Security",
+            "ELEVATOR": "Elevator",
+            "CENTRAL_AC": "Central AC",
+            "GARDEN": "Garden"
+        },
+        "TYPES": {
+            "Apartment": "Apartment",
+            "Villa": "Villa",
+            "Office": "Office",
+            "Land": "Land"
         }
     },
     "EDITOR": {

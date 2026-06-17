@@ -143,7 +143,10 @@
         "CONFIRM_DELETE_DESC": "هل أنت متأكد من الحذف؟ لا يمكن التراجع عن هذا الإجراء.",
         "CONFIRM_CLEAR_TITLE": "تأكيد المسح",
         "CONFIRM_CLEAR_DESC": "هل أنت متأكد من مسح سجل المحادثة بالكامل؟",
-        "LOCATION_SEPARATOR": "، "
+        "LOCATION_SEPARATOR": "، ",
+        "ANY": "أي شيء",
+        "MIN": "الحد الأدنى",
+        "MAX": "الحد الأقصى"
     },
     "HOME": {
         "BADGE": "🤖 منصة مدعومة بالذكاء الاصطناعي",
@@ -3183,6 +3186,34 @@
     "PROPERTIES": {
         "LIST": {
             "LOGIN_REQUIRED_SAVE": "يجب تسجيل الدخول لحفظ العقار في المفضلة"
+        },
+        "BASIC_INFO": "المعلومات الأساسية",
+        "PROPERTY_TYPE": "نوع العقار",
+        "LISTING_TYPE": "نوع الإعلان",
+        "DISTRICT": "المنطقة / الحي",
+        "CITY": "المدينة",
+        "PRICE": "السعر",
+        "AREA_SQM": "المساحة (م²)",
+        "BEDROOMS": "غرف النوم",
+        "BATHROOMS": "الحمامات",
+        "FEATURES_AMENITIES": "المميزات والمرافق",
+        "VIEW_TYPE": "نوع الإطلالة",
+        "FURNISHING": "حالة التأثيث",
+        "AMENITIES": {
+            "GYM": "صالة رياضية",
+            "POOL": "مسبح",
+            "PARKING": "موقف سيارات",
+            "BALCONY": "شرفة",
+            "SECURITY": "حراسة",
+            "ELEVATOR": "مصعد",
+            "CENTRAL_AC": "تكييف مركزي",
+            "GARDEN": "حديقة"
+        },
+        "TYPES": {
+            "Apartment": "شقة",
+            "Villa": "فيلا",
+            "Office": "مكتب",
+            "Land": "أرض"
         }
     },
     "EDITOR": {
