@@ -9,6 +9,7 @@ import { PropertyService } from '../../../features/properties/services/property.
 import { extractApiError } from '../../../core/utils/api-error';
 import { CurrencyEgpPipe } from '../../pipes/currency-egp.pipe';
 import { buildPropertyPlaceholder } from '../../../core/utils/media';
+import { LocalizedDatePipe } from '../../pipes/localized-date.pipe';
 
 @Component({
   selector: 'app-property-compare',
@@ -17,7 +18,8 @@ import { buildPropertyPlaceholder } from '../../../core/utils/media';
     TranslateModule, 
     RouterLink, 
     DecimalPipe, 
-    CurrencyEgpPipe
+    CurrencyEgpPipe,
+    LocalizedDatePipe
   ],
   template: `
     <!-- Floating Comparison Tray -->
@@ -33,11 +35,20 @@ import { buildPropertyPlaceholder } from '../../../core/utils/media';
           </div>
         </div>
         
-        <!-- Selected Thumbnails -->
+        <!-- Selected Thumbnails with Drag & Drop -->
         <div class="hidden sm:flex items-center gap-2 overflow-hidden max-w-[200px]">
-          @for (item of selectedProperties(); track item.id) {
-            <div class="relative w-10 h-10 rounded-lg overflow-hidden border border-slate-100 shrink-0 group/thumb animate-scale-in">
-              <img [src]="item.primaryImageUrl || propertyFallback(item.title)" class="w-full h-full object-cover">
+          @for (item of selectedProperties(); track item.id; let i = $index) {
+            <div draggable="true"
+                 (dragstart)="onDragStart(i)"
+                 (dragover)="onDragOver(i)"
+                 (drop)="onDrop()"
+                 (dragend)="onDragEnd()"
+                 [class.opacity-50]="dragIndex() === i"
+                 [class.ring-2]="dragOverIndex() === i"
+                 [class.ring-[#0a8f96]]="dragOverIndex() === i"
+                 [class.scale-110]="dragOverIndex() === i"
+                 class="relative w-10 h-10 rounded-lg overflow-hidden border border-slate-100 shrink-0 group/thumb animate-scale-in cursor-grab active:cursor-grabbing transition-all">
+              <img [src]="item.primaryImageUrl || propertyFallback(item.title)" class="w-full h-full object-cover pointer-events-none">
               <button (click)="toggleCompare(item)" class="absolute inset-0 bg-black/40 opacity-0 group-hover/thumb:opacity-100 flex items-center justify-center text-white transition-opacity cursor-pointer">
                 <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
               </button>
@@ -77,9 +88,14 @@ import { buildPropertyPlaceholder } from '../../../core/utils/media';
                 <p class="text-[10px] text-slate-400 font-bold">{{ 'COMPARE.MATRIX_SUBTITLE' | translate }}</p>
               </div>
             </div>
-            <button (click)="showCompareModal.set(false)" class="p-2 hover:bg-slate-50 rounded-xl text-slate-400 hover:text-slate-600 transition-colors cursor-pointer">
-              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-            </button>
+            <div class="flex items-center gap-2">
+              <button (click)="shareComparison()" class="p-2 hover:bg-slate-50 rounded-xl text-slate-400 hover:text-[#0a8f96] transition-colors cursor-pointer" [title]="'COMPARE.SHARE' | translate">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
+              </button>
+              <button (click)="showCompareModal.set(false)" class="p-2 hover:bg-slate-50 rounded-xl text-slate-400 hover:text-slate-600 transition-colors cursor-pointer">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+              </button>
+            </div>
           </div>
 
           <!-- Modal Content (Scrollable Matrix) -->
@@ -103,6 +119,56 @@ import { buildPropertyPlaceholder } from '../../../core/utils/media';
                 }
               </div>
             } @else {
+              <!-- Score Cards Section -->
+              <div class="mb-8">
+                <h3 class="text-sm font-black text-slate-700 mb-4 flex items-center gap-2">
+                  <span class="w-1.5 h-5 bg-[#0a8f96] rounded-full"></span>
+                  {{ 'COMPARE.SCORE_TITLE' | translate }}
+                </h3>
+                <div class="grid gap-4" [style.grid-template-columns]="'repeat(' + comparedPropertiesDetails().length + ', 1fr)'">
+                  @for (p of comparedPropertiesDetails(); track p.id) {
+                    <div class="bg-white rounded-2xl border border-slate-100 p-4 shadow-sm">
+                      <p class="text-xs font-black text-slate-800 truncate mb-3">{{ p.title }}</p>
+                      <!-- Overall Score -->
+                      <div class="text-center mb-4">
+                        <div class="text-3xl font-black" [class]="getScoreColor(getOverallScore(p))">{{ getOverallScore(p) }}</div>
+                        <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mt-0.5">{{ 'COMPARE.SCORE_TITLE' | translate }}</p>
+                      </div>
+                      <!-- Breakdown -->
+                      <div class="space-y-2">
+                        <div>
+                          <div class="flex justify-between text-[10px] font-bold text-slate-500 mb-1">
+                            <span>{{ 'COMPARE.SCORE_VALUE' | translate }}</span>
+                            <span>{{ getValueScore(p) }}%</span>
+                          </div>
+                          <div class="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                            <div class="h-full rounded-full transition-all" [class]="getScoreBarColor(getValueScore(p))" [style.width.%]="getValueScore(p)"></div>
+                          </div>
+                        </div>
+                        <div>
+                          <div class="flex justify-between text-[10px] font-bold text-slate-500 mb-1">
+                            <span>{{ 'COMPARE.SCORE_SPACE' | translate }}</span>
+                            <span>{{ getSpaceScore(p) }}%</span>
+                          </div>
+                          <div class="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                            <div class="h-full rounded-full transition-all" [class]="getScoreBarColor(getSpaceScore(p))" [style.width.%]="getSpaceScore(p)"></div>
+                          </div>
+                        </div>
+                        <div>
+                          <div class="flex justify-between text-[10px] font-bold text-slate-500 mb-1">
+                            <span>{{ 'COMPARE.SCORE_AMENITIES' | translate }}</span>
+                            <span>{{ getAmenitiesPercent(p) }}%</span>
+                          </div>
+                          <div class="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                            <div class="h-full rounded-full transition-all" [class]="getScoreBarColor(getAmenitiesPercent(p))" [style.width.%]="getAmenitiesPercent(p)"></div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  }
+                </div>
+              </div>
+
               <!-- Local AI-powered Summary Card -->
               <div class="mb-8 bg-gradient-to-br from-[#0a8f96]/5 via-teal-500/5 to-transparent border border-[#0a8f96]/15 rounded-[24px] p-6 shadow-sm">
                 <div class="flex items-start gap-4">
@@ -171,19 +237,34 @@ import { buildPropertyPlaceholder } from '../../../core/utils/media';
                     <span>{{ 'COMPARE.CORE_SPECS' | translate }}</span>
                   </div>
 
-                  <!-- Row 2: Price -->
+                  <!-- Row 2: Price with visual bar + diff -->
                   <div class="contents">
                     <div class="py-4 text-xs font-black text-slate-500 flex items-center gap-1.5">💰 {{ 'COMPARE.PRICE' | translate }}</div>
                     @for (p of comparedPropertiesDetails(); track p.id) {
-                      <div class="py-4 text-lg font-black tracking-tight flex flex-wrap items-center gap-2"
-                           [class.text-emerald-600]="isWinner(p.id, 'price')"
-                           [style.color]="!isWinner(p.id, 'price') ? '#0a8f96' : ''">
-                        <span>{{ p.price | currencyEgp }}</span>
-                        @if (isWinner(p.id, 'price')) {
-                          <span class="bg-emerald-500/10 text-emerald-600 text-[8px] font-black px-2.5 py-1 rounded-full border border-emerald-500/10 uppercase tracking-wider">
-                            🏆 {{ 'COMPARE.WINNER_PRICE' | translate }}
-                          </span>
-                        }
+                      <div class="py-4 flex flex-col gap-1">
+                        <div class="text-lg font-black tracking-tight flex flex-wrap items-center gap-2"
+                             [class.text-emerald-600]="isWinner(p.id, 'price')"
+                             [style.color]="!isWinner(p.id, 'price') ? '#0a8f96' : ''">
+                          <span>{{ p.price | currencyEgp }}</span>
+                          @if (isWinner(p.id, 'price')) {
+                            <span class="bg-emerald-500/10 text-emerald-600 text-[8px] font-black px-2.5 py-1 rounded-full border border-emerald-500/10 uppercase tracking-wider">
+                              🏆 {{ 'COMPARE.WINNER_PRICE' | translate }}
+                            </span>
+                          }
+                          @if (getDiff(p.id, 'price'); as diff) {
+                            <span class="text-[10px] font-bold flex items-center gap-0.5"
+                                  [class.text-red-500]="diff.isHigher"
+                                  [class.text-emerald-500]="!diff.isHigher">
+                              {{ diff.isHigher ? '▲' : '▼' }} {{ diff.value | currencyEgp }}
+                              <span class="text-slate-400 font-normal">({{ 'COMPARE.DIFF_PREFIX' | translate }})</span>
+                            </span>
+                          }
+                        </div>
+                        <!-- Visual price bar -->
+                        <div class="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden max-w-[180px]">
+                          <div class="h-full bg-gradient-to-r from-[#0a8f96] to-teal-400 rounded-full" 
+                               [style.width.%]="(p.price / getMaxValue('price')) * 100"></div>
+                        </div>
                       </div>
                     }
                   </div>
@@ -205,22 +286,36 @@ import { buildPropertyPlaceholder } from '../../../core/utils/media';
                     }
                   </div>
 
-                  <!-- Row 4: Area -->
+                  <!-- Row 4: Area with visual bar + diff -->
                   <div class="contents">
                     <div class="py-4 text-xs font-black text-slate-500 flex items-center gap-1.5">📐 {{ 'COMPARE.AREA' | translate }}</div>
                     @for (p of comparedPropertiesDetails(); track p.id) {
-                      <div class="py-4 text-sm font-black text-slate-900 flex flex-wrap items-center gap-2">
-                        <span>{{ p.area | number }} <span class="text-[10px] font-normal text-slate-400 mr-1">{{ 'PROPERTY.AREA_UNIT' | translate }}</span></span>
-                        @if (isWinner(p.id, 'area')) {
-                          <span class="bg-indigo-500/10 text-indigo-600 text-[8px] font-black px-2.5 py-1 rounded-full border border-indigo-500/10 uppercase tracking-wider">
-                            🏆 {{ 'COMPARE.WINNER_AREA' | translate }}
-                          </span>
-                        }
+                      <div class="py-4 flex flex-col gap-1">
+                        <div class="text-sm font-black text-slate-900 flex flex-wrap items-center gap-2">
+                          <span>{{ p.area | number }} <span class="text-[10px] font-normal text-slate-400 mr-1">{{ 'PROPERTY.AREA_UNIT' | translate }}</span></span>
+                          @if (isWinner(p.id, 'area')) {
+                            <span class="bg-indigo-500/10 text-indigo-600 text-[8px] font-black px-2.5 py-1 rounded-full border border-indigo-500/10 uppercase tracking-wider">
+                              🏆 {{ 'COMPARE.WINNER_AREA' | translate }}
+                            </span>
+                          }
+                          @if (getDiff(p.id, 'area'); as diff) {
+                            <span class="text-[10px] font-bold flex items-center gap-0.5"
+                                  [class.text-red-500]="diff.isHigher"
+                                  [class.text-emerald-500]="!diff.isHigher">
+                              {{ diff.isHigher ? '▲' : '▼' }} {{ diff.value | number }}
+                              <span class="text-slate-400 font-normal">{{ 'PROPERTY.AREA_UNIT' | translate }} ({{ 'COMPARE.DIFF_PREFIX' | translate }})</span>
+                            </span>
+                          }
+                        </div>
+                        <div class="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden max-w-[180px]">
+                          <div class="h-full bg-gradient-to-r from-indigo-400 to-indigo-500 rounded-full" 
+                               [style.width.%]="(p.area / getMaxValue('area')) * 100"></div>
+                        </div>
                       </div>
                     }
                   </div>
 
-                  <!-- Row 5: Bedrooms & Bathrooms -->
+                  <!-- Row 5: Bedrooms & Bathrooms with diff -->
                   <div class="contents">
                     <div class="py-4 text-xs font-black text-slate-500 flex items-center gap-1.5">🛏️ {{ 'COMPARE.ROOMS_BATHS' | translate }}</div>
                     @for (p of comparedPropertiesDetails(); track p.id) {
@@ -233,6 +328,13 @@ import { buildPropertyPlaceholder } from '../../../core/utils/media';
                            @if (isWinner(p.id, 'bedrooms')) {
                              <span class="bg-indigo-500/10 text-indigo-600 text-[8px] font-black px-1.5 py-0.5 rounded-full border border-indigo-500/10">
                                {{ 'COMPARE.WINNER_BEDS' | translate }}
+                             </span>
+                           }
+                           @if (getDiff(p.id, 'bedrooms'); as diff) {
+                             <span class="text-[10px] font-bold"
+                                   [class.text-red-500]="diff.isHigher"
+                                   [class.text-emerald-500]="!diff.isHigher">
+                               {{ diff.isHigher ? '▲' : '▼' }} {{ diff.value }} ({{ 'COMPARE.DIFF_PREFIX' | translate }})
                              </span>
                            }
                         </div>
@@ -266,6 +368,71 @@ import { buildPropertyPlaceholder } from '../../../core/utils/media';
                         <span class="bg-slate-100 text-slate-500 text-[9px] font-black tracking-wider px-2 py-0.5 rounded border border-slate-100">
                           {{ 'PROPERTY.STATUSES.' + p.status | translate }}
                         </span>
+                      </div>
+                    }
+                  </div>
+
+                  <!-- Row: Floor -->
+                  <div class="contents">
+                    <div class="py-4 text-xs font-black text-slate-500 flex items-center gap-1.5">🏢 {{ 'COMPARE.FLOOR' | translate }}</div>
+                    @for (p of comparedPropertiesDetails(); track p.id) {
+                      <div class="py-4 text-xs font-bold text-slate-700">
+                        @if (p.floor != null) {
+                          <span>{{ p.floor }}{{ p.totalFloors ? ' / ' + p.totalFloors : '' }}</span>
+                        } @else {
+                          <span class="text-slate-400">{{ 'COMPARE.NOT_SPECIFIED' | translate }}</span>
+                        }
+                      </div>
+                    }
+                  </div>
+
+                  <!-- Row: Images Count -->
+                  <div class="contents">
+                    <div class="py-4 text-xs font-black text-slate-500 flex items-center gap-1.5">🖼️ {{ 'COMPARE.IMAGES_COUNT' | translate }}</div>
+                    @for (p of comparedPropertiesDetails(); track p.id) {
+                      <div class="py-4 text-xs font-bold text-slate-700">
+                        {{ p.images?.length || 0 }}
+                      </div>
+                    }
+                  </div>
+
+                  <!-- Row: Created Date -->
+                  <div class="contents">
+                    <div class="py-4 text-xs font-black text-slate-500 flex items-center gap-1.5">📅 {{ 'COMPARE.CREATED' | translate }}</div>
+                    @for (p of comparedPropertiesDetails(); track p.id) {
+                      <div class="py-4 text-xs font-bold text-slate-700">
+                        {{ p.createdOnUtc | localizedDate:'medium' }}
+                      </div>
+                    }
+                  </div>
+
+                  <!-- Row: Agent -->
+                  <div class="contents">
+                    <div class="py-4 text-xs font-black text-slate-500 flex items-center gap-1.5">👤 {{ 'COMPARE.AGENT' | translate }}</div>
+                    @for (p of comparedPropertiesDetails(); track p.id) {
+                      <div class="py-4 text-xs font-bold text-slate-700 flex items-center gap-2">
+                        @if (p.agent) {
+                          <span>{{ p.agent.agencyName || p.agent.displayName }}</span>
+                          @if (p.agent.rating) {
+                            <span class="text-amber-500 text-[10px]">★ {{ p.agent.rating.toFixed(1) }}</span>
+                          }
+                        } @else {
+                          <span class="text-slate-400">{{ 'COMPARE.NOT_SPECIFIED' | translate }}</span>
+                        }
+                      </div>
+                    }
+                  </div>
+
+                  <!-- Row: Description (truncated) -->
+                  <div class="contents">
+                    <div class="py-4 text-xs font-black text-slate-500 flex items-center gap-1.5">📄 {{ 'COMPARE.DESCRIPTION' | translate }}</div>
+                    @for (p of comparedPropertiesDetails(); track p.id) {
+                      <div class="py-4 text-xs font-bold text-slate-600 leading-relaxed line-clamp-3">
+                        @if (p.description) {
+                          {{ p.description.length > 150 ? (p.description.slice(0, 150) + '...') : p.description }}
+                        } @else {
+                          <span class="text-slate-400">{{ 'COMPARE.NOT_SPECIFIED' | translate }}</span>
+                        }
                       </div>
                     }
                   </div>
@@ -490,6 +657,10 @@ export class PropertyCompareComponent {
   comparedPropertiesDetails = signal<Property[]>([]);
   comparedImageIndices = signal<Record<string, number>>({});
   activeLightboxImage = signal<string | null>(null);
+
+  // Drag & drop state
+  dragIndex = signal<number | null>(null);
+  dragOverIndex = signal<number | null>(null);
 
   private toast = inject(ToastService);
   private propertyService = inject(PropertyService);
@@ -807,5 +978,161 @@ export class PropertyCompareComponent {
 
       return summary;
     }
+  }
+
+  // ---- Drag & Drop ----
+  onDragStart(index: number) {
+    this.dragIndex.set(index);
+  }
+
+  onDragOver(index: number) {
+    this.dragOverIndex.set(index);
+  }
+
+  onDrop() {
+    const from = this.dragIndex();
+    const to = this.dragOverIndex();
+    if (from === null || to === null || from === to) {
+      this.dragIndex.set(null);
+      this.dragOverIndex.set(null);
+      return;
+    }
+    const items = [...this.selectedProperties()];
+    const [moved] = items.splice(from, 1);
+    items.splice(to, 0, moved);
+    this.compareChange.emit(items);
+    this.dragIndex.set(null);
+    this.dragOverIndex.set(null);
+  }
+
+  onDragEnd() {
+    this.dragIndex.set(null);
+    this.dragOverIndex.set(null);
+  }
+
+  // ---- Share ----
+  shareComparison() {
+    const ids = this.selectedProperties().map(p => p.id).join(',');
+    const url = `${window.location.origin}/properties?compare=${ids}`;
+    navigator.clipboard.writeText(url).then(() => {
+      this.toast.success(this.translate.instant('COMPARE.SHARE_COPIED'));
+    }).catch(() => {
+      // Fallback: create a temporary input
+      const el = document.createElement('input');
+      el.value = url;
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand('copy');
+      document.body.removeChild(el);
+      this.toast.success(this.translate.instant('COMPARE.SHARE_COPIED'));
+    });
+  }
+
+  // ---- Score Calculation ----
+  getValueScore(p: Property): number {
+    const props = this.comparedPropertiesDetails();
+    if (props.length < 2) return 50;
+    const maxPrice = Math.max(...props.map(x => x.price));
+    const minPrice = Math.min(...props.map(x => x.price));
+    const range = maxPrice - minPrice || 1;
+    return Math.round(((maxPrice - p.price) / range) * 100);
+  }
+
+  getSpaceScore(p: Property): number {
+    const props = this.comparedPropertiesDetails();
+    if (props.length < 2) return 50;
+    const maxArea = Math.max(...props.map(x => x.area));
+    const minArea = Math.min(...props.map(x => x.area));
+    const areaRange = maxArea - minArea || 1;
+    const areaScore = ((p.area - minArea) / areaRange) * 70;
+    const maxBeds = Math.max(...props.map(x => x.bedrooms));
+    const minBeds = Math.min(...props.map(x => x.bedrooms));
+    const bedsRange = maxBeds - minBeds || 1;
+    const bedsScore = ((p.bedrooms - minBeds) / bedsRange) * 30;
+    return Math.round(areaScore + bedsScore);
+  }
+
+  getAmenitiesPercent(p: Property): number {
+    return Math.round((this.getAmenitiesScore(p) / 7) * 100);
+  }
+
+  getOverallScore(p: Property): number {
+    let score = 0;
+    const props = this.comparedPropertiesDetails();
+    if (props.length < 2) return 50;
+
+    // Price score (lower is better): 0-40 points
+    const maxPrice = Math.max(...props.map(x => x.price));
+    const minPrice = Math.min(...props.map(x => x.price));
+    const priceRange = maxPrice - minPrice || 1;
+    const priceScore = ((maxPrice - p.price) / priceRange) * 40;
+    score += priceScore;
+
+    // Area score (higher is better): 0-25 points
+    const maxArea = Math.max(...props.map(x => x.area));
+    const minArea = Math.min(...props.map(x => x.area));
+    const areaRange = maxArea - minArea || 1;
+    const areaScore = ((p.area - minArea) / areaRange) * 25;
+    score += areaScore;
+
+    // Amenities score: 0-20 points
+    const amenityScore = (this.getAmenitiesScore(p) / 7) * 20;
+    score += amenityScore;
+
+    // Bedrooms score: 0-15 points
+    const maxBeds = Math.max(...props.map(x => x.bedrooms));
+    const minBeds = Math.min(...props.map(x => x.bedrooms));
+    const bedsRange = maxBeds - minBeds || 1;
+    const bedsScore = ((p.bedrooms - minBeds) / bedsRange) * 15;
+    score += bedsScore;
+
+    return Math.round(score);
+  }
+
+  getScoreColor(score: number): string {
+    if (score >= 75) return 'text-emerald-600';
+    if (score >= 50) return 'text-amber-600';
+    return 'text-slate-500';
+  }
+
+  getScoreBarColor(score: number): string {
+    if (score >= 75) return 'bg-emerald-500';
+    if (score >= 50) return 'bg-amber-500';
+    return 'bg-slate-400';
+  }
+
+  getMaxValue(metric: 'price' | 'area' | 'bedrooms'): number {
+    const props = this.comparedPropertiesDetails();
+    if (props.length < 2) return 1;
+    if (metric === 'price') return Math.max(...props.map(p => p.price));
+    if (metric === 'area') return Math.max(...props.map(p => p.area));
+    if (metric === 'bedrooms') return Math.max(...props.map(p => p.bedrooms));
+    return 1;
+  }
+
+  // ---- +/- Difference ----
+  getDiff(propertyId: string, metric: 'price' | 'area' | 'bedrooms'): { value: number; isHigher: boolean } | null {
+    const props = this.comparedPropertiesDetails();
+    if (props.length < 2) return null;
+
+    const target = props.find(p => p.id === propertyId);
+    if (!target) return null;
+
+    if (metric === 'price') {
+      const best = Math.min(...props.map(p => p.price));
+      const diff = target.price - best;
+      return { value: Math.abs(diff), isHigher: diff > 0 };
+    }
+    if (metric === 'area') {
+      const best = Math.max(...props.map(p => p.area));
+      const diff = best - target.area;
+      return { value: Math.abs(diff), isHigher: diff > 0 };
+    }
+    if (metric === 'bedrooms') {
+      const best = Math.max(...props.map(p => p.bedrooms));
+      const diff = best - target.bedrooms;
+      return { value: Math.abs(diff), isHigher: diff > 0 };
+    }
+    return null;
   }
 }

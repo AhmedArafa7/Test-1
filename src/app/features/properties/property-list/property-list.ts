@@ -17,6 +17,7 @@ import { CurrencyEgpPipe } from '../../../shared/pipes/currency-egp.pipe';
 import { resolveBackendAssetUrl, buildPropertyPlaceholder } from '../../../core/utils/media';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { PropertyCompareComponent } from '../../../shared/components/property-compare/property-compare';
+import { CompareService } from '../../../core/services/compare.service';
 import { extractApiError } from '../../../core/utils/api-error';
 import * as L from 'leaflet';
 import { EGYPT_REGIONS, Governorate, City } from '../../../core/constants/egypt-regions';
@@ -412,7 +413,7 @@ import { EGYPT_REGIONS, Governorate, City } from '../../../core/constants/egypt-
         </div>
       </div>
 
-      <app-property-compare [selectedProperties]="selectedPropertiesForCompare()" (compareChange)="selectedPropertiesForCompare.set($event)" />
+      <app-property-compare [selectedProperties]="compareService.items()" (compareChange)="compareService.reorder($event)" />
 
     </div>
   `
@@ -423,8 +424,7 @@ export class PropertyListComponent implements OnInit, AfterViewInit {
   private markersLayer = L.layerGroup();
   properties = signal<PropertyListItem[]>([]);
   
-  // Comparison Matrix State
-  selectedPropertiesForCompare = signal<PropertyListItem[]>([]);
+  compareService = inject(CompareService);
 
   loading = signal(true);
   currentPage = signal(1);
@@ -957,25 +957,19 @@ export class PropertyListComponent implements OnInit, AfterViewInit {
 
   // Comparison Matrix Operations
   isCompared(id: string): boolean {
-    return this.selectedPropertiesForCompare().some(item => item.id === id);
+    return this.compareService.isCompared(id);
   }
 
-
-
-
-
   toggleCompare(item: PropertyListItem) {
-    this.selectedPropertiesForCompare.update(current => {
-      const exists = current.some(i => i.id === item.id);
-      if (exists) {
-        return current.filter(i => i.id !== item.id);
-      }
-      if (current.length >= 3) {
-        this.toast.info(this.translate.instant('COMPARE.TOAST_MAX'));
-        return current;
-      }
-      return [...current, item];
-    });
+    if (this.compareService.isCompared(item.id)) {
+      this.compareService.remove(item.id);
+      return;
+    }
+    if (this.compareService.items().length >= 3) {
+      this.toast.info(this.translate.instant('COMPARE.TOAST_MAX'));
+      return;
+    }
+    this.compareService.toggle(item);
   }
 
 }

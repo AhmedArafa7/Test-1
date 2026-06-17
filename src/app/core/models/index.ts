@@ -9,3 +9,4 @@ export * from './profile.models';
 export * from './admin.models';
 export * from './availability.models';
 export * from './trash.models';
+export * from './property-preference.models';

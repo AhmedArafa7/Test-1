@@ -39,6 +39,7 @@ export const routes: Routes = [
     children: [
       { path: 'profile', loadComponent: () => import('./features/profile/user-profile/user-profile').then(m => m.UserProfileComponent), data: { title: 'NAV.PROFILE' } },
       { path: 'profile/edit', loadComponent: () => import('./features/profile/edit-profile/edit-profile').then(m => m.EditProfileComponent), data: { title: 'NAV.EDIT_PROFILE' } },
+      { path: 'profile/preferences', loadComponent: () => import('./features/profile/property-preferences/property-preferences').then(m => m.PropertyPreferencesComponent), data: { title: 'NAV.PROPERTY_PREFERENCES' } },
       { path: 'profile/:id', loadComponent: () => import('./features/profile/user-profile/user-profile').then(m => m.UserProfileComponent), data: { title: 'NAV.PROFILE' } },
       { path: 'saved', canActivate: [roleGuard('Buyer')], loadComponent: () => import('./features/properties/saved-properties/saved-properties').then(m => m.SavedPropertiesComponent), data: { title: 'NAV.SAVED' } },
       { path: 'bookings', canActivate: [roleGuard('Buyer', 'Agent')], loadComponent: () => import('./features/bookings/booking-list/booking-list').then(m => m.BookingListComponent), data: { title: 'NAV.BOOKINGS' } },

@@ -1516,6 +1516,10 @@
         "PW_SUCCESS": "Password changed successfully",
         "PW_ERROR": "Failed to change password",
         "LOADING": "Loading profile...",
+        "PROPERTY_ALERTS": "Property Alerts",
+        "PROPERTY_ALERTS_DESC": "Set your desired property specifications, and we will notify you immediately when a matching property is added.",
+        "BUDGET_AND_SIZE": "Budget and Size",
+        "PREFERENCES_SAVED": "Preferences saved successfully",
         "EDIT": {
             "TITLE": "Update Profile",
             "SUBTITLE": "Update your personal information",
@@ -3164,7 +3168,19 @@
         "WINNER_BEDS": "Most Bedrooms",
         "WINNER_SQM": "Best Price/m²",
         "CORE_SPECS": "Core Specifications",
-        "AMENITIES_SPECS": "Amenities & Additional Services"
+        "AMENITIES_SPECS": "Amenities & Additional Services",
+        "FLOOR": "Floor",
+        "CREATED": "Listed Date",
+        "DESCRIPTION": "Description",
+        "AGENT": "Agent",
+        "SHARE": "Share",
+        "SHARE_COPIED": "Comparison link copied!",
+        "SCORE_TITLE": "Overall Score",
+        "SCORE_VALUE": "Value Score",
+        "SCORE_SPACE": "Space Score",
+        "SCORE_AMENITIES": "Amenities Score",
+        "DIFF_PREFIX": "vs best",
+        "IMAGES_COUNT": "Images"
     },
     "PROPERTIES": {
         "LIST": {

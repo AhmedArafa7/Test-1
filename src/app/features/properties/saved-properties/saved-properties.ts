@@ -9,6 +9,7 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
 import { PropertyCardComponent } from '../../../shared/components/property-card/property-card';
 import { PropertyService } from '../services/property.service';
 import { PropertyCompareComponent } from '../../../shared/components/property-compare/property-compare';
+import { CompareService } from '../../../core/services/compare.service';
 import { extractApiError } from '../../../core/utils/api-error';
 
 @Component({
@@ -84,7 +85,7 @@ import { extractApiError } from '../../../core/utils/api-error';
       </div>
 
       <!-- Comparison Matrix -->
-      <app-property-compare [selectedProperties]="selectedPropertiesForCompare()" (compareChange)="selectedPropertiesForCompare.set($event)" />
+      <app-property-compare [selectedProperties]="compareService.items()" (compareChange)="compareService.reorder($event)" />
 
     </div>
   `,
@@ -96,8 +97,7 @@ export class SavedPropertiesComponent implements OnInit {
   totalPages = signal(1);
   totalCount = signal(0);
 
-  // Comparison Matrix Signals
-  selectedPropertiesForCompare = signal<PropertyListItem[]>([]);
+  compareService = inject(CompareService);
 
   public translate = inject(TranslateService);
 
@@ -137,7 +137,7 @@ export class SavedPropertiesComponent implements OnInit {
       this.totalCount.update(c => Math.max(0, c - 1));
       
       // Also remove from comparison if removed from saved
-      this.selectedPropertiesForCompare.update(current => current.filter(i => i.id !== id));
+      this.compareService.remove(id);
       
       if (this.items().length === 0 && this.currentPage() > 1) {
         this.goToPage(this.currentPage() - 1);
@@ -158,20 +158,18 @@ export class SavedPropertiesComponent implements OnInit {
 
   // Comparison Matrix Operations
   isCompared(id: string): boolean {
-    return this.selectedPropertiesForCompare().some(item => item.id === id);
+    return this.compareService.isCompared(id);
   }
 
   toggleCompare(item: PropertyListItem) {
-    this.selectedPropertiesForCompare.update(current => {
-      const exists = current.some(i => i.id === item.id);
-      if (exists) {
-        return current.filter(i => i.id !== item.id);
-      }
-      if (current.length >= 3) {
-        this.toast.info(this.translate.instant('COMPARE.TOAST_MAX'));
-        return current;
-      }
-      return [...current, item];
-    });
+    if (this.compareService.isCompared(item.id)) {
+      this.compareService.remove(item.id);
+      return;
+    }
+    if (this.compareService.items().length >= 3) {
+      this.toast.info(this.translate.instant('COMPARE.TOAST_MAX'));
+      return;
+    }
+    this.compareService.toggle(item);
   }
 }
