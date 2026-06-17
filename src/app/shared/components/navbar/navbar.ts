@@ -310,31 +310,18 @@ export class NavbarComponent implements OnInit, OnDestroy {
         const isIncoming = msg.senderId !== this.auth.userId();
         if (isIncoming) {
           this.showMessagePopup(msg);
-          
-          // Update unread count in localStorage if we are NOT on the conversations page
+          // Update unread count if we are NOT on the conversations page
           const currentRoute = window.location.pathname;
           if (!currentRoute.includes('/conversations')) {
-            try {
-              const unreadCountsRaw = localStorage.getItem('baytology_unread_counts') || '{}';
-              const unreadCounts = JSON.parse(unreadCountsRaw);
-              unreadCounts[msg.conversationId] = (unreadCounts[msg.conversationId] || 0) + 1;
-              localStorage.setItem('baytology_unread_counts', JSON.stringify(unreadCounts));
-            } catch (err) {}
+            this.unreadMessagesCount.update(c => c + 1);
           }
         }
-        setTimeout(() => this.updateUnreadStatus(), 150);
       }
     });
   }
 
   ngOnInit() {
     this.updateUnreadStatus();
-
-    // Load unread message count from API if no localStorage cache exists
-    const cachedCounts = localStorage.getItem('baytology_unread_counts');
-    if (!cachedCounts || cachedCounts === '{}') {
-      this.loadUnreadConversationsCount();
-    }
 
     // Fetch avatar from profile if not cached
     if (this.auth.isAuthenticated() && !this.auth.userAvatar()) {
@@ -362,72 +349,23 @@ export class NavbarComponent implements OnInit, OnDestroy {
   private async loadUnreadConversationsCount() {
     try {
       const conversations = await this.conversationService.getAll();
-      let total = 0;
-      const counts: Record<string, number> = {};
-
-      const lastViewedRaw = localStorage.getItem('baytology_last_viewed') || '{}';
-      const lastViewed: Record<string, string> = JSON.parse(lastViewedRaw);
-
-      const cachedSendersRaw = localStorage.getItem('baytology_last_message_senders') || '{}';
-      const cachedSenders = JSON.parse(cachedSendersRaw);
-
-      for (const conv of conversations) {
-        let count = 0;
-        const effectiveSenderId = conv.lastMessageSenderId || cachedSenders[conv.id];
-
-        if (effectiveSenderId === this.auth.userId()) {
-          count = 0;
-        } else if (conv.lastMessageAt) {
-          const lastViewTime = lastViewed[conv.id];
-          if (lastViewTime) {
-            const lastMsgMs = new Date(conv.lastMessageAt).getTime();
-            const viewMs = new Date(lastViewTime).getTime();
-            if (lastMsgMs > viewMs + 2000) {
-              count = 1;
-            }
-          } else if (conv.lastMessageContent) {
-            count = 1;
-          }
-        }
-
-        if (count > 0) {
-          counts[conv.id] = count;
-          total += count;
-        }
+      const total = conversations.reduce((sum, c) => sum + (c.unreadCount || 0), 0);
+      
+      const currentRoute = window.location.pathname;
+      if (!currentRoute.includes('/conversations')) {
+        this.unreadMessagesCount.set(total);
       }
-
-      localStorage.setItem('baytology_unread_counts', JSON.stringify(counts));
-      this.updateUnreadStatus();
     } catch {
       // Silent fallback
     }
   }
 
   updateUnreadStatus() {
-    try {
-      const unreadCountsRaw = localStorage.getItem('baytology_unread_counts') || '{}';
-      const unreadCounts = JSON.parse(unreadCountsRaw);
-
-      // Self-healing: if we find legacy keys or haven't migrated to v2, clear them and rebuild
-      const hasLegacyKeys = Object.keys(unreadCounts).some(key => key.startsWith('buyer_') || key.startsWith('agent_'));
-      const isMigrated = localStorage.getItem('baytology_unread_counts_v2') === 'true';
-      if (hasLegacyKeys || !isMigrated) {
-        localStorage.setItem('baytology_unread_counts_v2', 'true');
-        localStorage.setItem('baytology_unread_counts', '{}');
-        this.loadUnreadConversationsCount();
-        return;
-      }
-
-      const total = Object.values(unreadCounts).reduce((a: any, b: any) => a + b, 0) as number;
-      
-      const currentRoute = window.location.pathname;
-      if (currentRoute.includes('/conversations')) {
-        this.unreadMessagesCount.set(0);
-      } else {
-        this.unreadMessagesCount.set(total);
-      }
-    } catch {
+    const currentRoute = window.location.pathname;
+    if (currentRoute.includes('/conversations')) {
       this.unreadMessagesCount.set(0);
+    } else {
+      this.loadUnreadConversationsCount();
     }
   }
 

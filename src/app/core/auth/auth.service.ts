@@ -198,9 +198,6 @@ export class AuthService {
     sessionStorage.removeItem(USER_KEY);
 
     localStorage.removeItem('baytology_chat_history');
-    localStorage.removeItem('baytology_mock_notifications'); // legacy shared key
-    localStorage.removeItem('baytology_unread_counts');
-    localStorage.removeItem('baytology_last_viewed');
     localStorage.removeItem('baytology_muted_conversations');
     if (userId) {
       localStorage.removeItem(`baytology_mock_notifications_${userId}`);

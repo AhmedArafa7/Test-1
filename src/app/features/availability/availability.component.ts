@@ -116,6 +116,12 @@ import { AvailabilityRuleDto, RecurrenceType } from '../../core/models';
             <div class="w-8 h-8 border-2 border-[#0a8f96] border-t-transparent rounded-full animate-spin"></div>
           </div>
         } @else if (rules().length === 0) {
+          <div class="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-4 flex items-start gap-3">
+            <svg class="w-5 h-5 text-amber-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+            </svg>
+            <p class="text-sm font-bold text-amber-800">{{ 'AVAILABILITY.ALL_DELETED_WARNING' | translate }}</p>
+          </div>
           <div class="text-center py-8">
             <svg class="w-12 h-12 text-slate-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
@@ -296,6 +302,10 @@ export class AvailabilityComponent implements OnInit {
     const sub = this.availabilityService.deleteRule(rule.id).subscribe({
       next: () => {
         this.toast.success(this.translate.instant('AVAILABILITY.DELETE_SUCCESS'));
+        // If this was the last rule, show persistent warning
+        if (this.rules().length === 1) {
+          this.toast.warning(this.translate.instant('AVAILABILITY.ALL_DELETED_WARNING'));
+        }
         this.loadRules();
       },
       error: (e: any) => {

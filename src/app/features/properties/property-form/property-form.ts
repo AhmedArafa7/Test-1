@@ -13,6 +13,7 @@ import { CloudinaryService } from '../../../core/services/cloudinary.service';
 import { TrashService } from '../../../core/services/trash.service';
 import { compressImage } from '../../../core/utils/media';
 import { firstValueFrom } from 'rxjs';
+import { AvailabilityService } from '../../availability/availability.service';
 
 @Component({
   selector: 'app-property-form',
@@ -754,6 +755,7 @@ export class PropertyFormComponent implements OnInit, AfterViewInit {
   private translate = inject(TranslateService);
   private cdr = inject(ChangeDetectorRef);
   private trashService = inject(TrashService);
+  private availabilityService = inject(AvailabilityService);
 
   hasDraftAvailable = signal(false);
   private geocodeTimeout: any = null;
@@ -1598,6 +1600,16 @@ export class PropertyFormComponent implements OnInit, AfterViewInit {
       }
 
       this.clearDraft(); // Clear autosaved draft on successful submit!
+
+      // Check if agent has availability rules; warn if not
+      if (!this.isEdit()) {
+        firstValueFrom(this.availabilityService.getRules()).then(rules => {
+          if (rules.length === 0) {
+            this.toast.warning(this.translate.instant('PROPERTY_FORM.MESSAGES.AVAILABILITY_WARNING'));
+          }
+        }).catch(() => {});
+      }
+
       this.router.navigate(['/properties', resultId]);
     } catch (e: any) { 
       console.error('Submission failed details:', e);

@@ -988,6 +988,7 @@
             "UPLOAD_SUCCESS": "{{count}} images uploaded successfully!",
             "UPDATE_SUCCESS": "Property updated successfully!",
             "CREATE_SUCCESS": "Property listed successfully and images are available to all!",
+            "AVAILABILITY_WARNING": "Property created! Don't forget to set up availability rules so buyers can book tours.",
             "SAVE_ERROR": "An error occurred during data saving",
             "GEO_NOT_SUPPORTED": "Browser does not support geolocation",
             "GEO_SUCCESS": "Your location determined successfully!",
@@ -3297,6 +3298,7 @@
         "DELETE_CONFIRM_MSG": "Are you sure you want to delete this rule?",
         "DELETE_SUCCESS": "Rule deleted successfully",
         "DELETE_ERROR": "Failed to delete rule",
+        "ALL_DELETED_WARNING": "All availability rules have been deleted. Buyers cannot book tours without available time slots.",
         "SUN": "Sun",
         "MON": "Mon",
         "TUE": "Tue",
@@ -3514,6 +3516,9 @@
         "PENDING_ACTIONS": "Pending Actions",
         "PENDING_MSG": "You have {{count}} booking request(s) waiting for your review",
         "VIEW_PENDING": "View Pending Requests",
+        "NO_AVAILABILITY_TITLE": "No Availability Rules",
+        "NO_AVAILABILITY_MSG": "You have {{count}} propert(ies) listed but no availability rules. Buyers cannot book tours without available time slots.",
+        "NO_AVAILABILITY_ACTION": "Set Up Availability",
         "LOAD_ERROR": "Failed to load dashboard data"
     }
 }

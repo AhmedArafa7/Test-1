@@ -87,6 +87,25 @@ import { Router } from '@angular/router';
           </div>
         </div>
 
+        <!-- No Availability Warning -->
+        @if (propertiesCount() > 0 && availabilityRulesCount() === 0) {
+          <div class="bg-gradient-to-br from-amber-50 to-orange-50 rounded-[24px] border border-amber-200 shadow-[0_4px_24px_rgba(0,0,0,0.015)] p-6 md:p-8 mb-8">
+            <div class="flex items-start gap-4">
+              <div class="w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center text-amber-600 shrink-0 mt-0.5">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+              </div>
+              <div class="flex-1">
+                <h3 class="text-lg font-black text-amber-800 mb-2">{{ 'AGENT_DASHBOARD.NO_AVAILABILITY_TITLE' | translate }}</h3>
+                <p class="text-sm font-bold text-amber-700 mb-4">{{ 'AGENT_DASHBOARD.NO_AVAILABILITY_MSG' | translate:{ count: propertiesCount() } }}</p>
+                <a routerLink="/availability" class="inline-flex items-center gap-2 px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-sm font-black transition-colors cursor-pointer">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                  {{ 'AGENT_DASHBOARD.NO_AVAILABILITY_ACTION' | translate }}
+                </a>
+              </div>
+            </div>
+          </div>
+        }
+
         <!-- Main Content Grid -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
           

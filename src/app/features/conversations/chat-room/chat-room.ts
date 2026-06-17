@@ -354,10 +354,6 @@ export class ChatRoomComponent implements OnInit, OnDestroy {
     effect(() => {
       const msg = this.chatSignalR.incomingMessage();
       if (msg) {
-        // Read unread counts from localStorage
-        const unreadCountsRaw = localStorage.getItem('baytology_unread_counts') || '{}';
-        const unreadCounts = JSON.parse(unreadCountsRaw);
-
         const isIncoming = msg.senderId !== this.auth.userId();
         if (isIncoming) {
           this.playNotificationSound();
@@ -368,13 +364,10 @@ export class ChatRoomComponent implements OnInit, OnDestroy {
           return list.map(c => {
             if (c.id === msg.conversationId) {
               const isCurrentActive = c.id === this.conversationId;
-              
-              let newUnreadCount = 0;
+              let newUnreadCount = c.unreadCount ?? 0;
+
               if (isIncoming && !isCurrentActive) {
-                newUnreadCount = (unreadCounts[c.id] || 0) + 1;
-                unreadCounts[c.id] = newUnreadCount;
-              } else {
-                unreadCounts[c.id] = 0;
+                newUnreadCount += 1;
               }
                 
               return {
@@ -389,15 +382,6 @@ export class ChatRoomComponent implements OnInit, OnDestroy {
           });
         });
 
-        // Persist lastMessageSenderId to localStorage so it survives page reload
-        const sendersRaw = localStorage.getItem('baytology_last_message_senders') || '{}';
-        const senders = JSON.parse(sendersRaw);
-        senders[msg.conversationId] = msg.senderId;
-        localStorage.setItem('baytology_last_message_senders', JSON.stringify(senders));
-
-        // Save updated unread counts to localStorage
-        localStorage.setItem('baytology_unread_counts', JSON.stringify(unreadCounts));
-
         // 2. Append the message if it belongs to the active conversation room
         if (msg.conversationId === this.conversationId) {
           this.messages.update(prev => {
@@ -405,11 +389,9 @@ export class ChatRoomComponent implements OnInit, OnDestroy {
             return [...prev, msg];
           });
           
-          // Also update lastViewed using the incoming message's backend time
-          const lvRaw = localStorage.getItem('baytology_last_viewed') || '{}';
-          const lv = JSON.parse(lvRaw);
-          lv[this.conversationId] = msg.sentAt;
-          localStorage.setItem('baytology_last_viewed', JSON.stringify(lv));
+          if (isIncoming) {
+            this.conversationService.markRead(msg.id).catch(() => {});
+          }
 
           setTimeout(() => this.scrollToBottom(), 50);
         }
@@ -443,25 +425,7 @@ export class ChatRoomComponent implements OnInit, OnDestroy {
         this.isMuted.set(mutedList.includes(this.conversationId));
         this.mutedConversations.set(mutedList);
 
-        // Reset unread count locally and in localStorage when active chat is loaded
-        const unreadCountsRaw = localStorage.getItem('baytology_unread_counts') || '{}';
-        const unreadCounts = JSON.parse(unreadCountsRaw);
-        unreadCounts[this.conversationId] = 0;
-        localStorage.setItem('baytology_unread_counts', JSON.stringify(unreadCounts));
-
-        // Save last viewed timestamp to synthesize unread status for historical messages
-        const lastViewedRaw = localStorage.getItem('baytology_last_viewed') || '{}';
-        const lastViewed = JSON.parse(lastViewedRaw);
-        
-        // Use existing conversation's lastMessageAt if available to avoid clock drift between BROWSER and SERVER.
-        const currentConv = this.conversations().find(c => c.id === this.conversationId);
-        if (currentConv && currentConv.lastMessageAt) {
-          lastViewed[this.conversationId] = currentConv.lastMessageAt;
-        } else {
-          lastViewed[this.conversationId] = new Date().toISOString();
-        }
-        localStorage.setItem('baytology_last_viewed', JSON.stringify(lastViewed));
-
+        // Reset unread count locally when active chat is loaded
         this.conversations.update(list => 
           list.map(c => c.id === this.conversationId ? { ...c, unreadCount: 0 } : c)
         );
@@ -507,88 +471,10 @@ export class ChatRoomComponent implements OnInit, OnDestroy {
     this.loadConversations();
   }
 
-  private mapConversationsWithUnread(list: Conversation[]): Conversation[] {
-    const unreadCountsRaw = localStorage.getItem('baytology_unread_counts') || '{}';
-    const unreadCounts = JSON.parse(unreadCountsRaw);
-
-    const lastViewedRaw = localStorage.getItem('baytology_last_viewed') || '{}';
-    const lastViewed = JSON.parse(lastViewedRaw);
-
-    const cachedSendersRaw = localStorage.getItem('baytology_last_message_senders') || '{}';
-    const cachedSenders = JSON.parse(cachedSendersRaw);
-
-    let changed = false;
-
-    // Clean up stale unread counts for conversations that no longer exist
-    const activeIds = new Set(list.map(c => c.id));
-    for (const key of Object.keys(unreadCounts)) {
-      if (!activeIds.has(key)) {
-        delete unreadCounts[key];
-        changed = true;
-      }
-    }
-    
-    // Also clean up stale lastViewed entries
-    for (const key of Object.keys(lastViewed)) {
-      if (!activeIds.has(key)) {
-        delete lastViewed[key];
-        changed = true;
-      }
-    }
-
-    const mapped = list.map(c => {
-      let count = unreadCounts[c.id] || 0;
-
-      const effectiveSenderId = c.lastMessageSenderId || cachedSenders[c.id];
-
-      if (effectiveSenderId === this.auth.userId()) {
-        if (count !== 0) {
-          count = 0;
-          unreadCounts[c.id] = 0;
-          changed = true;
-        }
-      } else if (c.lastMessageAt && c.id !== this.conversationId) {
-        const lastViewTime = lastViewed[c.id];
-        if (lastViewTime) {
-          const lastMsgMs = new Date(c.lastMessageAt).getTime();
-          const viewMs = new Date(lastViewTime).getTime();
-          // If the last message is newer than the last viewed time by more than 2 seconds
-          if (lastMsgMs > viewMs + 2000) {
-            if (count === 0) {
-              count = 1;
-              unreadCounts[c.id] = 1;
-              changed = true;
-            }
-          }
-        } else if (c.lastMessageContent) {
-          // If never viewed before and has content, initialize as 1 unread message
-          if (count === 0) {
-            count = 1;
-            unreadCounts[c.id] = 1;
-            changed = true;
-          }
-        }
-      }
-
-      return {
-        ...c,
-        unreadCount: count
-      };
-    });
-
-    if (changed) {
-      localStorage.setItem('baytology_unread_counts', JSON.stringify(unreadCounts));
-      localStorage.setItem('baytology_last_viewed', JSON.stringify(lastViewed));
-    }
-
-    return mapped;
-  }
-
   private async loadConversations() {
     try {
       const list = await this.conversationService.getAll();
-      const mapped = this.mapConversationsWithUnread(list);
-      this.conversations.set(mapped);
+      this.conversations.set(list);
     } catch {}
   }
 
@@ -600,25 +486,14 @@ export class ChatRoomComponent implements OnInit, OnDestroy {
       ]);
       
       this.messages.set(msgs);
-      
-      // Update last viewed using the LATEST conversation data from backend to ensure clock drift is handled
-      const current = convs.find(c => c.id === this.conversationId);
-      if (current && current.lastMessageAt) {
-        const lvRaw = localStorage.getItem('baytology_last_viewed') || '{}';
-        const lv = JSON.parse(lvRaw);
-        lv[this.conversationId] = current.lastMessageAt;
-        localStorage.setItem('baytology_last_viewed', JSON.stringify(lv));
-      }
-      
-      const mappedConvs = this.mapConversationsWithUnread(convs);
-      this.conversations.set(mappedConvs);
+      this.conversations.set(convs);
       
       // Mark all unread messages as read
-      // [BACKEND_MISSING]: The backend doesn't support unread status for individual messages yet.
-      /* msgs.filter(m => !m.isRead && m.senderId !== this.auth.userId()).forEach(m => {
+      msgs.filter(m => !m.isRead && m.senderId !== this.auth.userId()).forEach(m => {
         this.conversationService.markRead(m.id).catch(() => {});
-      }); */
+      });
 
+      const current = convs.find(c => c.id === this.conversationId);
       if (current) {
         this.activeConversation.set(current);
         this.recipientName.set(this.auth.userId() === current.buyerUserId 
@@ -627,8 +502,6 @@ export class ChatRoomComponent implements OnInit, OnDestroy {
         
         this.propertyService.getAll({ agentUserId: current.agentUserId, pageSize: 50 }).then(res => {
           this.agentProperties.set(res.items);
-          
-          // Local storage fetching removed as per user request
         });
       }
       
