@@ -3,6 +3,8 @@ import { RouterLink } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
 import { AdminService } from '../services/admin.service';
+import { ToastService } from '../../../core/services/toast.service';
+import { extractApiError } from '../../../core/utils/api-error';
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -211,6 +213,8 @@ export class DashboardComponent implements OnInit {
   verifiedPercentage = signal(0);
 
   private adminService = inject(AdminService);
+  private translate = inject(TranslateService);
+  private toast = inject(ToastService);
 
   async ngOnInit() {
     try {
@@ -226,7 +230,9 @@ export class DashboardComponent implements OnInit {
       
       const vPercent = agents.length > 0 ? Math.round((this.verifiedCount() / agents.length) * 100) : 0;
       this.verifiedPercentage.set(vPercent);
-    } catch {
+    } catch (e: any) {
+      const extracted = extractApiError(e, this.translate);
+      if (extracted) { this.toast.error(extracted); return; }
       this.usersCount.set(0);
       this.agentsCount.set(0);
       this.verifiedCount.set(0);

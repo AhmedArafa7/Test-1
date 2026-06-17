@@ -391,6 +391,10 @@
             "PHONE_REQUIRED": "Phone number is required",
             "PHONE_HINT": "Valid Egyptian phone number",
             "REQUIRED": "This field is required",
+            "EMAIL_TAKEN": "This email is already registered. Try logging in instead.",
+            "PHONE_TAKEN": "This phone number is already in use.",
+            "PASSWORD_WEAK": "Password is too weak. Please check the password requirements.",
+            "UNKNOWN_ERROR": "An unexpected error occurred. Please try again.",
             "SAVE_DISABLED_HINT": "Complete all required fields correctly to create your account"
         },
         "FORGOT_PW": "Forgot Password",

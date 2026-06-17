@@ -463,7 +463,7 @@ import { firstValueFrom } from 'rxjs';
                   <!-- Smart Geocoding search input with autocomplete -->
                   <div class="space-y-3 md:col-span-2 relative">
                     <label class="block text-[11px] font-black text-[#0a8f96] uppercase tracking-wider mb-1 px-1">{{ 'PROPERTY_FORM.GEO_SEARCH_LABEL' | translate }}</label>
-                    <div class="relative flex gap-2">
+                    <div class="relative flex items-start gap-2">
                       <div class="relative flex-1">
                         <input type="text" #geoSearchInput
                                (input)="onGeoSearchInput(geoSearchInput.value)"

@@ -3,12 +3,14 @@ import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { ProfileService } from '../../profile/services/profile.service';
 import { NotificationSignalRService } from '../../../core/services/notification-signalr.service';
+import { extractApiError } from '../../../core/utils/api-error';
 import { ConversationService } from '../../conversations/services/conversation.service';
 import { AuthService } from '../../../core/auth/auth.service';
 import { AppNotification, Conversation } from '../../../core/models';
 import { RelativeTimePipe } from '../../../shared/pipes/relative-time.pipe';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { EmptyStateComponent } from '../../../shared/components/empty-state/empty-state';
+import { ToastService } from '../../../core/services/toast.service';
 
 interface NotificationGroup {
   type: string;
@@ -366,7 +368,8 @@ export class NotificationListComponent implements OnInit, OnDestroy {
     private notifService: NotificationSignalRService, 
     private conversationService: ConversationService,
     private router: Router,
-    private translate: TranslateService
+    private translate: TranslateService,
+    private toast: ToastService
   ) {
   }
   
@@ -496,7 +499,9 @@ export class NotificationListComponent implements OnInit, OnDestroy {
       if (!append) {
         this.notifService.setNotifications(items);
       }
-    } catch (err) {
+    } catch (err: any) {
+      const extracted = extractApiError(err, this.translate);
+      if (extracted) { this.toast.error(extracted); return; }
       console.error('Failed to load notifications in component:', err);
     } finally {
       this.loading.set(false);

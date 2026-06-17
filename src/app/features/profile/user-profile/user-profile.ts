@@ -8,6 +8,7 @@ import { AuthService } from '../../../core/auth/auth.service';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner';
 import { ToastService } from '../../../core/services/toast.service';
 import { FormsModule } from '@angular/forms';
+import { extractApiError } from '../../../core/utils/api-error';
 import { LocalizedDatePipe } from '../../../shared/pipes/localized-date.pipe';
 
 @Component({
@@ -390,35 +391,12 @@ export class UserProfileComponent implements OnInit {
       this.showChangePassword.set(false);
       this.pwForm = { currentPassword: '', newPassword: '', confirmPassword: '' };
     } catch (error: any) {
-      let translationKey = '';
-      if (error?.error?.detail) {
-        translationKey = error.error.detail;
-      } else if (error?.error?.errors) {
-        const firstErrorKey = Object.keys(error.error.errors)[0];
-        const firstErrorMessages = error.error.errors[firstErrorKey];
-        translationKey = Array.isArray(firstErrorMessages) ? firstErrorMessages[0] : firstErrorMessages;
-      } else if (error?.error?.code) {
-        translationKey = error.error.code;
-      } else if (error?.error?.title) {
-        translationKey = error.error.title;
-      }
-
-      let errorMessage = '';
-      if (translationKey) {
-        const isValidKey = /^[A-Za-z0-9_.]+$/.test(translationKey);
-        if (isValidKey) {
-          const translated = this.translate.instant('VALIDATION.' + translationKey);
-          if (translated !== 'VALIDATION.' + translationKey) {
-            errorMessage = translated;
-          }
-        }
-        if (!errorMessage) {
-          errorMessage = this.translate.instant('PROFILE.PW_ERROR');
-        }
+      const extracted = extractApiError(error, this.translate);
+      if (extracted) {
+        this.toast.error(extracted);
       } else {
-        errorMessage = this.translate.instant('PROFILE.PW_ERROR');
+        this.toast.error(this.translate.instant('PROFILE.PW_ERROR'));
       }
-      this.toast.error(errorMessage);
     } finally {
       this.changingPassword.set(false);
     }

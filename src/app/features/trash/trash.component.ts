@@ -4,6 +4,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { RouterLink } from '@angular/router';
 import { TrashService } from '../../core/services/trash.service';
 import { ToastService } from '../../core/services/toast.service';
+import { extractApiError } from '../../core/utils/api-error';
 import { ConfirmService } from '../../core/services/confirm.service';
 import { PropertyService } from '../properties/services/property.service';
 import { TrashItem, TrashImageData, TrashPropertyData } from '../../core/models';
@@ -142,7 +143,9 @@ export class TrashComponent implements OnInit {
         await this.propertyService.addImages(data.propertyId, [data.imageUrl]);
         this.toast.success(this.translate.instant('TRASH.RESTORE_IMAGE_SUCCESS'));
         this.trashService.restoreItem(item);
-      } catch {
+      } catch (e: any) {
+        const extracted = extractApiError(e, this.translate);
+        if (extracted) { this.toast.error(extracted); return; }
         this.toast.error(this.translate.instant('TRASH.RESTORE_ERROR'));
       }
     } else {
@@ -151,7 +154,9 @@ export class TrashComponent implements OnInit {
         await this.propertyService.create(data.createRequest);
         this.toast.success(this.translate.instant('TRASH.RESTORE_PROPERTY_SUCCESS'));
         this.trashService.restoreItem(item);
-      } catch {
+      } catch (e: any) {
+        const extracted = extractApiError(e, this.translate);
+        if (extracted) { this.toast.error(extracted); return; }
         this.toast.error(this.translate.instant('TRASH.RESTORE_ERROR'));
       }
     }
@@ -178,7 +183,9 @@ export class TrashComponent implements OnInit {
         this.toast.success(this.translate.instant('TRASH.DELETE_PROPERTY_FOREVER_SUCCESS'));
       }
       this.trashService.remove(item.id);
-    } catch {
+    } catch (e: any) {
+      const extracted = extractApiError(e, this.translate);
+      if (extracted) { this.toast.error(extracted); return; }
       this.toast.error(this.translate.instant('TRASH.DELETE_ERROR'));
     }
   }
@@ -197,8 +204,9 @@ export class TrashComponent implements OnInit {
         }
         this.trashService.restoreItem(item);
         restored++;
-      } catch {
-        // skip failed items
+      } catch (e: any) {
+        const extracted = extractApiError(e, this.translate);
+        if (extracted) { this.toast.error(extracted); }
       }
     }
     if (restored > 0) {

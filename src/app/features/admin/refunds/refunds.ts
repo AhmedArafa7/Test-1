@@ -6,6 +6,7 @@ import { RefundRequestAdmin } from '../../../core/models';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner';
 import { ToastService } from '../../../core/services/toast.service';
 import { CurrencyEgpPipe } from '../../../shared/pipes/currency-egp.pipe';
+import { extractApiError } from '../../../core/utils/api-error';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 @Component({
@@ -283,7 +284,9 @@ export class RefundsComponent implements OnInit {
       this.toast.success(approve ? this.translate.instant('ADMIN.REFUNDS.ACTIONS.SUCCESS_APPROVE') : this.translate.instant('ADMIN.REFUNDS.ACTIONS.SUCCESS_REJECT'));
       this.loadPage(this.page());
     } catch (e: any) {
-      this.toast.error(e?.error?.detail || this.translate.instant('ADMIN.REFUNDS.ACTIONS.FAILED'));
+      const extracted = extractApiError(e, this.translate);
+      if (extracted) { this.toast.error(extracted); return; }
+      this.toast.error(this.translate.instant('ADMIN.REFUNDS.ACTIONS.FAILED'));
     }
   }
 

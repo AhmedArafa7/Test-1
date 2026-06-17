@@ -11,6 +11,7 @@ import { AuthService } from '../../../core/auth/auth.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { AgentDetail, PropertyListItem, BookingListItem } from '../../../core/models';
 import { PropertyCardComponent } from '../../../shared/components/property-card/property-card';
+import { extractApiError } from '../../../core/utils/api-error';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner';
 
 export interface AgentReview {
@@ -435,7 +436,10 @@ export class AgentProfileComponent implements OnInit {
       this.toast.success(this.translate.instant('PROFILE.AGENT.SUCCESS_CHAT'));
       this.router.navigate(['/conversations', response.conversationId]);
     } catch (error: any) {
-      if (error?.status === 409) {
+      const extracted = extractApiError(error, this.translate);
+      if (extracted) {
+        this.toast.error(extracted);
+      } else if (error?.status === 409) {
         this.toast.info(this.translate.instant('PROFILE.AGENT.ALREADY_CHAT'));
         const conversations = await this.conversationService.getAll().catch(() => []);
         const existing = conversations.find(c => c.agentUserId === this.agent()?.userId);
@@ -512,7 +516,12 @@ export class AgentProfileComponent implements OnInit {
         
         this.toast.success(this.translate.instant('PROFILE.AGENT.BOOKING_SUCCESS_GENERIC'));
       } catch (error: any) {
-        this.toast.error(this.translate.instant('PROFILE.AGENT.BOOKING_FAILED'));
+        const extracted = extractApiError(error, this.translate);
+        if (extracted) {
+          this.toast.error(extracted);
+        } else {
+          this.toast.error(this.translate.instant('PROFILE.AGENT.BOOKING_FAILED'));
+        }
       }
     } else {
       this.toast.error(this.translate.instant('PROFILE.AGENT.NO_LISTING_AVAILABLE'));

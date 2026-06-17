@@ -4,6 +4,7 @@ import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../core/auth/auth.service';
 import { ToastService } from '../../../core/services/toast.service';
+import { extractApiError } from '../../../core/utils/api-error';
 
 @Component({
   selector: 'app-register',
@@ -469,43 +470,43 @@ export class RegisterComponent {
       console.error('Registration error full details:', e);
       let errorMessage = '';
 
-      if (e?.status === 0) {
+      const extracted = extractApiError(e, this.translate);
+      if (extracted) {
+        errorMessage = extracted;
+      } else if (e?.status === 0) {
         errorMessage = this.translate.instant('AUTH.REGISTER.SERVER_OFFLINE');
       } else {
-        let translationKey = '';
+        let rawMsg = '';
         if (typeof e?.error === 'string') {
-          translationKey = e.error;
+          rawMsg = e.error;
         } else if (e?.error?.detail) {
-          translationKey = e.error.detail;
+          rawMsg = e.error.detail;
         } else if (e?.error?.errors) {
           const firstErrorKey = Object.keys(e.error.errors)[0];
           const firstErrorMessages = e.error.errors[firstErrorKey];
-          translationKey = Array.isArray(firstErrorMessages) ? firstErrorMessages[0] : firstErrorMessages;
-        } else if (e?.error?.code) {
-          translationKey = e.error.code;
+          rawMsg = Array.isArray(firstErrorMessages) ? firstErrorMessages[0] : firstErrorMessages;
         } else if (e?.error?.title) {
-          translationKey = e.error.title;
+          rawMsg = e.error.title;
         } else if (e?.message) {
-          translationKey = e.message;
+          rawMsg = e.message;
         }
 
-        errorMessage = translationKey;
-        if (errorMessage) {
-          const lowerMsg = errorMessage.toLowerCase();
-          if (lowerMsg.includes('already taken') || lowerMsg.includes('duplicate')) {
-            if (lowerMsg.includes('email') || lowerMsg.includes('user name')) {
-              errorMessage = 'عذراً، هذا البريد الإلكتروني مسجل بالفعل!';
-            } else if (lowerMsg.includes('phone')) {
-              errorMessage = 'عذراً، رقم الهاتف هذا مستخدم بالفعل!';
-            } else {
-              errorMessage = 'عذراً، هذه البيانات مسجلة مسبقاً!';
-            }
-          } else if (lowerMsg.includes('password')) {
-            errorMessage = 'كلمة المرور ضعيفة أو غير مطابقة للشروط.';
+        if (rawMsg) {
+          if (rawMsg.toLowerCase().includes('email') || rawMsg.toLowerCase().includes('user name')
+              || rawMsg.toLowerCase().includes('already taken') || rawMsg.toLowerCase().includes('duplicate')) {
+            errorMessage = this.translate.instant('AUTH.REGISTER.EMAIL_TAKEN');
+          } else if (rawMsg.toLowerCase().includes('phone')) {
+            errorMessage = this.translate.instant('AUTH.REGISTER.PHONE_TAKEN');
+          } else if (rawMsg.toLowerCase().includes('password')) {
+            errorMessage = this.translate.instant('AUTH.REGISTER.PASSWORD_WEAK');
+          } else {
+            errorMessage = rawMsg;
           }
-        } else {
-          errorMessage = 'حدث خطأ غير معروف أثناء التسجيل. حاول مرة أخرى.';
         }
+      }
+
+      if (!errorMessage) {
+        errorMessage = this.translate.instant('AUTH.REGISTER.UNKNOWN_ERROR');
       }
 
       if (e?.error?.instance) {

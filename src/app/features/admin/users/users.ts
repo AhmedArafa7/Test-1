@@ -3,6 +3,7 @@ import { AdminService } from '../services/admin.service';
 import { UserSummary } from '../../../core/models';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner';
 import { ToastService } from '../../../core/services/toast.service';
+import { extractApiError } from '../../../core/utils/api-error';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
@@ -198,7 +199,9 @@ export class UsersComponent implements OnInit {
       this.toast.success(this.translate.instant('ADMIN.USERS.SUCCESS_UPDATE')); 
       this.loadUsers(); 
     } catch (e: any) { 
-      this.toast.error(e?.error?.detail || this.translate.instant('ADMIN.USERS.ERROR_UPDATE')); 
+      const extracted = extractApiError(e, this.translate);
+      if (extracted) { this.toast.error(extracted); return; }
+      this.toast.error(this.translate.instant('ADMIN.USERS.ERROR_UPDATE')); 
     } 
   }
 
@@ -211,7 +214,9 @@ export class UsersComponent implements OnInit {
       this.toast.success(this.translate.instant('ADMIN.USERS.SUCCESS_ROLE', { role: roleName })); 
       this.loadUsers(); 
     } catch (er: any) { 
-      this.toast.error(er?.error?.detail || this.translate.instant('ADMIN.USERS.ERROR_ROLE')); 
+      const extracted = extractApiError(er, this.translate);
+      if (extracted) { this.toast.error(extracted); return; }
+      this.toast.error(this.translate.instant('ADMIN.USERS.ERROR_ROLE')); 
     } 
   }
 }

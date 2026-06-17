@@ -13,6 +13,7 @@ import { ToastService } from '../../core/services/toast.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { AppStateStore } from '../../core/store/app-state.store';
 import { BookingService } from '../bookings/services/booking.service';
+import { extractApiError } from '../../core/utils/api-error';
 
 export interface AgentReview {
   id: string;
@@ -627,7 +628,12 @@ export class AgentProfileComponent implements OnInit {
       const res = await this.conversationService.create(props.items[0].id);
       this.router.navigate(['/conversations', res.conversationId]);
     } catch (error: any) {
-      this.toast.error(error?.error?.detail || this.translate.instant('AGENT_PROFILE.START_CHAT_FAILED'));
+      const extracted = extractApiError(error, this.translate);
+      if (extracted) {
+        this.toast.error(extracted);
+      } else {
+        this.toast.error(error?.error?.detail || this.translate.instant('AGENT_PROFILE.START_CHAT_FAILED'));
+      }
     } finally {
       this.contactingAgent.set(false);
     }
@@ -647,12 +653,22 @@ export class AgentProfileComponent implements OnInit {
     try {
       await this.propertyService.save(id);
       this.toast.success(this.translate.instant('AGENT_PROFILE.FAV_ADDED'));
-    } catch {
-      try {
-        await this.propertyService.unsave(id);
-        this.toast.success(this.translate.instant('AGENT_PROFILE.FAV_REMOVED'));
-      } catch {
-        this.toast.error(this.translate.instant('AGENT_PROFILE.FAV_ERROR'));
+    } catch (e: any) {
+      const extracted = extractApiError(e, this.translate);
+      if (extracted) {
+        this.toast.error(extracted);
+      } else {
+        try {
+          await this.propertyService.unsave(id);
+          this.toast.success(this.translate.instant('AGENT_PROFILE.FAV_REMOVED'));
+        } catch (e2: any) {
+          const extracted2 = extractApiError(e2, this.translate);
+          if (extracted2) {
+            this.toast.error(extracted2);
+          } else {
+            this.toast.error(this.translate.instant('AGENT_PROFILE.FAV_ERROR'));
+          }
+        }
       }
     }
   }
@@ -730,7 +746,12 @@ export class AgentProfileComponent implements OnInit {
       this.toast.success(this.translate.instant('AGENT_PROFILE.BOOKING_SUCCESS', { date: slot.dateStr, time: slot.timeStr }));
     } catch (err: any) {
       console.error('Failed to create booking:', err);
-      this.toast.error(err?.error?.detail || this.translate.instant('AGENT_PROFILE.BOOKING_FAILED'));
+      const extracted = extractApiError(err, this.translate);
+      if (extracted) {
+        this.toast.error(extracted);
+      } else {
+        this.toast.error(err?.error?.detail || this.translate.instant('AGENT_PROFILE.BOOKING_FAILED'));
+      }
     } finally {
       this.selectedSlot.set(null);
     }

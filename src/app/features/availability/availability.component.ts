@@ -5,6 +5,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AvailabilityService } from './availability.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { ToastService } from '../../core/services/toast.service';
+import { extractApiError } from '../../core/utils/api-error';
 import { ConfirmService } from '../../core/services/confirm.service';
 import { AvailabilityRuleDto, RecurrenceType } from '../../core/models';
 
@@ -272,7 +273,9 @@ export class AvailabilityComponent implements OnInit {
         this.newSlotDuration.set('00:30:00');
         this.loadRules();
       },
-      error: () => {
+      error: (e: any) => {
+        const extracted = extractApiError(e, this.translate);
+        if (extracted) { this.toast.error(extracted); this.submitting.set(false); return; }
         this.toast.error(this.translate.instant('AVAILABILITY.ADD_ERROR'));
         this.submitting.set(false);
       },
@@ -295,7 +298,9 @@ export class AvailabilityComponent implements OnInit {
         this.toast.success(this.translate.instant('AVAILABILITY.DELETE_SUCCESS'));
         this.loadRules();
       },
-      error: () => {
+      error: (e: any) => {
+        const extracted = extractApiError(e, this.translate);
+        if (extracted) { this.toast.error(extracted); return; }
         this.toast.error(this.translate.instant('AVAILABILITY.DELETE_ERROR'));
       },
     });

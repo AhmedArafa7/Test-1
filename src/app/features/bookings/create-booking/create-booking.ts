@@ -16,6 +16,7 @@ import { CurrencyEgpPipe } from '../../../shared/pipes/currency-egp.pipe';
 import { ProfileService } from '../../profile/services/profile.service';
 import { PropertyService } from '../../properties/services/property.service';
 import { BookingService } from '../services/booking.service';
+import { extractApiError } from '../../../core/utils/api-error';
 import { AvailabilityService } from '../../availability/availability.service';
 
 interface Slot {
@@ -704,8 +705,13 @@ export class CreateBookingComponent implements OnInit {
         const email = this.auth.currentUser()?.email || '';
         this.form.update(f => ({ ...f, payerName: name, payerEmail: email }));
       }
-    } catch {
-      this.toast.error(this.translate.instant('PROPERTY_DETAIL.MESSAGES.NOT_FOUND'));
+    } catch (e: any) {
+      const extracted = extractApiError(e, this.translate);
+      if (extracted) {
+        this.toast.error(extracted);
+      } else {
+        this.toast.error(this.translate.instant('PROPERTY_DETAIL.MESSAGES.NOT_FOUND'));
+      }
     } finally {
       this.loadingProperty.set(false);
     }
@@ -778,51 +784,10 @@ export class CreateBookingComponent implements OnInit {
         } else {
           errorMessage = this.translate.instant('BOOKINGS.MESSAGES.DUPLICATE_ERROR');
         }
-      } else if (e?.status === 400) {
-        const detail = e?.error?.detail || '';
-        const errors = e?.error?.errors;
-        let validationMsg = '';
-        if (errors) {
-          const firstKey = Object.keys(errors)[0];
-          const firstVal = errors[firstKey];
-          validationMsg = Array.isArray(firstVal) ? firstVal[0] : firstVal;
-        }
-        const code = e?.error?.code || validationMsg || detail;
-        if (code) {
-          const isValidKey = /^[A-Za-z0-9_.]+$/.test(code);
-          if (isValidKey) {
-            const translated = this.translate.instant('VALIDATION.' + code);
-            if (translated !== 'VALIDATION.' + code) {
-              errorMessage = translated;
-            }
-          }
-        }
-      } else if (e?.status === 500) {
-        const detail = e?.error?.detail || e?.error?.title || '';
-        const isValidDetail = detail && /^[A-Za-z0-9_.]+$/.test(detail);
-        if (isValidDetail) {
-          const translated = this.translate.instant('VALIDATION.' + detail);
-          if (translated !== 'VALIDATION.' + detail) {
-            errorMessage = translated;
-          }
-        }
-      } else if (e?.error?.detail) {
-        const code = e.error.detail;
-        const isValidKey = /^[A-Za-z0-9_.]+$/.test(code);
-        if (isValidKey) {
-          const translated = this.translate.instant('VALIDATION.' + code);
-          if (translated !== 'VALIDATION.' + code) {
-            errorMessage = translated;
-          }
-        }
-      } else if (e?.error?.code) {
-        const code = e.error.code;
-        const isValidKey = /^[A-Za-z0-9_.]+$/.test(code);
-        if (isValidKey) {
-          const translated = this.translate.instant('VALIDATION.' + code);
-          if (translated !== 'VALIDATION.' + code) {
-            errorMessage = translated;
-          }
+      } else {
+        const extracted = extractApiError(e, this.translate);
+        if (extracted) {
+          errorMessage = extracted;
         }
       }
 

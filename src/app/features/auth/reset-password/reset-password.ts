@@ -4,6 +4,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../core/auth/auth.service';
 import { ToastService } from '../../../core/services/toast.service';
+import { extractApiError } from '../../../core/utils/api-error';
 
 @Component({ selector: 'app-reset-password', standalone: true, imports: [FormsModule, RouterLink, TranslateModule], template: `
   <div class="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#f0f4f5] to-[#f8f9fa] px-4 font-sans">
@@ -52,7 +53,12 @@ export class ResetPasswordComponent implements OnInit {
       this.toast.success(this.translate.instant('AUTH.RESET_PASSWORD.SUCCESS')); 
       this.router.navigate(['/auth/login']); 
     } catch (e: any) { 
-      this.toast.error(this.translate.instant('AUTH.RESET_PASSWORD.ERROR')); 
+      const extracted = extractApiError(e, this.translate);
+      if (extracted) {
+        this.toast.error(extracted);
+      } else {
+        this.toast.error(this.translate.instant('AUTH.RESET_PASSWORD.ERROR'));
+      }
     } finally { 
       this.loading.set(false); 
     } 

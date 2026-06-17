@@ -122,6 +122,7 @@ export class AuthService {
       const rememberMe = localStorage.getItem('baytology_remember_me') === 'true';
       const storage = rememberMe ? localStorage : sessionStorage;
       storage.setItem(USER_KEY, JSON.stringify(user));
+      this.syncAvatarFromProfile();
     } catch {
       this.clearAuth();
     }
@@ -207,6 +208,7 @@ export class AuthService {
     sessionStorage.removeItem('baytology_ai_session_id');
     this._token.set(null);
     this._currentUser.set(null);
+    this.userAvatar.set(null);
   }
 
   private loadUser(): CurrentUser | null {

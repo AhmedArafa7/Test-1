@@ -6,6 +6,7 @@ import { DecimalPipe } from '@angular/common';
 import { Property, PropertyListItem } from '../../../core/models';
 import { ToastService } from '../../../core/services/toast.service';
 import { PropertyService } from '../../../features/properties/services/property.service';
+import { extractApiError } from '../../../core/utils/api-error';
 import { CurrencyEgpPipe } from '../../pipes/currency-egp.pipe';
 import { buildPropertyPlaceholder } from '../../../core/utils/media';
 
@@ -520,7 +521,9 @@ export class PropertyCompareComponent {
       const fetchPromises = this.selectedProperties().map(p => this.propertyService.getById(p.id));
       const details = await Promise.all(fetchPromises);
       this.comparedPropertiesDetails.set(details);
-    } catch (err) {
+    } catch (err: any) {
+      const extracted = extractApiError(err, this.translate);
+      if (extracted) { this.toast.error(extracted); this.showCompareModal.set(false); return; }
       this.toast.error(this.translate.instant('COMPARE.TOAST_ERROR'));
       this.showCompareModal.set(false);
     } finally {

@@ -6,6 +6,7 @@ import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../../core/auth/auth.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { environment } from '../../../../environments/environment';
+import { extractApiError } from '../../../core/utils/api-error';
 
 declare global {
   interface Window {
@@ -280,9 +281,13 @@ export class LoginComponent implements OnInit {
         this.router.navigate(['/']);
       }
     } catch (e: any) {
-      let errorMessage = this.translate.instant('AUTH.LOGIN.ERROR');
+      let errorMessage = '';
 
-      if (e?.status === 0) {
+      // Try backend error code translation first
+      const extracted = extractApiError(e, this.translate);
+      if (extracted) {
+        errorMessage = extracted;
+      } else if (e?.status === 0) {
         errorMessage = this.translate.instant('AUTH.LOGIN.SERVER_OFFLINE');
       } else if (e?.error?.detail) {
         const detail = e.error.detail.toLowerCase();
@@ -300,6 +305,10 @@ export class LoginComponent implements OnInit {
         const firstErrorMessages = e.error.errors[firstErrorKey];
         errorMessage = Array.isArray(firstErrorMessages) ? firstErrorMessages[0] : firstErrorMessages;
       } else if (e?.error?.title) {
+        errorMessage = this.translate.instant('AUTH.LOGIN.ERROR');
+      }
+
+      if (!errorMessage) {
         errorMessage = this.translate.instant('AUTH.LOGIN.ERROR');
       }
 

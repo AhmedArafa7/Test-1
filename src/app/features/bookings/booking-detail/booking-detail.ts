@@ -17,6 +17,7 @@ import { getPropertyImageUrl, buildPropertyPlaceholder } from '../../../core/uti
 import { LocalImageService } from '../../../core/services/local-image.service';
 import { AgentService } from '../../agents/services/agent.service';
 import { AgentDetail } from '../../../core/models';
+import { extractApiError } from '../../../core/utils/api-error';
 import { ProfileService } from '../../profile/services/profile.service';
 
 @Component({
@@ -432,35 +433,12 @@ export class BookingDetailComponent implements OnInit {
       });
       this.toast.success(this.translate.instant('BOOKINGS.DETAIL.MESSAGES.REFUND_SUCCESS', { id: res.refundId.substring(0, 8) }));
     } catch (e: any) {
-      let translationKey = '';
-      if (e?.error?.detail) {
-        translationKey = e.error.detail;
-      } else if (e?.error?.errors) {
-        const firstErrorKey = Object.keys(e.error.errors)[0];
-        const firstErrorMessages = e.error.errors[firstErrorKey];
-        translationKey = Array.isArray(firstErrorMessages) ? firstErrorMessages[0] : firstErrorMessages;
-      } else if (e?.error?.code) {
-        translationKey = e.error.code;
-      } else if (e?.error?.title) {
-        translationKey = e.error.title;
-      }
-
-      let errorMessage = '';
-      if (translationKey) {
-        const isValidKey = /^[A-Za-z0-9_.]+$/.test(translationKey);
-        if (isValidKey) {
-          const translated = this.translate.instant('VALIDATION.' + translationKey);
-          if (translated !== 'VALIDATION.' + translationKey) {
-            errorMessage = translated;
-          }
-        }
-        if (!errorMessage) {
-          errorMessage = this.translate.instant('BOOKINGS.DETAIL.MESSAGES.REFUND_ERROR');
-        }
+      const extracted = extractApiError(e, this.translate);
+      if (extracted) {
+        this.toast.error(extracted);
       } else {
-        errorMessage = this.translate.instant('BOOKINGS.DETAIL.MESSAGES.REFUND_ERROR');
+        this.toast.error(this.translate.instant('BOOKINGS.DETAIL.MESSAGES.REFUND_ERROR'));
       }
-      this.toast.error(errorMessage);
     } finally {
       this.refunding.set(false);
     }
@@ -505,8 +483,13 @@ export class BookingDetailComponent implements OnInit {
           this.propertyImageUrl.set(buildPropertyPlaceholder(bookingData.propertyTitle));
         }
       }
-    } catch {
-      this.toast.error(this.translate.instant('BOOKINGS.DETAIL.MESSAGES.NOT_FOUND'));
+    } catch (e: any) {
+      const extracted = extractApiError(e, this.translate);
+      if (extracted) {
+        this.toast.error(extracted);
+      } else {
+        this.toast.error(this.translate.instant('BOOKINGS.DETAIL.MESSAGES.NOT_FOUND'));
+      }
     } finally {
       this.loading.set(false);
     }
@@ -552,8 +535,13 @@ export class BookingDetailComponent implements OnInit {
       await this.bookingService.updateStatus(currentBooking.id, { status });
       this.toast.success(this.translate.instant('BOOKINGS.DETAIL.MESSAGES.UPDATE_SUCCESS'));
       await this.ngOnInit();
-    } catch (error: any) {
-      this.toast.error(this.translate.instant('BOOKINGS.DETAIL.MESSAGES.UPDATE_ERROR'));
+    } catch (e: any) {
+      const extracted = extractApiError(e, this.translate);
+      if (extracted) {
+        this.toast.error(extracted);
+      } else {
+        this.toast.error(this.translate.instant('BOOKINGS.DETAIL.MESSAGES.UPDATE_ERROR'));
+      }
     }
   }
 
@@ -567,8 +555,13 @@ export class BookingDetailComponent implements OnInit {
         this.toast.info(this.translate.instant('BOOKINGS.DETAIL.MESSAGES.CHAT_OPENING'));
         const res = await this.conversationService.createWithBuyer(b.propertyId, b.userId);
         this.router.navigate(['/conversations', res.conversationId], { queryParams: { propertyId: b.propertyId } });
-      } catch {
-        this.toast.error(this.translate.instant('BOOKINGS.DETAIL.MESSAGES.CHAT_ERROR'));
+      } catch (e: any) {
+        const extracted = extractApiError(e, this.translate);
+        if (extracted) {
+          this.toast.error(extracted);
+        } else {
+          this.toast.error(this.translate.instant('BOOKINGS.DETAIL.MESSAGES.CHAT_ERROR'));
+        }
       }
       return;
     }
@@ -578,8 +571,13 @@ export class BookingDetailComponent implements OnInit {
       this.toast.info(this.translate.instant('BOOKINGS.DETAIL.MESSAGES.CHAT_OPENING'));
       const res = await this.conversationService.create(b.propertyId);
       this.router.navigate(['/conversations', res.conversationId], { queryParams: { propertyId: b.propertyId } });
-    } catch {
-      this.toast.error(this.translate.instant('BOOKINGS.DETAIL.MESSAGES.CHAT_ERROR'));
+    } catch (e: any) {
+      const extracted = extractApiError(e, this.translate);
+      if (extracted) {
+        this.toast.error(extracted);
+      } else {
+        this.toast.error(this.translate.instant('BOOKINGS.DETAIL.MESSAGES.CHAT_ERROR'));
+      }
     }
   }
 
@@ -603,13 +601,12 @@ export class BookingDetailComponent implements OnInit {
       this.reviewCommentTouched.set(false);
     } catch (e: any) {
       console.error('Review submission failed:', e);
-      let errorMessage = this.translate.instant('BOOKINGS.DETAIL.MESSAGES.REVIEW_ERROR');
-      if (e?.error?.detail) {
-        errorMessage = e.error.detail;
-      } else if (e?.error?.title) {
-        errorMessage = e.error.title;
+      const extracted = extractApiError(e, this.translate);
+      if (extracted) {
+        this.toast.error(extracted);
+      } else {
+        this.toast.error(this.translate.instant('BOOKINGS.DETAIL.MESSAGES.REVIEW_ERROR'));
       }
-      this.toast.error(errorMessage);
     } finally {
       this.submittingReview.set(false);
     }

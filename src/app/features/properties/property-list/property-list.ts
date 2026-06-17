@@ -17,6 +17,7 @@ import { CurrencyEgpPipe } from '../../../shared/pipes/currency-egp.pipe';
 import { resolveBackendAssetUrl, buildPropertyPlaceholder } from '../../../core/utils/media';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { PropertyCompareComponent } from '../../../shared/components/property-compare/property-compare';
+import { extractApiError } from '../../../core/utils/api-error';
 import * as L from 'leaflet';
 import { EGYPT_REGIONS, Governorate, City } from '../../../core/constants/egypt-regions';
 
@@ -826,8 +827,13 @@ export class PropertyListComponent implements OnInit, AfterViewInit {
       this.totalCount.set(r.totalCount);
       
       this.updateMarkers();
-    } catch (error) { 
-      this.toast.error(this.translate.instant('PROPERTY_LIST.MESSAGES.LOAD_ERROR')); 
+    } catch (error) {
+      const extracted = extractApiError(error, this.translate);
+      if (extracted) {
+        this.toast.error(extracted);
+      } else {
+        this.toast.error(this.translate.instant('PROPERTY_LIST.MESSAGES.LOAD_ERROR'));
+      }
       this.totalCount.set(0);
       this.totalPages.set(1);
     }
@@ -856,7 +862,10 @@ export class PropertyListComponent implements OnInit, AfterViewInit {
         this.toast.success(this.translate.instant('PROPERTY_LIST.MESSAGES.FAV_ADDED'));
       }
     } catch (e: any) {
-      if (e?.status === 409) {
+      const extracted = extractApiError(e, this.translate);
+      if (extracted) {
+        this.toast.error(extracted);
+      } else if (e?.status === 409) {
         this.toast.info(this.translate.instant('PROPERTY_LIST.MESSAGES.FAV_EXIST'));
       } else {
         this.toast.error(e?.error?.detail || this.translate.instant('COMMON.ERROR'));
@@ -914,15 +923,20 @@ export class PropertyListComponent implements OnInit, AfterViewInit {
       this.toast.success(this.translate.instant('PROPERTY_LIST.MESSAGES.MOVED_TO_TRASH'));
       this.search();
     } catch (err: any) {
-      const status = err?.status ?? err?.statusCode;
-      if (status === 409) {
-        this.toast.error(this.translate.instant('TRASH.DELETE_HAS_RELATED'));
-      } else if (status === 403) {
-        this.toast.error(this.translate.instant('TRASH.DELETE_ACCESS_DENIED'));
-      } else if (status === 404) {
-        this.toast.error(this.translate.instant('TRASH.DELETE_NOT_FOUND'));
+      const extracted = extractApiError(err, this.translate);
+      if (extracted) {
+        this.toast.error(extracted);
       } else {
-        this.toast.error(this.translate.instant('TRASH.DELETE_ERROR'));
+        const status = err?.status ?? err?.statusCode;
+        if (status === 409) {
+          this.toast.error(this.translate.instant('TRASH.DELETE_HAS_RELATED'));
+        } else if (status === 403) {
+          this.toast.error(this.translate.instant('TRASH.DELETE_ACCESS_DENIED'));
+        } else if (status === 404) {
+          this.toast.error(this.translate.instant('TRASH.DELETE_NOT_FOUND'));
+        } else {
+          this.toast.error(this.translate.instant('TRASH.DELETE_ERROR'));
+        }
       }
     }
   }

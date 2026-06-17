@@ -4,6 +4,7 @@ import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../core/auth/auth.service';
 import { ToastService } from '../../../core/services/toast.service';
+import { extractApiError } from '../../../core/utils/api-error';
 
 @Component({
   selector: 'app-forgot-password',
@@ -142,7 +143,12 @@ export class ForgotPasswordComponent {
       await this.auth.forgotPassword({ email: this.email() });
       this.sent.set(true);
     } catch (e: any) {
-      this.toast.error(e?.error?.detail || this.translate.instant('AUTH.FORGOT_PASSWORD.ERROR'));
+      const extracted = extractApiError(e, this.translate);
+      if (extracted) {
+        this.toast.error(extracted);
+      } else {
+        this.toast.error(this.translate.instant('AUTH.FORGOT_PASSWORD.ERROR'));
+      }
     } finally { this.loading.set(false); }
   }
 }

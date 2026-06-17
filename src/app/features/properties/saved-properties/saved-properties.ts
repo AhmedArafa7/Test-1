@@ -9,6 +9,7 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
 import { PropertyCardComponent } from '../../../shared/components/property-card/property-card';
 import { PropertyService } from '../services/property.service';
 import { PropertyCompareComponent } from '../../../shared/components/property-compare/property-compare';
+import { extractApiError } from '../../../core/utils/api-error';
 
 @Component({
   selector: 'app-saved-properties',
@@ -146,7 +147,12 @@ export class SavedPropertiesComponent implements OnInit {
       
       this.toast.success('SAVED_PROPERTIES.SUCCESS_REMOVE');
     } catch (error: any) {
-      this.toast.error(error?.error?.detail || 'SAVED_PROPERTIES.ERROR_REMOVE');
+      const extracted = extractApiError(error, this.translate);
+      if (extracted) {
+        this.toast.error(extracted);
+      } else {
+        this.toast.error(error?.error?.detail || 'SAVED_PROPERTIES.ERROR_REMOVE');
+      }
     }
   }
 

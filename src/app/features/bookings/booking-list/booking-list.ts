@@ -14,6 +14,7 @@ import { LocalImageService } from '../../../core/services/local-image.service';
 import { buildPropertyPlaceholder, getPropertyImageUrl } from '../../../core/utils/media';
 import { ConversationService } from '../../conversations/services/conversation.service';
 import { EmptyStateComponent } from '../../../shared/components/empty-state/empty-state';
+import { extractApiError } from '../../../core/utils/api-error';
 
 @Component({
   selector: 'app-booking-list',
@@ -360,8 +361,13 @@ export class BookingListComponent implements OnInit {
       const detail = await this.bookingService.getById(b.id);
       const res = await this.conversationService.createWithBuyer(b.propertyId, detail.userId);
       this.router.navigate(['/conversations', res.conversationId], { queryParams: { propertyId: b.propertyId } });
-    } catch {
-      this.toast.error(this.translate.instant('BOOKINGS.MESSAGES.CHAT_ERROR'));
+    } catch (e: any) {
+      const extracted = extractApiError(e, this.translate);
+      if (extracted) {
+        this.toast.error(extracted);
+      } else {
+        this.toast.error(this.translate.instant('BOOKINGS.MESSAGES.CHAT_ERROR'));
+      }
     }
   }
 
@@ -441,8 +447,13 @@ export class BookingListComponent implements OnInit {
       await this.bookingService.updateStatus(booking.id, { status: BookingStatus.Confirmed });
       this.toast.success(this.translate.instant('BOOKINGS.MESSAGES.CONFIRM_SUCCESS'));
       await this.loadPage(this.page());
-    } catch {
-      this.toast.error(this.translate.instant('BOOKINGS.MESSAGES.CONFIRM_ERROR'));
+    } catch (e: any) {
+      const extracted = extractApiError(e, this.translate);
+      if (extracted) {
+        this.toast.error(extracted);
+      } else {
+        this.toast.error(this.translate.instant('BOOKINGS.MESSAGES.CONFIRM_ERROR'));
+      }
     }
   }
 
@@ -451,8 +462,13 @@ export class BookingListComponent implements OnInit {
       await this.bookingService.updateStatus(booking.id, { status: BookingStatus.Cancelled });
       this.toast.success(this.translate.instant('BOOKINGS.MESSAGES.REJECT_SUCCESS'));
       await this.loadPage(this.page());
-    } catch {
-      this.toast.error(this.translate.instant('BOOKINGS.MESSAGES.REJECT_ERROR'));
+    } catch (e: any) {
+      const extracted = extractApiError(e, this.translate);
+      if (extracted) {
+        this.toast.error(extracted);
+      } else {
+        this.toast.error(this.translate.instant('BOOKINGS.MESSAGES.REJECT_ERROR'));
+      }
     }
   }
 }

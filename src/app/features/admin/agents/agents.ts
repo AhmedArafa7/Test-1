@@ -6,6 +6,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AdminAgent } from '../../../core/models';
 import { ToastService } from '../../../core/services/toast.service';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner/loading-spinner';
+import { extractApiError } from '../../../core/utils/api-error';
 import { AdminService } from '../services/admin.service';
 
 @Component({
@@ -212,7 +213,9 @@ export class AgentsComponent implements OnInit {
     try {
       const res = await this.adminService.getAgents();
       this.agents.set(res);
-    } catch {
+    } catch (e: any) {
+      const extracted = extractApiError(e, this.translate);
+      if (extracted) { this.toast.error(extracted); return; }
       this.toast.error(this.translate.instant('ADMIN.AGENTS.TOAST.LOAD_ERROR'));
     } finally {
       this.loading.set(false);
@@ -225,7 +228,9 @@ export class AgentsComponent implements OnInit {
       this.toast.success(this.translate.instant('ADMIN.AGENTS.TOAST.VERIFY_SUCCESS'));
       await this.loadAgents();
     } catch (error: any) {
-      this.toast.error(error?.error?.detail || this.translate.instant('ADMIN.AGENTS.TOAST.ACTION_ERROR'));
+      const extracted = extractApiError(error, this.translate);
+      if (extracted) { this.toast.error(extracted); return; }
+      this.toast.error(this.translate.instant('ADMIN.AGENTS.TOAST.ACTION_ERROR'));
     }
   }
 
@@ -235,7 +240,9 @@ export class AgentsComponent implements OnInit {
       this.toast.success(this.translate.instant('ADMIN.AGENTS.TOAST.REVERT_SUCCESS'));
       await this.loadAgents();
     } catch (error: any) {
-      this.toast.error(error?.error?.detail || this.translate.instant('ADMIN.AGENTS.TOAST.ACTION_ERROR'));
+      const extracted = extractApiError(error, this.translate);
+      if (extracted) { this.toast.error(extracted); return; }
+      this.toast.error(this.translate.instant('ADMIN.AGENTS.TOAST.ACTION_ERROR'));
     }
   }
 }

@@ -10,6 +10,7 @@ import { ToastService } from '../../../core/services/toast.service';
 import { ProfileService } from '../services/profile.service';
 import { CloudinaryService } from '../../../core/services/cloudinary.service';
 import { ImageCropperComponent, ImageCroppedEvent, ImageTransform } from 'ngx-image-cropper';
+import { extractApiError } from '../../../core/utils/api-error';
 import { LocalizedDatePipe } from '../../../shared/pipes/localized-date.pipe';
 import { firstValueFrom } from 'rxjs';
 
@@ -855,35 +856,12 @@ export class EditProfileComponent implements OnInit {
       this.toast.success(this.translate.instant('PROFILE.EDIT.SUCCESS'));
       this.router.navigate(['/profile']);
     } catch (e: any) {
-      let translationKey = '';
-      if (e?.error?.detail) {
-        translationKey = e.error.detail;
-      } else if (e?.error?.errors) {
-        const firstErrorKey = Object.keys(e.error.errors)[0];
-        const firstErrorMessages = e.error.errors[firstErrorKey];
-        translationKey = Array.isArray(firstErrorMessages) ? firstErrorMessages[0] : firstErrorMessages;
-      } else if (e?.error?.code) {
-        translationKey = e.error.code;
-      } else if (e?.error?.title) {
-        translationKey = e.error.title;
-      }
-
-      let errorMessage = '';
-      if (translationKey) {
-        const isValidKey = /^[A-Za-z0-9_.]+$/.test(translationKey);
-        if (isValidKey) {
-          const translated = this.translate.instant('VALIDATION.' + translationKey);
-          if (translated !== 'VALIDATION.' + translationKey) {
-            errorMessage = translated;
-          }
-        }
-        if (!errorMessage) {
-          errorMessage = this.translate.instant('PROFILE.EDIT.ERROR');
-        }
+      const extracted = extractApiError(e, this.translate);
+      if (extracted) {
+        this.toast.error(extracted);
       } else {
-        errorMessage = this.translate.instant('PROFILE.EDIT.ERROR');
+        this.toast.error(this.translate.instant('PROFILE.EDIT.ERROR'));
       }
-      this.toast.error(errorMessage);
     } finally {
       this.loading.set(false);
     }

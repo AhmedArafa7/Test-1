@@ -7,6 +7,7 @@ import { firstValueFrom } from 'rxjs';
 import { SearchEngine, SearchInputType, SearchRequestDetail, SearchResult, ImageSearchResponse, MatchedProperty } from '../../../core/models';
 import { ToastService } from '../../../core/services/toast.service';
 import { CurrencyEgpPipe } from '../../../shared/pipes/currency-egp.pipe';
+import { extractApiError } from '../../../core/utils/api-error';
 import { AiService } from '../services/ai.service';
 import { CloudinaryService } from '../../../core/services/cloudinary.service';
 import { compressImage } from '../../../core/utils/media';
@@ -592,7 +593,9 @@ export class AiSearchComponent {
         this.toast.info(this.translate.instant('AI_SEARCH.STILL_PROCESSING'));
       }
     } catch (error: any) {
-      this.toast.error(error?.error?.detail || this.translate.instant('AI_SEARCH.SEARCH_FAILED'));
+      const extracted = extractApiError(error, this.translate);
+      if (extracted) { this.toast.error(extracted); }
+      else { this.toast.error(this.translate.instant('AI_SEARCH.SEARCH_FAILED')); }
     } finally {
       this.searching.set(false);
       this.searchProgress.set(0);

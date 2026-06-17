@@ -20,6 +20,7 @@ import { NavigationHistoryService } from '../../../core/services/navigation-hist
 import { CurrencyEgpPipe } from '../../../shared/pipes/currency-egp.pipe';
 import { SkeletonLoaderComponent } from '../../../shared/components/skeleton-loader/skeleton-loader';
 import { buildPropertyPlaceholder, getPropertyImageUrl } from '../../../core/utils/media';
+import { extractApiError } from '../../../core/utils/api-error';
 
 @Component({
   selector: 'app-property-detail',
@@ -869,8 +870,13 @@ export class PropertyDetailComponent implements OnInit {
       
       // Load similar properties via AI recommendations or database fallback
       this.loadSimilarProperties(property);
-    } catch {
-      this.toast.error(this.translate.instant('PROPERTY_LIST.MESSAGES.LOAD_ERROR'));
+    } catch (e: any) {
+      const extracted = extractApiError(e, this.translate);
+      if (extracted) {
+        this.toast.error(extracted);
+      } else {
+        this.toast.error(this.translate.instant('PROPERTY_LIST.MESSAGES.LOAD_ERROR'));
+      }
     } finally {
       this.loading.set(false);
     }
@@ -902,8 +908,13 @@ export class PropertyDetailComponent implements OnInit {
         this.isSaved.set(true);
         this.toast.success(this.translate.instant('PROPERTY_LIST.MESSAGES.FAV_ADDED'));
       }
-    } catch {
-      this.toast.error(this.translate.instant('PROPERTY_LIST.MESSAGES.LOAD_ERROR'));
+    } catch (e: any) {
+      const extracted = extractApiError(e, this.translate);
+      if (extracted) {
+        this.toast.error(extracted);
+      } else {
+        this.toast.error(this.translate.instant('PROPERTY_LIST.MESSAGES.LOAD_ERROR'));
+      }
     }
   }
 
@@ -922,7 +933,10 @@ export class PropertyDetailComponent implements OnInit {
       this.toast.success(this.translate.instant('PROPERTY_DETAIL.MESSAGES.CONVERSATION_STARTED'));
       this.router.navigate(['/conversations', response.conversationId], { queryParams: { propertyId: property.id } });
     } catch (error: any) {
-      if (error?.status === 401) {
+      const extracted = extractApiError(error, this.translate);
+      if (extracted) {
+        this.toast.error(extracted);
+      } else if (error?.status === 401) {
         this.toast.error(this.translate.instant('PROPERTY_DETAIL.MESSAGES.SESSION_EXPIRED'));
         this.router.navigate(['/auth/login']);
       } else {
@@ -1001,15 +1015,20 @@ export class PropertyDetailComponent implements OnInit {
       this.toast.success(this.translate.instant('PROPERTY_DETAIL.MESSAGES.MOVED_TO_TRASH'));
       this.router.navigate(['/properties']);
     } catch (err: any) {
-      const status = err?.status ?? err?.statusCode;
-      if (status === 409) {
-        this.toast.error(this.translate.instant('TRASH.DELETE_HAS_RELATED'));
-      } else if (status === 403) {
-        this.toast.error(this.translate.instant('TRASH.DELETE_ACCESS_DENIED'));
-      } else if (status === 404) {
-        this.toast.error(this.translate.instant('TRASH.DELETE_NOT_FOUND'));
+      const extracted = extractApiError(err, this.translate);
+      if (extracted) {
+        this.toast.error(extracted);
       } else {
-        this.toast.error(this.translate.instant('TRASH.DELETE_ERROR'));
+        const status = err?.status ?? err?.statusCode;
+        if (status === 409) {
+          this.toast.error(this.translate.instant('TRASH.DELETE_HAS_RELATED'));
+        } else if (status === 403) {
+          this.toast.error(this.translate.instant('TRASH.DELETE_ACCESS_DENIED'));
+        } else if (status === 404) {
+          this.toast.error(this.translate.instant('TRASH.DELETE_NOT_FOUND'));
+        } else {
+          this.toast.error(this.translate.instant('TRASH.DELETE_ERROR'));
+        }
       }
     }
   }
@@ -1031,13 +1050,18 @@ export class PropertyDetailComponent implements OnInit {
       this.reviewComment = '';
     } catch (e: any) {
       console.error('Review submission failed:', e);
-      let errorMessage = this.translate.instant('PROPERTY_DETAIL.MESSAGES.REVIEW_FAILED');
-      if (e?.error?.detail) {
-        errorMessage = e.error.detail;
-      } else if (e?.error?.title) {
-        errorMessage = e.error.title;
+      const extracted = extractApiError(e, this.translate);
+      if (extracted) {
+        this.toast.error(extracted);
+      } else {
+        let errorMessage = this.translate.instant('PROPERTY_DETAIL.MESSAGES.REVIEW_FAILED');
+        if (e?.error?.detail) {
+          errorMessage = e.error.detail;
+        } else if (e?.error?.title) {
+          errorMessage = e.error.title;
+        }
+        this.toast.error(errorMessage);
       }
-      this.toast.error(errorMessage);
     } finally {
       this.submittingReview.set(false);
     }
