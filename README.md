@@ -1,59 +1,75 @@
-# Client
+# 🏡 Baytology Frontend
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.7.
+Welcome to the **Baytology Frontend** repository! This is an elegant, robust, and modern web application built with **Angular** to provide a seamless real estate experience.
 
-## Development server
+## 🚀 Tech Stack
 
-To start a local development server, run:
+- **Framework:** Angular 21
+- **Styling:** Tailwind CSS & Vanilla CSS
+- **Real-Time:** Microsoft SignalR
+- **Maps:** Leaflet & `@types/leaflet`
+- **Internationalization:** `@ngx-translate` (i18n support)
+- **Forms & Inputs:** `ngx-intl-tel-input`, `google-libphonenumber`
 
-```bash
-ng serve
-```
+## ✨ Features
 
-Once the server is running, open your browser and navigate to `https://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+- **Property Listings:** View and manage properties dynamically.
+- **Bookings Management:** Detailed booking flows and components.
+- **Real-Time Updates:** Live data integration with SignalR.
+- **Localization:** Multi-language support (AR/EN).
+- **Interactive Maps:** Embedded maps for property locations using Leaflet.
+- **Responsive Design:** Optimized for all screen sizes using modern CSS techniques and Tailwind.
 
-## Code scaffolding
+## 🛠️ Development Server
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
-```bash
-ng generate component component-name
-```
-
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
-
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
+To start the local development server, run:
 
 ```bash
-ng build
+npm install
+npm run start
+# or ng serve
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+Once the server is running, navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
 
-## Running unit tests
+## 🏗️ Build
 
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
+To build the project for production, run:
 
 ```bash
-ng test
+npm run build
+# or ng build
 ```
 
-## Running end-to-end tests
+The build artifacts will be stored in the `dist/` directory.
 
-For end-to-end (e2e) testing, run:
+## 🧪 Testing
+
+To run the unit tests with [Vitest](https://vitest.dev/), use:
 
 ```bash
-ng e2e
+npm run test
+# or ng test
 ```
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+## 📂 Project Structure
 
-## Additional Resources
+```
+src/
+├── app/
+│   ├── core/         # Core singletons, interceptors, models, services
+│   ├── features/     # Feature modules (bookings, properties, profile, auth, etc.)
+│   ├── shared/       # Shared UI components (navbar, footer, cards), directives, pipes
+│   └── app.ts        # Main application component
+```
 
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+## 🤝 Contributing
+
+1. Clone the repository
+2. Create a new branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+---
+*Built with ❤️ by the Baytology Team*

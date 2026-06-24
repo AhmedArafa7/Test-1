@@ -2973,6 +2973,7 @@
         "PUSH_SUCCESS_TITLE": "Notifications enabled successfully! 🔔",
         "PUSH_SUCCESS_BODY": "You will now receive urgent alerts and messages first-hand, even when the site is closed.",
         "PUSH_SUCCESS_BODY_FALLBACK": "You will now receive urgent alerts and messages first-hand.",
+        "SERVER_UNAVAILABLE": "The server is currently unavailable. Please try again later or check your internet connection.",
         "GROUP_TODAY": "Today",
         "GROUP_YESTERDAY": "Yesterday",
         "GROUP_LAST_WEEK": "Last Week",

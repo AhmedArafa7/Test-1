@@ -5,6 +5,13 @@ const VALID_KEY = /^[A-Za-z0-9_.]+$/;
 export function extractApiError(error: any, translate: TranslateService): string | null {
   if (!error) return null;
 
+  // Server/Connectivity error detection
+  if (!error.status && (error.message?.toLowerCase().includes('network') || 
+                        error.message?.toLowerCase().includes('timeout') ||
+                        error.name?.toLowerCase().includes('aborterror'))) {
+    return translate.instant('NOTIFICATIONS.SERVER_UNAVAILABLE');
+  }
+
   const httpError = error.error || error;
   const candidates: string[] = [];
 
